@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+	<style> 
+		#audio{ 
+			display: none;
+		}
+	</style> 
+	<head>
+		<meta charset=utf-8>
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+
+		<audio id="audio" controls>
+			<source src="./assets/audio/sample.mp3" type="audio/mpeg">
+		</audio> 
+	
+	</head>
+	<body>
+        <!-- Load libs -->
+		<script src="src/three.js"></script>
+		
+		<script>
+			var AudioContext = AudioContext || webkitAudioContext;
+			var theway = document.getElementById('audio');
+			
+			audio.load();
+			audio.play();
+
+			var context = new AudioContext;
+			var analyser = context.createAnalyser();
+
+			var source = context.createMediaElementSource(theway);
+			source.connect(analyser); 
+			analyser.connect(context.destination);
+			analyser.smoothingTimeConstant = .8;
+			analyser.fftSize = 1024;
+
+			var bufferlen = analyser.frequencyBinCount;
+			var pitch_array = new Uint8Array(bufferlen);
+			var volume_array = new Uint8Array(bufferlen);
+
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+			var renderer = new THREE.WebGLRenderer();
+
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+
+			var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+			var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+			var cube = new THREE.Mesh( geometry, material );
+			scene.add( cube );
+
+			camera.position.z = 5;
+
+			var animate = function () {
+				requestAnimationFrame( animate );
+				//deals with pitch (and bass)
+				analyser.getByteFrequencyData(pitch_array);
+				//deals with volume
+				analyser.getByteTimeDomainData(volume_array);
+
+				var speed;
+				for( var i = 0; i < bufferlen; i++){ 
+					speed = pitch_array[i]
+					console.log(speed)
+					cube.rotation.x += 0.0000005 * speed;
+					if( speed > 180)
+					cube.rotation.y += 0.000001 * speed;
+					if (speed > 240) {
+					cube.rotation.x += 0.000001 * speed;
+					// cube.scale.x += .0001;
+					// cube.scale.y += .0001; 
+					// cube.scale.z += .0001;
+					}
+				}
+				
+				renderer.render( scene, camera );
+			};
+
+			animate();
+		</script>
+		</script>
+	</body>
+</html>
