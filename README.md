@@ -1,4 +1,4 @@
-# cmmnd
+# Creative Labs X CMMND Collaborative Project, UCLA Spring 2019
 # Music visualizer for the CMMND EP
 
 
