@@ -1,8 +1,8 @@
 # cmmnd
-# H1 Music visualizer for the CMMND EP
+# Music visualizer for the CMMND EP
 
 
-## H2 Web Audio API 
+## Web Audio API 
 There are only several things you need to worry about for the Web Audio API
 
 the Analyser: this is what parses all the audio into audio data, it gives us two arrays
