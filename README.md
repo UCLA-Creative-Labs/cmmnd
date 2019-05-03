@@ -7,8 +7,8 @@ There are only several things you need to worry about for the Web Audio API
 
 the Analyser: this is what parses all the audio into audio data, it gives us two arrays
 
-1. frequency_array: determines the pitch (high frequency) and bass (low frequency)
-2. volume_array: determines the volume (from the amplitude)
+  1. frequency_array: determines the pitch (high frequency) and bass (low frequency)
+  2. volume_array: determines the volume (from the amplitude)
 
 We'll basically be using these two arrays to produce the dynamic, real time effects in the scene. 
 Everytime animate() is called (each new frame), these two arrays will be filled with audio data from whatever source we specify, all that's left to us is to link the elements in the array to variables that we can then use to scale, rotate, etc. our shapes
@@ -57,7 +57,7 @@ draw();
 
 ```
 
-other semi-important things: 
+Other semi-important things: 
 
 analyser.fftsize: basically determines the amount of data values you have to play around with 
 analyser.smoothingTimeConstant: double value from 0 to 1 that will smooth your set of values over time (smoother audiodata) (default is .8)
