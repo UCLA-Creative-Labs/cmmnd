@@ -1,8 +1,9 @@
 # cmmnd
 # H1 Music visualizer for the CMMND EP
 
+## H2 Implementation
 
-## H2 Web Audio API 
+## H3 Web Audio API 
 There are only several things you need to worry about for the Web Audio API
 
 the Analyser: this is what parses all the audio into audio data, it gives us two arrays
@@ -68,3 +69,13 @@ the audio data will be converted to movement etc. later on.
 i think that's it but [here's](https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode) the mdn documentation for the analyser if you need more info 
 
 
+## H3 Orbitcontrols 
+
+Three.js has a built-in [orbit control system]( )
+## H3 Car animation
+Three.js has a built in [animation system](https://threejs.org/docs/#manual/en/introduction/Animation-system)
+
+## H3 Shader Effects
+- [VHS quality grain](https://www.youtube.com/watch?v=9eFVeErnUzg)
+- shape distortion with [fractal brownian motion](https://thebookofshaders.com/13/)
+- text distortion sine wave
