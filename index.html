@@ -22,8 +22,10 @@
         <!-- Load libs -->
 		<script src="src/three.js"></script>
 		<script src="src/OrbitControls.js"></script>
+		<script src="scenes/SampleScene.js"></script>
 		
 		<script>
+			/* initial song */ 
 			var AudioContext = AudioContext || webkitAudioContext;
 			var theway = document.getElementById('audio');
 			
@@ -47,59 +49,16 @@
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
 			var controls = new THREE.OrbitControls(camera);
+			controls.zoomSpeed = .5;
+			controls.minAzimuthAngle = - Math.PI/2;
+			controls.maxAzimuthAngle = Math.PI/2;
+			controls.enablePan = false;
 			var renderer = new THREE.WebGLRenderer();
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
 
-			/* main cube */ 
-			var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-			var material = new THREE.MeshNormalMaterial(  );
-			var cube = new THREE.Mesh( geometry, material );
-			scene.add( cube );
-
-			var geometry1 = new THREE.CylinderGeometry(1,1, 2, 6);
-			var material1 = new THREE.MeshBasicMaterial( { color: 0x404040 } );
-			var cylinder = new THREE.Mesh( geometry1, material1 );
-			scene.add( cylinder );
-
-			cylinder.position.y = -2;
-
-			var light = new THREE.AmbientLight( 0xffffff ); // soft white light
-			scene.add( light );
-			
-			camera.position.z = 5;
-
-			var animate = function () {
-				requestAnimationFrame( animate );
-				//deals with pitch (and bass)
-				analyser.getByteFrequencyData(pitch_array);
-				//deals with volume
-				analyser.getByteTimeDomainData(volume_array);
-
-				var speed;
-				for( var i = 0; i < bufferlen; i++){ 
-					speed = pitch_array[i]
-					cube.rotation.x += 0.0000005 * speed;
-					if( speed > 180) {
-					cube.rotation.y += 0.000001 * speed;
-					cube.scale.x -= .0001;
-					cube.scale.y -= .0001; 
-					cube.scale.z -= .0001;
-					}
-					if (speed > 255) {
-					cube.rotation.x += 0.000001 * speed;
-					cube.scale.x += .0001;
-					cube.scale.y += .0001; 
-					cube.scale.z += .0001;
-					}
-				}
-
-				controls.update();
-				
-				renderer.render( scene, camera );
-			};
-
+			initScene();
 			animate();
 		</script>
 		</script>
