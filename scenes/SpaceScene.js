@@ -15,8 +15,8 @@
 		windowHalfY, stats, geometry,
 		starStuff, materialOptions, stars,cube;
 
-	init();
-	animate();
+	// init();
+	// animate();
 
 	function init() {
 		container = document.createElement('div');
@@ -190,6 +190,33 @@
    	cube = new THREE.Mesh( geometry, material );
 	
    	scene.add( cube );
+
+
+   	//earth
+   		var geometry   = new THREE.SphereGeometry(0.5, 32, 32);
+		var material  = new THREE.MeshPhongMaterial();
+		var earthMesh = new THREE.Mesh(geometry, material);
+		scene.add(earthMesh);
+		
+		material.map    = THREE.ImageUtils.loadTexture('images/earthmap1k.jpg');
+		material.bumpMap    = THREE.ImageUtils.loadTexture('images/earthbump1k.jpg');
+		material.bumpScale = 0.05;
+		material.specularMap    = THREE.ImageUtils.loadTexture('images/earthspec1k.jpg');
+		material.specular  = new THREE.Color('grey');
+		var geometry   = new THREE.SphereGeometry(0.51, 32, 32);
+		var material  = new THREE.MeshPhongMaterial({ 
+			map     : new THREE.Texture(canvasCloud),
+  			side        : THREE.DoubleSide,
+  			opacity     : 0.8,
+  			transparent : true,
+  			depthWrite  : false,
+		});
+		var cloudMesh = new THREE.Mesh(geometry, material);
+		earthMesh.add(cloudMesh);
+	
+		onRenderFcts.push(function(delta, now){
+  		cloudMesh.rotation.y  += 1/16 * delta
+		});
 	}
 
 	function onMouseMove(e) {
