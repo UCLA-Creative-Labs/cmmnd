@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>space</title>
+	<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+			/*body {
+				color: #808080;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+				background-color: #ffffff;
+				margin: 0px;
+				overflow: hidden;
+			}
+			#info {
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+			}
+			a {
+				color: #0080ff;
+			}*/
+	</style>
+	<audio id="audio" controls>
+			<source src="./assets/audio/indarocket.mp3" type="audio/mpeg">
+	</audio>
+</head>
+<body>
+	<!-- Libraries -->
+	<script src="src/three.js"></script>
+	<script src="src/OrbitControls.js"></script>
+	<script src="scenes/SampleScene.js"></script>
+	<script>
+		
+		
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+			var renderer = new THREE.WebGLRenderer(); 
+			renderer.setSize( window.innerWidth, window.innerHeight ); 
+			document.body.appendChild( renderer.domElement );
+			camera.position.z = 50;
+		
+		objectsInTheScene();
+		animate();
+		//Web-audio code
+		/* initial song */ 
+			// var AudioContext = AudioContext || webkitAudioContext;
+			// var theway = document.getElementById('audio');		
+			// audio.load();
+			// audio.play();
+			// var context = new AudioContext;
+			// var analyser = context.createAnalyser();
+			// var source = context.createMediaElementSource(theway);
+			// source.connect(analyser); 
+			// analyser.connect(context.destination);
+			// analyser.smoothingTimeConstant = .8;
+			// analyser.fftSize = 1024;
+
+			// var bufferlen = analyser.frequencyBinCount;
+			// var pitch_array = new Uint8Array(bufferlen);
+			// var volume_array = new Uint8Array(bufferlen);
+
+		//animate function
+		function animate() {
+			requestAnimationFrame( animate );
+			//deals with pitch (and bass)
+		    // analyser.getByteFrequencyData(pitch_array);
+		    // //deals with volume
+		    // analyser.getByteTimeDomainData(volume_array);
+
+		    // var speed;
+		    // for( var i = 0; i < bufferlen; i++){ 
+		    //     speed = pitch_array[i]
+		    //     cube.rotation.x += 0.0000005 * speed;
+		    // }
+	    	cube.rotation.x += 0.005;
+			cube.rotation.y += 0.01;
+			stars1.rotation.x+= 0.00005;
+			stars2.rotation.y+= 0.00005;
+			stars3.rotation.x+= 0.0005;
+			stars4.rotation.z+= 0.00005; 
+	        //camera.position.x +=  0.05;
+	       	//cube.rotation.x+=0.05;
+		 	//camera.position.y +=  0.05;
+		    // camera.position.z += 0.05;
+		    //earth.rotation.x+=0.05;
+			camera.lookAt( scene.position );
+			renderer.render( scene, camera );
+		}
+
+		
+		//add objects to the scene
+		function objectsInTheScene(){	
+			//------------------------------- STARS -------------------------------------------
+			geometry1 = new THREE.SphereGeometry(1000, 100, 50);
+			geometry2 = new THREE.SphereGeometry(1000, 100, 50);
+			geometry3 = new THREE.SphereGeometry(1000, 1000, 50);
+			geometry4 = new THREE.SphereGeometry(1000, 100, 50);
+			//four differnt options for color of the stars
+	    	materialOptions1 = {
+	    		size: 1.0, 
+	    		transparency: false , 
+	    		opacity: 0.7,
+	    		color: 0xeaf20c //yellow
+	    	};
+	    	materialOptions2 = {
+	    		size: 1.0, 
+	    		transparency: false , 
+	    		opacity: 0.7,
+	    		color: 0xff9d00 //orange
+	    	};
+	    	materialOptions3 = {
+	    		size: 1.0, 
+	    		transparency: false , 
+	    		opacity: 0.7,
+	    		color: 0xa8f0ff //white
+	    	};
+	    	materialOptions4 = {
+	    		size: 1.0, 
+	    		transparency: false , 
+	    		opacity: 0.7,
+	    		color: 0xce1c1c //red
+	    	};
+	    	starStuff1 = new THREE.PointCloudMaterial(materialOptions1);
+	    	starStuff2 = new THREE.PointCloudMaterial(materialOptions2);
+	    	starStuff3 = new THREE.PointCloudMaterial(materialOptions3);
+	    	starStuff4 = new THREE.PointCloudMaterial(materialOptions4);
+	    	//create random stars
+			for (var i = 0; i < 10000; i++) {		
+				var starVertex1 = new THREE.Vector3();
+				starVertex1.x = Math.random() * 2000 - 1000;
+				starVertex1.y = Math.random() * 2000 - 1000;
+				starVertex1.z = Math.random() * 2000 - 1000;
+				geometry1.vertices.push(starVertex1);
+			}
+			for (var i = 0; i < 10000; i++) {		
+				var starVertex2 = new THREE.Vector3();
+				starVertex2.x = Math.random() * 2000 - 1000;
+				starVertex2.y = Math.random() * 2000 - 1000;
+				starVertex2.z = Math.random() * 2000 - 1000;
+				geometry2.vertices.push(starVertex2);
+			}
+			for (var i = 0; i < 50000; i++) {		
+				var starVertex3 = new THREE.Vector3();
+				starVertex3.x = Math.random() * 2000 - 1000;
+				starVertex3.y = Math.random() * 2000 - 1000;
+				starVertex3.z = Math.random() * 2000 - 1000;
+				geometry3.vertices.push(starVertex3);
+			}
+			for (var i = 0; i <2000; i++) {		
+				var starVertex4 = new THREE.Vector3();
+				starVertex4.x = Math.random() * 2000 - 1000;
+				starVertex4.y = Math.random() * 2000 - 1000;
+				starVertex4.z = Math.random() * 2000 - 1000;
+				geometry4.vertices.push(starVertex4);
+			}
+			//create four different color star
+			stars1 = new THREE.PointCloud(geometry1, starStuff1);
+			stars2 = new THREE.PointCloud(geometry2, starStuff2);
+			stars3 = new THREE.PointCloud(geometry3, starStuff3);
+			stars4 = new THREE.PointCloud(geometry4, starStuff4);
+			//add to the scene
+			scene.add(stars1);
+			scene.add(stars2);
+			scene.add(stars3);
+			scene.add(stars4);
+			//--------------------------------------End Stars ---------------------
+
+			//--------------------------------------Middle object that floats; will be the car --------
+			var geometry = new THREE.BoxGeometry( 20, 20, 20);
+   			var material = new THREE.MeshNormalMaterial(  );
+    		cube = new THREE.Mesh( geometry, material );
+    		scene.add( cube );
+			//----------------------------------------End of the of middle object ---------------------
+
+		   	//-------------------------------------- Earth ------------------------  
+		 //   	var geometry 			= new THREE.SphereGeometry( 5, 32, 32 );
+			// var material 			= new THREE.MeshBasicMaterial( {color: 0x0000ff} );
+			// var sphere 				= new THREE.Mesh( geometry, material );
+			// scene.add( sphere );
+			// material.map    		= new THREE.TextureLoader().load('./assets/images/earthmap1k.jpg');
+			// material.bumpMap    	= new THREE.TextureLoader().load('./assets/images/earthbump1k.jpg');
+			// material.bumpScale  	= 0.05;
+			// material.specularMap    = new THREE.TextureLoader().load('./assets/images/earthspec1k.jpg');
+			// material.specular  		= new THREE.Color('grey');
+			// var geometry   			= new THREE.SphereGeometry(0.51, 32, 32);
+			// var material 			= new THREE.MeshPhongMaterial({ 
+			// 	map         : new THREE.Texture(canvasCloud),
+	  // 			side        : THREE.DoubleSide,
+	  // 			opacity     : 0.8,
+	  // 			transparent : true,
+	  // 			depthWrite  : false,
+			// });
+			// var cloudMesh 			= new THREE.Mesh(geometry, material);
+			// earthMesh.add(cloudMesh);
+			// onRenderFcts.push(function(delta, now){
+	  // 			cloudMesh.rotation.y  += 1/16 * delta
+			// });
+		}
+	</script>
+</body>
+</html>
