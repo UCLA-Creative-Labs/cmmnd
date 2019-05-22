@@ -31,56 +31,82 @@
 	<!-- Libraries -->
 	<script src="src/three.js"></script>
 	<script src="src/OrbitControls.js"></script>
+	<script src="src/dat.gui.min.js"></script>
 	<script src="scenes/SampleScene.js"></script>
+
+    
 	<script>
 		
-		
+					// Earth params
+			var radius   = 0.5,
+				segments = 32,
+				rotation = 6;  
+
 			var scene = new THREE.Scene();
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 			var renderer = new THREE.WebGLRenderer(); 
 			renderer.setSize( window.innerWidth, window.innerHeight ); 
 			document.body.appendChild( renderer.domElement );
 			camera.position.z = 50;
+			var AudioContext = AudioContext || webkitAudioContext;
+			var theway = document.getElementById('audio');		
+			audio.load();
+			audio.play();
+// 			var promise = document.querySelector('audio').play();
+
+// 			if (promise !== undefined) {
+// 			    promise.then(_ => {
+// 			        // Autoplay started!
+// 			    }).catch(error => {
+// 			        // Autoplay was prevented.
+// 			        // Show a "Play" button so that user can start playback.
+// 			    });
+// }
+			var context = new AudioContext;
+			var analyser = context.createAnalyser();
+			var source = context.createMediaElementSource(theway);
+			source.connect(analyser); 
+			analyser.connect(context.destination);
+			analyser.smoothingTimeConstant = .8;
+			analyser.fftSize = 1024;
+
+			var bufferlen = analyser.frequencyBinCount;
+			var pitch_array = new Uint8Array(bufferlen);
+			var volume_array = new Uint8Array(bufferlen);
 		
-		objectsInTheScene();
-		animate();
-		//Web-audio code
-		/* initial song */ 
-			// var AudioContext = AudioContext || webkitAudioContext;
-			// var theway = document.getElementById('audio');		
-			// audio.load();
-			// audio.play();
-			// var context = new AudioContext;
-			// var analyser = context.createAnalyser();
-			// var source = context.createMediaElementSource(theway);
-			// source.connect(analyser); 
-			// analyser.connect(context.destination);
-			// analyser.smoothingTimeConstant = .8;
-			// analyser.fftSize = 1024;
-
-			// var bufferlen = analyser.frequencyBinCount;
-			// var pitch_array = new Uint8Array(bufferlen);
-			// var volume_array = new Uint8Array(bufferlen);
-
+		update();
+		animate();			
 		//animate function
 		function animate() {
 			requestAnimationFrame( animate );
 			//deals with pitch (and bass)
-		    // analyser.getByteFrequencyData(pitch_array);
-		    // //deals with volume
-		    // analyser.getByteTimeDomainData(volume_array);
+		    analyser.getByteFrequencyData(pitch_array);
+		    //deals with volume
+		    analyser.getByteTimeDomainData(volume_array);
 
-		    // var speed;
+		    var speed;
 		    // for( var i = 0; i < bufferlen; i++){ 
 		    //     speed = pitch_array[i]
 		    //     cube.rotation.x += 0.0000005 * speed;
+		    //      if( speed > 180) {
+		    //     cube.rotation.y += 0.000001 * speed;
+		    //     cube.scale.x -= .0001;
+		    //     cube.scale.y -= .0001; 
+		    //     cube.scale.z -= .0001;
+		    //     }
 		    // }
-	    	cube.rotation.x += 0.005;
-			cube.rotation.y += 0.01;
-			stars1.rotation.x+= 0.00005;
-			stars2.rotation.y+= 0.00005;
-			stars3.rotation.x+= 0.0005;
-			stars4.rotation.z+= 0.00005; 
+	    	
+			// cube.rotation.y += 0.01;
+			// if(globe.earth)
+   // 				 globe.earth.rotation.y += 0.0005;
+
+			//   if(globe.clouds)
+			//     globe.clouds.rotation.y += 0.0003;
+	
+			// stars1.rotation.x+= 0.00005;
+			// stars2.rotation.y+= 0.00005;
+			// stars3.rotation.x+= 0.0005;
+			// stars4.rotation.z+= 0.00005; 
 	        //camera.position.x +=  0.05;
 	       	//cube.rotation.x+=0.05;
 		 	//camera.position.y +=  0.05;
@@ -92,7 +118,7 @@
 
 		
 		//add objects to the scene
-		function objectsInTheScene(){	
+		function update(){	
 			//------------------------------- STARS -------------------------------------------
 			geometry1 = new THREE.SphereGeometry(1000, 100, 50);
 			geometry2 = new THREE.SphereGeometry(1000, 100, 50);
@@ -169,19 +195,41 @@
 			//--------------------------------------End Stars ---------------------
 
 			//--------------------------------------Middle object that floats; will be the car --------
-			var geometry = new THREE.BoxGeometry( 20, 20, 20);
-   			var material = new THREE.MeshNormalMaterial(  );
-    		cube = new THREE.Mesh( geometry, material );
-    		scene.add( cube );
+			// var geometry = new THREE.BoxGeometry( 20, 20, 20);
+   // 			var material = new THREE.MeshNormalMaterial(  );
+   //  		cube = new THREE.Mesh( geometry, material );
+   //  		scene.add( cube );
 			//----------------------------------------End of the of middle object ---------------------
 
 		   	//-------------------------------------- Earth ------------------------  
+			// var globe = new Globe(radius, segments);
+			// scene.add(globe);
+			var sphere = createSphere(radius, segments);
+			//sphere.rotation.y = rotation; 
+			scene.add(sphere)
+
+		    var clouds = createClouds(radius, segments);
+			//clouds.rotation.y = rotation;
+			scene.add(clouds)
+
+
+
 		 //   	var geometry 			= new THREE.SphereGeometry( 5, 32, 32 );
 			// var material 			= new THREE.MeshBasicMaterial( {color: 0x0000ff} );
 			// var sphere 				= new THREE.Mesh( geometry, material );
+
 			// scene.add( sphere );
-			// material.map    		= new THREE.TextureLoader().load('./assets/images/earthmap1k.jpg');
-			// material.bumpMap    	= new THREE.TextureLoader().load('./assets/images/earthbump1k.jpg');
+			// //load earthmap1k
+			// var texture = new THREE.TextureLoader().load('1.png');
+			// var material = new THREE.MeshBasicMaterial( { map: texture } );
+			//load earthbump
+			// var texture = new THREE.TextureLoader().load('./assets/images/earthbump1k.jpg');
+			// var material = new THREE.MeshBasicMaterial({bumpMap: texture2  });
+			///assets/images/earthmap1k.jpg
+
+			//material.map    		= THREE.ImageUtils.loadTexture('./assets/images/earthmap1k.jpg');
+			//loadTexture.setCrossOrigin ( 'anonymous' );
+			//material.bumpMap    	= new THREE.TextureLoader().load('./assets/images/earthbump1k.jpg');
 			// material.bumpScale  	= 0.05;
 			// material.specularMap    = new THREE.TextureLoader().load('./assets/images/earthspec1k.jpg');
 			// material.specular  		= new THREE.Color('grey');
@@ -199,6 +247,111 @@
 	  // 			cloudMesh.rotation.y  += 1/16 * delta
 			// });
 		}
+		 function createSphere(radius, segments) {
+				return new THREE.Mesh(
+					new THREE.SphereGeometry(radius, segments, segments),
+					new THREE.MeshPhongMaterial({
+						map:         THREE.ImageUtils.loadTexture('./assets/images/2_no_clouds_4k.jpg'),
+						bumpMap:     THREE.ImageUtils.loadTexture('./assets/images/elev_bump_4k.jpg'),
+						bumpScale:   0.005,
+						specularMap: THREE.ImageUtils.loadTexture('./assets/images/water_4k.png'),
+						specular:    new THREE.Color('grey')
+														
+					})
+				);
+			}
+
+			function createClouds(radius, segments) {
+				return new THREE.Mesh(
+					new THREE.SphereGeometry(radius + 0.003, segments, segments),			
+					new THREE.MeshPhongMaterial({
+						map:         THREE.ImageUtils.loadTexture('./assets/images/fair_clouds_4k.png'),
+						transparent: true
+					})
+				);		
+			}
+			
+		// var Globe = function (radius, segments) {
+
+		// 	  THREE.Object3D.call(this);
+
+		// 	  this.name = "Globe";
+
+		// 	  var that = this;
+
+		// 	  // instantiate a loader
+		// 	  var loader = new THREE.TextureLoader();
+
+		// 	  // earth textures
+		// 	  var textures = {
+		// 	    'map': {
+		// 	      url: 'assets/images/earthmap1k.jpg',
+		// 	      val: undefined
+		// 	    },
+		// 	    'bumpMap': {
+		// 	      url: 'assets/images/earthbump1k.jpg',
+		// 	      val: undefined
+		// 	    },
+		// 	    'specularMap': {
+		// 	      url: 'assets/images/earthspec1k.jpg',
+		// 	      val: undefined
+		// 	    }
+		// 	  };
+
+		// 	  var texturePromises = [], path = './';
+
+		// 	  for (var key in textures) {
+		// 	    texturePromises.push(new Promise((resolve, reject) => {
+		// 	      var entry = textures[key]
+		// 	      var url = path + entry.url
+		// 	      loader.load(url,
+		// 	        texture => {
+		// 	          entry.val = texture;
+		// 	          if (entry.val instanceof THREE.Texture) resolve(entry);
+		// 	        },
+		// 	        xhr => {
+		// 	          console.log(url + ' ' + (xhr.loaded / xhr.total * 100) +
+		// 	            '% loaded');
+		// 	        },
+		// 	        xhr => {
+		// 	          reject(new Error(xhr +
+		// 	            'An error occurred loading while loading: ' +
+		// 	            entry.url));
+		// 	        }
+		// 	      );
+		// 	    }));
+		// 	  }
+
+		// 	  // load the geometry and the textures
+		// 	  Promise.all(texturePromises).then(loadedTextures => {
+		// 	    var geometry = new THREE.SphereGeometry(radius, segments, segments);
+		// 	    var material = new THREE.MeshPhongMaterial({
+		// 	      map: textures.map.val,
+		// 	      bumpMap: textures.bumpMap.val,
+		// 	      bumpScale: 0.005,
+		// 	      specularMap: textures.specularMap.val,
+		// 	      specular: new THREE.Color('grey')
+		// 	    });
+
+		// 	    var earth = that.earth = new THREE.Mesh(geometry, material);
+		// 	    that.add(earth);
+		// 	  });
+
+		// 	  // clouds
+		// 	  loader.load('./assets/images/earthcloudmap.jpg', map => {
+		// 	    var geometry = new THREE.SphereGeometry(radius + .05, segments, segments);
+		// 	    var material = new THREE.MeshPhongMaterial({
+		// 	      map: map,
+		// 	      transparent: true
+		// 	    });
+
+		// 	    var clouds = that.clouds = new THREE.Mesh(geometry, material);
+		// 	    that.add(clouds);
+		// 	  });
+		// 	}
+
+		// 	Globe.prototype = Object.create(THREE.Object3D.prototype);
+		// 	Globe.prototype.constructor = Globe;
 	</script>
 </body>
 </html>

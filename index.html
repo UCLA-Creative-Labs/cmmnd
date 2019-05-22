@@ -20,7 +20,8 @@
         <!-- Load libs -->
 		<script src="src/three.js"></script>
 		<script src="src/OrbitControls.js"></script>
-		<script src="scenes/SampleScene.js"></script>
+		<script src="src/dat.gui.min.js"></script>
+		<script src="scenes/space.js"></script>
 		
 		<script>
 			/* initial song */ 
@@ -40,6 +41,7 @@
 			var pitch_array = new Uint8Array(bufferlen);
 			var volume_array = new Uint8Array(bufferlen);
 			var scene = new THREE.Scene();
+			//scene.fog = new THREE.FogExp2(0x000000, .0007);
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 			var controls = new THREE.OrbitControls(camera);
 			controls.zoomSpeed = .5;
@@ -49,9 +51,11 @@
 			var renderer = new THREE.WebGLRenderer();
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
+			camera.position.z = 100;
 
 
-			initScene();
+
+			spaceScene();
 			animate();
 
 		</script>
