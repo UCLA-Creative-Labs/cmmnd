@@ -7,7 +7,7 @@
 	</style> 
 	<head>
 		<meta charset=utf-8>
-		<title>My first three.js app</title>
+		<title>CMMND</title>
 		<style>
 			body { margin: 0; }
 			canvas { width: 100%; height: 100% }
@@ -22,11 +22,12 @@
         <!-- Load libs -->
 		<script src="src/three.js"></script>
 		<script src="src/OrbitControls.js"></script>
-		<script src="scenes/SampleScene.js"></script>
+		<script src="./scenes/theWay.js"></script> 
 		
 		<script>
-			/* initial song */ 
-			var AudioContext = AudioContext || webkitAudioContext;
+
+			/* audio object interfaces songs */ 
+			var AudioContext = window.AudioContext || window.webkitAudioContext;
 			var theway = document.getElementById('audio');
 			
 			audio.load();
@@ -46,6 +47,7 @@
 			var volume_array = new Uint8Array(bufferlen);
 
 			var scene = new THREE.Scene();
+			scene.background = new THREE.Color( 0x4B0082 );
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
 			var controls = new THREE.OrbitControls(camera);
@@ -54,10 +56,43 @@
 			controls.maxAzimuthAngle = Math.PI/2;
 			controls.enablePan = false;
 			var renderer = new THREE.WebGLRenderer();
+	
+			/* add platform and car other universal scene objects*/
+			//platform 
+			var stepGeo = new THREE.CylinderGeometry( 5, 5, .1, 32 );
+
+			//only apply material to top platform
+			var stepMaterial = new THREE.MeshStandardMaterial( {color:0xC0C0C0 });
+			var normalMap = new THREE.TextureLoader().load( 'assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_normal.jpg' );
+			var metallicMap = new THREE.TextureLoader().load('assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_metallic.jpg');
+			var aoMap = new THREE.TextureLoader().load('assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_ambientOcclusion.jpg');
+			stepMaterial.normalMap = normalMap;
+			stepMaterial.metalnessMap = metallicMap;
+			
+			let platform; 
+
+			for (let s = 0; s<6; s++) { 
+				let norm = s * .1;
+				let scale = 1 - (norm*.5); 
+				console.log(scale)
+				let newGeo = new THREE.CylinderGeometry( 5, 5, .1, 32 );
+				console.log(newGeo);
+				//set position and scale of mesh 
+				//merge geometry 
+				newGeo.translate(0, 1*norm, 0);
+				newGeo.scale(scale, 1, scale); // scale circle smaller
+				stepGeo.merge(newGeo);
+			}
+			console.log(stepGeo)
+			stepGeo.translate(0, -5, -4)
+			platform = new THREE.Mesh(stepGeo, stepMaterial);
+			scene.add( platform );
+
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
 
+			//initializes first scene
 			initScene();
 			animate();
 		</script>

@@ -68,6 +68,8 @@ the audio data will be converted to movement etc. later on.
 
 i think that's it but [here's](https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode) the mdn documentation for the analyser if you need more info 
 
+More complex [beat detection](http://joesul.li/van/beat-detection-using-web-audio/)
+
 ## H3 Orbitcontrols 
 Three.js has a built-in [orbit control system]( )
 
