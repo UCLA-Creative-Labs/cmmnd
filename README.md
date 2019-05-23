@@ -1,10 +1,10 @@
 # Creative Labs X CMMND Collaborative Project, UCLA Spring 2019
 # Music visualizer for the CMMND EP
 
-## H2 Implementation
+## Implementation
 
 
-## H3 Web Audio API 
+## Web Audio API 
 There are only several things you need to worry about for the Web Audio API
 
 The Analyser: this is what parses all the audio into audio data, it gives us two arrays
@@ -70,19 +70,19 @@ i think that's it but [here's](https://developer.mozilla.org/en-US/docs/Web/API/
 
 More complex [beat detection](http://joesul.li/van/beat-detection-using-web-audio/)
 
-## H3 Orbitcontrols 
+## Orbitcontrols 
 Three.js has a built-in [orbit control system]( )
 
-## H3 Car animation
+## Car animation
 Three.js has a built in [animation system](https://threejs.org/docs/#manual/en/introduction/Animation-system)
 
-## H3 Shader Effects
+## Shader Effects
 - [VHS quality grain](https://www.youtube.com/watch?v=9eFVeErnUzg)
 - shape distortion with [fractal brownian motion](https://thebookofshaders.com/13/)
 - text distortion sine wave
 
 
-## H2 Scene integration
+## Scene integration
 When each song ends, a new song is played and a new scene is rendered. 
 Each scene is an object  with init and animate functions
 

@@ -7,35 +7,33 @@
 	</style> 
 	<head>
 		<meta charset=utf-8>
-		<title>CMMND</title>
+
+		<title>CMMND EP X Creative Labs</title>
 		<style>
 			body { margin: 0; }
 			canvas { width: 100%; height: 100% }
 		</style>
-
 		<audio id="audio" controls>
-			<source src="./assets/audio/sample.mp3" type="audio/mpeg">
+			<source src="./assets/audio/theWay.mp3" type="audio/mpeg">
 		</audio> 
-	
 	</head>
 	<body>
         <!-- Load libs -->
 		<script src="src/three.js"></script>
 		<script src="src/OrbitControls.js"></script>
-		<script src="./scenes/theWay.js"></script> 
+
+		<script src="src/dat.gui.min.js"></script>
+		<script src="scenes/space.js"></script>
 		
 		<script>
+			/* initial song */ 
+			var AudioContext = AudioContext || webkitAudioContext;
+			var theway = document.getElementById('audio');		
 
-			/* audio object interfaces songs */ 
-			var AudioContext = window.AudioContext || window.webkitAudioContext;
-			var theway = document.getElementById('audio');
-			
 			audio.load();
 			audio.play();
-
 			var context = new AudioContext;
 			var analyser = context.createAnalyser();
-
 			var source = context.createMediaElementSource(theway);
 			source.connect(analyser); 
 			analyser.connect(context.destination);
@@ -46,19 +44,23 @@
 			var pitch_array = new Uint8Array(bufferlen);
 			var volume_array = new Uint8Array(bufferlen);
 
+
 			var scene = new THREE.Scene();
 			scene.background = new THREE.Color( 0x4B0082 );
-			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+			//scene.fog = new THREE.FogExp2(0x000000, .0007);
 
+
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 			var controls = new THREE.OrbitControls(camera);
 			controls.zoomSpeed = .5;
 			controls.minAzimuthAngle = - Math.PI/2;
 			controls.maxAzimuthAngle = Math.PI/2;
-			controls.enablePan = false;
+			controls.enablePan = true;
+			
+			
 			var renderer = new THREE.WebGLRenderer();
 	
 			/* add platform and car other universal scene objects*/
-			//platform 
 			var stepGeo = new THREE.CylinderGeometry( 5, 5, .1, 32 );
 
 			//only apply material to top platform
@@ -83,7 +85,7 @@
 				newGeo.scale(scale, 1, scale); // scale circle smaller
 				stepGeo.merge(newGeo);
 			}
-			console.log(stepGeo)
+
 			stepGeo.translate(0, -5, -4)
 			platform = new THREE.Mesh(stepGeo, stepMaterial);
 			scene.add( platform );
@@ -91,10 +93,12 @@
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
+			camera.position.z = 100;
 
-			//initializes first scene
-			initScene();
+
+			spaceScene();
 			animate();
+
 		</script>
 		</script>
 	</body>
