@@ -1,25 +1,28 @@
- /* effects and ideas 
+// the way scene
+
+/* effects and ideas 
 - birds
 - lo poly clouds
 - gradient sunset 
 - fog and light source
 - lo poly waves with slight reflectance
 */ 
-
 // import {background} from "./materials.js";
 
 var start = Date.now();
 var end, timeDiff;
 
 var cube, plane, clouds, circle, particle, particles;
+var dynamicShape;
 const cloud_num = 12;
 
 const AMOUNT = 50; 
-const SEPARATION = 30;
-const MAXSIZE = .5;
-const WAVESIZE = 10;
+const SEPARATION = 4;
+
+const MAXSIZE = .2;
+const WAVESIZE = 2;
 var count = 0;
-let WAVE_Y = -50;
+let WAVE_Y = -35;
 
 class WaveShader { 
     vertexShader() { 
@@ -169,24 +172,7 @@ class WaveShader {
 
 
 //for fog
-var uniforms = { 
 
-}
-
-function initWave() { 
-    var waveShader = new WaveShader();
-    console.log(waveShader.vertexShader)
-    console.log(waveShader.fragmentShader)
-    var waveGeo = new THREE.PlaneBufferGeometry( 2000, 2000, 100, 100 );
-    var waveMaterial = new THREE.MeshBasicMaterial({ 
-        wireframe: true,
-        color: 0x0900ff
-    });
-    var wavePlane = new THREE.Mesh( waveGeo, waveMaterial );
-    wavePlane.position.y = -50;
-    wavePlane.rotation.x = Math.PI/2;
-    scene.add( wavePlane );
-}
 
 /* inspired by https://github.com/chebyrash/Waves/blob/master/static/js/projector.js */
 function initWaveParticles(){ 
@@ -204,9 +190,11 @@ function initWaveParticles(){
                     context.fill();
                 }
             });
-            material.color = new THREE.Color(Math.random(), 0, Math.random());
-            let particleGeometry = new THREE.SphereGeometry();
-            let particle = new THREE.Mesh(particleGeometry, material);
+            let normalizeX = x/AMOUNT;
+            let normalizeY = y/AMOUNT;
+            material.color = new THREE.Color(normalizeX, normalizeY, normalizeX);
+            //let particleGeometry = new THREE.Sprite();
+            let particle = new THREE.Sprite( material);
             particle.position.x = x * SEPARATION - ((AMOUNT * SEPARATION) / 2);
             particle.position.z = y * SEPARATION - ((AMOUNT * SEPARATION) / 2);
             particle.position.y = WAVE_Y;
@@ -233,7 +221,7 @@ const update = () => {
             prevSpeed = speed;
         }
     }
-    count += .02;
+    count += .05;
 }
 
 
@@ -241,25 +229,36 @@ const update = () => {
 function initClouds() { 
     //clouds (procedural)
     clouds = [];
+
     for (let i = 0; i < cloud_num; i++){
 
+        let side = 1;
+        let rand1 = Math.random();
+        let rand2 = Math.random();
+        let rand3 = Math.random();
         //angle (position)
         let angle = i * (Math.PI) / 12;
 
+        if( i%2 ) { 
+            side = -1
+        }
         //generate random clouds   
-        let cloudGeo = new THREE.SphereGeometry( 5, 8, 8);
-        cloudGeo.translate(-5,0,0);
-        let cloudGeo2 = new THREE.SphereGeometry( 6, 10, 8);
-        cloudGeo2.translate(0,0,0);
-        let cloudGeo3 = new THREE.SphereGeometry( 5, 8, 8);
-        cloudGeo3.translate(5,0,0);
+        let cloudGeo = new THREE.BoxGeometry( 30, 30, 30);
+        cloudGeo.translate(-side*25,rand1,0);
+        cloudGeo.rotateX(rand1); 
+        let cloudGeo2 = new THREE.BoxGeometry( 20, 20, 20);
+        cloudGeo2.translate(0,rand2,0);
+        cloudGeo2.rotateY(rand2); 
+        let cloudGeo3 = new THREE.BoxGeometry( 10, 10, 10);
+        cloudGeo3.translate(side*20,rand3,0);
+        cloudGeo2.rotateZ(rand3); 
 
         let cloudMaterial = new THREE.MeshPhongMaterial({ 
             color: 0xD9E9FF,
             flatShading: true,
             opacity: .75
         });
-        cloudMaterial.fog = true;
+        //cloudMaterial.fog = true;
         //merge 
         cloudGeo.merge(cloudGeo2);
         cloudGeo.merge(cloudGeo3);
@@ -273,7 +272,7 @@ function initClouds() {
         }); 
 
         clouds[i] = new THREE.Mesh(cloudGeo, cloudMaterial);
-        clouds[i].position.set(200*Math.cos(angle+Math.random()), Math.random()*30 ,-200*Math.sin(angle+Math.random()))
+        clouds[i].position.set(500*Math.cos(angle+rand1), rand2*20 + 300 ,-500*Math.sin(angle+rand3))
         scene.add(clouds[i]);
     }
 
@@ -282,38 +281,76 @@ function initClouds() {
 function initSky() { 
  //sun
  var circleGeometry = new THREE.CircleGeometry( 50, 32 );;
- var circleMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+ var circleMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      color1: {
+        value: new THREE.Color(0x8200c9)
+      },
+      color2: {
+        value: new THREE.Color(0xffc922)
+      }
+    },
+    vertexShader: `
+      varying vec2 vUv;
+  
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 color1;
+      uniform vec3 color2;
+    
+      varying vec2 vUv;
+      
+      void main() {
+        
+        gl_FragColor = vec4(mix(color1, color2, vUv.y), 1.0);
+      }
+    `
+  });
  circle = new THREE.Mesh( circleGeometry, circleMaterial );
- circle.position.z = -900;
- circle.position.y = 200;
+ circle.position.z = -550;
+ circle.position.y = 300;
  scene.add( circle );
 
  //fog
- var fog = new THREE.Fog(0x4E2A84);
- scene.fog = fog;
+//  var fog = new THREE.Fog(0x77bfe );
+//  scene.fog = fog;
 
 }
 
 function initScene() {
-    scene.background = new THREE.Color(0x4E2A84);
+    renderer.setClearColor( 0x000000, 0 );
     initSky();
-    //initClouds();
-    initWave(); 
+    initClouds();
     initWaveParticles();
-    //white light
-    const light = new THREE.PointLight( 0xffffff, 1.0 );
-    const light2 = new THREE.DirectionalLight( 0xffffff, .5 );
-    light.position.set( 1, 1, 0 ).normalize();
+    var dynamicGeometry = new THREE.IcosahedronBufferGeometry(50, 0);
+    var dynamicMaterial = new THREE.MeshPhongMaterial({ 
+        color: 0xffffff,
+        shading: THREE.FlatShading
+    } );
+    dynamicShape = new THREE.Mesh(dynamicGeometry, dynamicMaterial);
+    dynamicShape.position.set(0,10,-350)
+    dynamicShape.lights = true;
+    scene.add(dynamicShape)
+
+
+
+    //blue light
+    const light = new THREE.DirectionalLight( 0x11e8bb, .5 );
+    light.position.set( 0, -10, 0 ).normalize();
 
     //pink light
-    //const sunset = new THREE.DirectionalLight( 0xF54040, 0.9 ); 
-
-    circle.add(light); 
-    scene.add(light2);
-    //scene.add(sunset);
+    const sunLight = new THREE.DirectionalLight( 0x8200c9, 5); 
+    sunLight.position.set( 0, 10, -10 ).normalize();
+    scene.add(light)
+  
+    circle.add(sunLight);
 
     //ambient light
-    scene.add(new THREE.AmbientLight( 0xffffff, .7 ));
+    scene.add(new THREE.AmbientLight( 0xffffff, .7));
 
     camera.position.z = 5;
 }
@@ -321,7 +358,6 @@ function initScene() {
 
 function animate() {
     update();
-    requestAnimationFrame(animate);
     //deals with pitch (and bass)
     analyser.getByteFrequencyData(pitch_array);
     //deals with volume
@@ -331,7 +367,9 @@ function animate() {
     timeDiff = start - end; 
     // plane.material.uniforms.u_time.value = timeDiff;
 
-    var speed;
+    dynamicShape.rotation.x += .01;
+    dynamicShape.rotation.y += .01;
+    //var speed;
 
     // for( var i = 0; i < bufferlen; i++){
 
@@ -351,10 +389,5 @@ function animate() {
     //     }
     // }
 
-    
+}
 
-    //controls.update();
-    renderer.render( scene, camera );
-};
-
-// export default initScene;

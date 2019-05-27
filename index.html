@@ -4,28 +4,37 @@
 		#audio{ 
 			display: none;
 		}
+		html {
+		width: 100%;
+		height: 100%;
+		
+		background: #8200c9; /* Old browsers */
+		background: -moz-linear-gradient(top,  #8200c9 0%,  #11e8bb 100%); /* FF3.6-15 */
+		background: -webkit-linear-gradient(top,  #8200c9 0%,  #11e8bb 100%); /* Chrome10-25,Safari5.1-6 */
+		background: linear-gradient(to bottom, #8200c9 0%,  #11e8bb 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8200c9', endColorstr='#11e8bb',GradientType=0 ); /* IE6-9 */
+		}
 	</style> 
 	<head>
 		<meta charset=utf-8>
-		<title>CMMND</title>
-		<style>
-			body { margin: 0; }
-			canvas { width: 100%; height: 100% }
-		</style>
-
-		<audio id="audio" controls>
-			<source src="./assets/audio/sample.mp3" type="audio/mpeg">
-		</audio> 
-	
 	</head>
-	<body>
+	<body> 
+		<title>CMMND EP X Creative Labs</title>
+			<style>
+				body { margin: 0; }
+				canvas { width: 100%; height: 100% }
+			</style>
+			<audio id="audio" controls>
+				<source src="./assets/audio/the_way.mp3" type="audio/mpeg">
+			</audio> 
+	</body>
         <!-- Load libs -->
-		<script src="src/three.js"></script>
-		<script src="src/OrbitControls.js"></script>
-		<script src="./scenes/theWay.js"></script> 
+		<script src="./lib/three.min.js"></script>
+		<script src="./lib/OrbitControls.js"></script>
+		<script src="./lib/OBJLoader.js"></script>
+		<script src="./src/scenes/beach.js"></script> 
 		
 		<script>
-
 			/* audio object interfaces songs */ 
 			var AudioContext = window.AudioContext || window.webkitAudioContext;
 			var theway = document.getElementById('audio');
@@ -33,69 +42,122 @@
 			audio.load();
 			audio.play();
 
+
 			var context = new AudioContext;
 			var analyser = context.createAnalyser();
 
+
 			var source = context.createMediaElementSource(theway);
 			source.connect(analyser); 
+
+
 			analyser.connect(context.destination);
 			analyser.smoothingTimeConstant = .8;
 			analyser.fftSize = 1024;
+
 
 			var bufferlen = analyser.frequencyBinCount;
 			var pitch_array = new Uint8Array(bufferlen);
 			var volume_array = new Uint8Array(bufferlen);
 
+			
+			
 			var scene = new THREE.Scene();
-			scene.background = new THREE.Color( 0x4B0082 );
+
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+			/* initialize renderer */
+			var renderer = new THREE.WebGLRenderer({alpha: true});
+
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+
+
 
 			var controls = new THREE.OrbitControls(camera);
 			controls.zoomSpeed = .5;
 			controls.minAzimuthAngle = - Math.PI/2;
 			controls.maxAzimuthAngle = Math.PI/2;
 			controls.enablePan = false;
-			var renderer = new THREE.WebGLRenderer();
 	
+
+
 			/* add platform and car other universal scene objects*/
-			//platform 
 			var stepGeo = new THREE.CylinderGeometry( 5, 5, .1, 32 );
 
-			//only apply material to top platform
 			var stepMaterial = new THREE.MeshStandardMaterial( {color:0xC0C0C0 });
+
 			var normalMap = new THREE.TextureLoader().load( 'assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_normal.jpg' );
 			var metallicMap = new THREE.TextureLoader().load('assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_metallic.jpg');
 			var aoMap = new THREE.TextureLoader().load('assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_ambientOcclusion.jpg');
+			
 			stepMaterial.normalMap = normalMap;
 			stepMaterial.metalnessMap = metallicMap;
 			
 			let platform; 
 
 			for (let s = 0; s<6; s++) { 
+
 				let norm = s * .1;
 				let scale = 1 - (norm*.5); 
 				console.log(scale)
 				let newGeo = new THREE.CylinderGeometry( 5, 5, .1, 32 );
-				console.log(newGeo);
-				//set position and scale of mesh 
+	
 				//merge geometry 
 				newGeo.translate(0, 1*norm, 0);
 				newGeo.scale(scale, 1, scale); // scale circle smaller
 				stepGeo.merge(newGeo);
+
 			}
-			console.log(stepGeo)
-			stepGeo.translate(0, -5, -4)
+
+			stepGeo.translate(0, -5, -4);
 			platform = new THREE.Mesh(stepGeo, stepMaterial);
+
 			scene.add( platform );
 
 
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			document.body.appendChild( renderer.domElement );
 
-			//initializes first scene
+			var loader = new THREE.OBJLoader();
+
+			// load a resource
+			loader.load(
+				'./assets/models/car_model.obj',
+
+				function ( object ) {
+					
+					object.rotation.y = Math.PI;
+					scene.add( object );
+
+				},
+				
+				function ( xhr ) {
+
+					console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+				},
+				
+				function ( error ) {
+
+					console.log( 'An error happened' );
+
+				}
+			);
+
+	
+			// initalize first scene
+			function render(){ 
+
+				requestAnimationFrame(render);
+
+				animate();
+
+				renderer.render( scene, camera );
+
+			}
+
 			initScene();
-			animate();
-		</script>
+			render();
+		
 		</script>
 	</body>
 </html>
