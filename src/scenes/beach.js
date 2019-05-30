@@ -6,6 +6,7 @@
 - gradient sunset 
 - fog and light source
 - lo poly waves with slight reflectance
+- rotate car slightly
 */ 
 // import {background} from "./materials.js";
 
@@ -14,7 +15,7 @@ var end, timeDiff;
 
 var cube, plane, clouds, circle, particle, particles;
 var dynamicShape;
-const cloud_num = 12;
+const cloud_num = 25;
 
 const AMOUNT = 50; 
 const SEPARATION = 4;
@@ -182,7 +183,7 @@ function initWaveParticles(){
     for (let x = 0; x < AMOUNT; x++) {
         particles.push([]);
         for (let y = 0; y < AMOUNT; y++) {
-            let material = new THREE.MeshBasicMaterial({
+            let material = new THREE.MeshPhongMaterial({
                 color: 0xffffff,
                 program: function (context) {
                     context.beginPath();
@@ -194,7 +195,7 @@ function initWaveParticles(){
             let normalizeY = y/AMOUNT;
             material.color = new THREE.Color(normalizeX, normalizeY, normalizeX);
             //let particleGeometry = new THREE.Sprite();
-            let particle = new THREE.Sprite( material);
+            let particle = new THREE.Sprite(material);
             particle.position.x = x * SEPARATION - ((AMOUNT * SEPARATION) / 2);
             particle.position.z = y * SEPARATION - ((AMOUNT * SEPARATION) / 2);
             particle.position.y = WAVE_Y;
@@ -207,23 +208,30 @@ function initWaveParticles(){
 
 const update = () => { 
     var prevSpeed = 0 ; 
-    var speed;
+    var speed = 0;
     for (let x = 0; x < AMOUNT; x++) {
         for (let y = 0; y < AMOUNT; y++) {
             let particle = particles[x][y];
             //add frequency data to each particle
             //average with prev freq data
-
-            speed =+ (.1*pitch_array[0] + prevSpeed)/2.;
+            speed = (.1*pitch_array[0] + prevSpeed)/2.;
             particle.position.y = (Math.sin((x + count) * 0.3) * (WAVESIZE + speed)) + (Math.sin((y + count) * 0.5) * WAVESIZE) + WAVE_Y;
             let scale = (Math.sin((x + count) * 0.3) + 1) * MAXSIZE + (Math.sin((y + count) * 0.5) + 1) * MAXSIZE;
             particle.scale.x = particle.scale.y = scale;
             prevSpeed = speed;
         }
     }
-    count += .05;
-}
+    
 
+    //update icosahedron
+    dynamicShape.rotation.x += .01;
+    dynamicShape.rotation.y += .01;
+    // dynamicShape.position.y += -Math.sin(count);
+    
+    count += .03;
+    
+
+}
 
 function initClouds() { 
     //clouds (procedural)
@@ -241,22 +249,25 @@ function initClouds() {
         if( i%2 ) { 
             side = -1
         }
+        
+
         //generate random clouds   
-        let cloudGeo = new THREE.BoxGeometry( 30, 30, 30);
-        cloudGeo.translate(-side*25,rand1,0);
+        let cloudGeo = new THREE.BoxGeometry( 3, 3, 3);
+        cloudGeo.translate(-side*2,rand1*3,0);
         cloudGeo.rotateX(rand1); 
-        let cloudGeo2 = new THREE.BoxGeometry( 20, 20, 20);
+        let cloudGeo2 = new THREE.BoxGeometry( 2, 2, 2);
         cloudGeo2.translate(0,rand2,0);
         cloudGeo2.rotateY(rand2); 
-        let cloudGeo3 = new THREE.BoxGeometry( 10, 10, 10);
-        cloudGeo3.translate(side*20,rand3,0);
+        let cloudGeo3 = new THREE.BoxGeometry( 1, 1, 1);
+        cloudGeo3.translate(side*2,rand3*3,0);
         cloudGeo2.rotateZ(rand3); 
 
         let cloudMaterial = new THREE.MeshPhongMaterial({ 
             color: 0xD9E9FF,
             flatShading: true,
-            opacity: .75
+            opacity: .5
         });
+
         //cloudMaterial.fog = true;
         //merge 
         cloudGeo.merge(cloudGeo2);
@@ -264,14 +275,15 @@ function initClouds() {
         cloudGeo.mergeVertices();
 
         //randomize vertices (jitter)
-        cloudGeo.vertices.forEach(pt => {
-        pt.x += 2%Math.sin(Math.random()*2*Math.PI)*2;
-        pt.y += 2%Math.sin(Math.random()*2*Math.PI)*2;
-        pt.z += 2%Math.sin(Math.random()*2*Math.PI)*2;
-        }); 
+        // cloudGeo.vertices.forEach(pt => {
+        // pt.x += 2%Math.sin(Math.random()*2*Math.PI)*2;
+        // pt.y += 2%Math.sin(Math.random()*2*Math.PI)*2;
+        // pt.z += 2%Math.sin(Math.random()*2*Math.PI)*2;
+        // }); 
 
         clouds[i] = new THREE.Mesh(cloudGeo, cloudMaterial);
-        clouds[i].position.set(500*Math.cos(angle+rand1), rand2*20 + 300 ,-500*Math.sin(angle+rand3))
+        clouds[i].scale.set(20,15,20)
+        clouds[i].position.set(500*Math.cos(angle+rand1), rand2*20 + 50 ,-500*Math.sin(angle+rand3))
         scene.add(clouds[i]);
     }
 
@@ -283,7 +295,7 @@ function initSky() {
  var circleMaterial = new THREE.ShaderMaterial({
     uniforms: {
       color1: {
-        value: new THREE.Color(0x8200c9)
+        value: new THREE.Color(0x8FFFF99)
       },
       color2: {
         value: new THREE.Color(0xffc922)
@@ -304,7 +316,6 @@ function initSky() {
       varying vec2 vUv;
       
       void main() {
-        
         gl_FragColor = vec4(mix(color1, color2, vUv.y), 1.0);
       }
     `
@@ -321,38 +332,81 @@ function initSky() {
 }
 
 function initScene() {
+    
     renderer.setClearColor( 0x000000, 0 );
     initSky();
     initClouds();
     initWaveParticles();
-    var dynamicGeometry = new THREE.IcosahedronBufferGeometry(50, 0);
+
+
+    var dynamicGeometry = new THREE.IcosahedronBufferGeometry(20, 0);
     var dynamicMaterial = new THREE.MeshPhongMaterial({ 
+
         color: 0xffffff,
         shading: THREE.FlatShading
+
     } );
+
     dynamicShape = new THREE.Mesh(dynamicGeometry, dynamicMaterial);
-    dynamicShape.position.set(0,10,-350)
+    dynamicShape.position.set(0,10,-80)
     dynamicShape.lights = true;
     scene.add(dynamicShape)
 
 
+    //particles 
+    // create the particle variables
+    var particleCount = 1800,
+    particles = new THREE.Geometry(),
+    pMaterial = new THREE.PointCloudMaterial({
+        color: 0xFFFFC2,
+        size: .8
+    });
+
+    // now create the individual particles
+    for (var p = 0; p < particleCount; p++) {
+
+        // create a particle with random
+        // position values, -250 -> 250
+        particle = new THREE.Vector3();
+
+        particle.x = Math.random() * 500 - 250,
+        particle.y = Math.random() * 500 - 250,
+        particle.z = Math.random() * 500 - 250,
+
+        // add it to the geometry
+        particles.vertices.push(particle);
+    }
+
+    // create the particle system
+    var particleSystem = new THREE.PointCloud(
+        particles,
+        pMaterial);
+
+    // add it to the scene
+    scene.add(particleSystem);
 
     //blue light
     const light = new THREE.DirectionalLight( 0x11e8bb, .5 );
     light.position.set( 0, -10, 0 ).normalize();
 
-    //pink light
-    const sunLight = new THREE.DirectionalLight( 0x8200c9, 5); 
+    //yellow light
+    const sunLight = new THREE.DirectionalLight( 0xffc922, 1); 
     sunLight.position.set( 0, 10, -10 ).normalize();
-    scene.add(light)
-  
+
+    //pink light
+    //add the pink light to car headlights
+    // const pinkLight = new THREE.DirectionalLight( 0x8200c9, 1); 
+    // pinkLight.position.set( 0, 5, -10 ).normalize();
+    
+    scene.add(light);
     circle.add(sunLight);
 
     //ambient light
-    scene.add(new THREE.AmbientLight( 0xffffff, .7));
+    scene.add(new THREE.AmbientLight( 0xffffff, .5));
 
-    camera.position.z = 5;
+    camera.position.z = 85;
 }
+
 
 
 function animate() {
@@ -366,8 +420,6 @@ function animate() {
     timeDiff = start - end; 
     // plane.material.uniforms.u_time.value = timeDiff;
 
-    dynamicShape.rotation.x += .01;
-    dynamicShape.rotation.y += .01;
     //var speed;
 
     // for( var i = 0; i < bufferlen; i++){

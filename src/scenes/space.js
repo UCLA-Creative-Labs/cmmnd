@@ -193,11 +193,13 @@ function rotateAroundWorldAxis(obj, axis, radians) {
 				starVertex4.z = Math.random() * 2000 - 1000;
 				geometry4.vertices.push(starVertex4);
 			}
+
 			//create four different color star
 			stars1 = new THREE.PointCloud(geometry1, starStuff1);
 			stars2 = new THREE.PointCloud(geometry2, starStuff2);
 			stars3 = new THREE.PointCloud(geometry3, starStuff3);
 			stars4 = new THREE.PointCloud(geometry4, starStuff4);
+			
 			//add to the scene
 			stars1.position.set(400, 0, 600);
 			stars2.position.set(400 ,0, 600);

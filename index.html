@@ -4,14 +4,17 @@
 		#audio{ 
 			display: none;
 		}
+		.play-button{ 
+			position:fixed;
+		}
 		html {
 		width: 100%;
 		height: 100%;
 		
 		background: #8200c9; /* Old browsers */
-		background: -moz-linear-gradient(top,  #8200c9 0%,  #11e8bb 100%); /* FF3.6-15 */
-		background: -webkit-linear-gradient(top,  #8200c9 0%,  #11e8bb 100%); /* Chrome10-25,Safari5.1-6 */
-		background: linear-gradient(to bottom, #8200c9 0%,  #11e8bb 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+		background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
+		background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* Chrome10-25,Safari5.1-6 */
+		background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8200c9', endColorstr='#11e8bb',GradientType=0 ); /* IE6-9 */
 		}
 	</style> 
@@ -24,6 +27,7 @@
 				body { margin: 0; }
 				canvas { width: 100%; height: 100% }
 			</style>
+			<button class="play-button" onclick="playAudio()" >play</button>
 			<audio id="audio" controls>
 				<source src="./assets/audio/the_way.mp3" type="audio/mpeg">
 			</audio> 
@@ -36,14 +40,25 @@
 		
 		<script>
 			/* audio object interfaces songs */ 
-			var AudioContext = window.AudioContext || window.webkitAudioContext;
-			var theway = document.getElementById('audio');
-			
-			audio.load();
-			audio.play();
+			var AudioContext, theway;
+			AudioContext = window.AudioContext || window.webkitAudioContext;
+			theway = document.getElementById('audio');
 
 
 			var context = new AudioContext;
+
+
+			function playAudio() { 
+				console.log("play audio")
+
+				context.resume().then( () => { 
+
+					audio.load()
+					audio.play();
+
+				});
+				
+			}
 			var analyser = context.createAnalyser();
 
 
@@ -84,50 +99,76 @@
 
 
 			/* add platform and car other universal scene objects*/
-			var stepGeo = new THREE.CylinderGeometry( 5, 5, .1, 32 );
+			var cliff, plane;
 
-			var stepMaterial = new THREE.MeshStandardMaterial( {color:0xC0C0C0 });
+			function initPlatform() { 
+				
+				const map = (val, smin, smax, emin, emax) => (emax-emin)*(val-smin)/(smax-smin) + emin
 
-			var normalMap = new THREE.TextureLoader().load( 'assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_normal.jpg' );
-			var metallicMap = new THREE.TextureLoader().load('assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_metallic.jpg');
-			var aoMap = new THREE.TextureLoader().load('assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_ambientOcclusion.jpg');
-			
-			stepMaterial.normalMap = normalMap;
-			stepMaterial.metalnessMap = metallicMap;
-			
-			let platform; 
+				//randomly displace the x,y,z coords by the `per` value
+				const jitter = (geo,per) => geo.vertices.forEach(v => {
 
-			for (let s = 0; s<6; s++) { 
+					v.x += map(Math.random(),0,1,-per,per)
+					v.y += map(Math.random(),0,1,-per,per)
+					v.z += map(Math.random(),0,1,-per,per)
 
-				let norm = s * .1;
-				let scale = 1 - (norm*.5); 
-				console.log(scale)
-				let newGeo = new THREE.CylinderGeometry( 5, 5, .1, 32 );
-	
-				//merge geometry 
-				newGeo.translate(0, 1*norm, 0);
-				newGeo.scale(scale, 1, scale); // scale circle smaller
-				stepGeo.merge(newGeo);
+				})
+
+				let geometry = new THREE.TorusGeometry( 10, 3, 8, 50 );
+				let planeGeometry = new THREE.PlaneGeometry( 18, 18, 16, 16 );
+
+				
+				planeGeometry.rotateX(Math.PI);
+				planeGeometry.translate(0,0,-2);
+
+				geometry.merge(planeGeometry);
+				jitter(geometry,0.2);
+
+
+				let material = new THREE.MeshPhongMaterial( { 
+					color: 0xEDC9AF,
+					flatShading: true
+				} );
+
+
+				cliff = new THREE.Mesh( geometry, material );
+				cliff.rotation.x = Math.PI/2;
+				cliff.position.y = -10
+				cliff.position.z = 60;
+				
+
+				scene.add( cliff );
 
 			}
 
-			stepGeo.translate(0, -5, -4);
-			platform = new THREE.Mesh(stepGeo, stepMaterial);
-
-			scene.add( platform );
-
+			initPlatform();
 
 
 			var loader = new THREE.OBJLoader();
 
 			// load a resource
 			loader.load(
-				'./assets/models/car_model.obj',
+				'./assets/models/car_model_halfsize.obj',
 
-				function ( object ) {
+				function ( car ) {
 					
-					object.rotation.y = Math.PI;
-					scene.add( object );
+					car.rotation.y = Math.PI;
+					car.traverse( function ( child ) {
+                             if ( child instanceof THREE.Mesh ) {
+								  child.material = new THREE.MeshStandardMaterial({
+									  color: 0x404040, 
+								  })
+                                 
+                                 }
+                             } );
+
+					car.position.z = -5;  
+					car.rotateX(Math.PI/2);
+					car.rotateY(7*Math.PI/6);
+			
+					window.car = car;
+			
+					cliff.add( car );
 
 				},
 				
