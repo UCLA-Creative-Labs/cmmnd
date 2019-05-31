@@ -120,13 +120,42 @@ function getLogo() {
     
 }
 
+function getMirrors() { 
+    let step = 9 / Math.PI*2 ;
+
+    let geometry = new THREE.BoxGeometry( 8, 15, .5 );
+
+    let material = new THREE.MeshPhysicalMaterial({ 
+        reflectivity: 1
+    })
+
+
+    for( let i= 0; i < 11 ; i++ )  { 
+
+        let geometry = new THREE.BoxGeometry( 8, 15, .5 );
+
+        let material = new THREE.MeshPhysicalMaterial({ 
+            reflectivity: 1
+        })
+
+        
+        let mirror = new THREE.Mesh(geometry, material)
+
+        mirror.position.set(50*Math.sin(step*i),0, 50*Math.cos(step*i))
+        mirror.lookAt(0,0,0);
+        scene.add( mirror );
+        
+    }
+
+
+}
 // initalize scene objects and scene attributes (background color, camera position, etc.)
 function initScene() { 
 
     scene.background = new THREE.Color(0x000000);
     getPlatform();
 
-
+    getMirrors()
     // ambient light
     scene.add(new THREE.AmbientLight( 0xffffff, .2));
 

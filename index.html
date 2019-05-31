@@ -45,7 +45,7 @@
 
 		<!-- Scenes -->
 		<!-- dynamically change according to timing of music -->
-		<script id="currentScene" src="./src/scenes/space.js"></script> 
+		<script id="currentScene" src="./src/scenes/cmmnd.js"></script> 
 		
 		<script>
 			/* todo: 
@@ -181,6 +181,8 @@
 			/* load each file */
 			var objFiles = ["carBody","backLeftWheel", "backRightWheel", "frontLeftWheel", "frontRightWheel", "carHood"];
 
+			var idx = 0;
+
 			mtlLoader.setPath( './assets/models/car_model/' );
 
 			objFiles.forEach( (objFile) => { 
@@ -196,10 +198,11 @@
 						objLoader.load( objFile + '.obj',
 
 							function ( obj ) {
-								
-								obj.rotation.y = Math.PI;
-								setCar(obj);
 
+								idx++;
+								obj.rotation.y = Math.PI;
+								setCar(obj );
+								
 							},
 						
 							function ( xhr ) {
