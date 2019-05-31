@@ -4,9 +4,12 @@
 		#audio{ 
 			display: none;
 		}
+
 		.play-button{ 
-			position:fixed;
+			position:absolute;
+			z-index: 100;
 		}
+
 		html {
 		width: 100%;
 		height: 100%;
@@ -17,6 +20,7 @@
 		background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8200c9', endColorstr='#11e8bb',GradientType=0 ); /* IE6-9 */
 		}
+
 	</style> 
 	<head>
 		<meta charset=utf-8>
@@ -36,11 +40,21 @@
 		<script src="./lib/three.min.js"></script>
 		<script src="./lib/OrbitControls.js"></script>
 		<script src="./lib/OBJLoader.js"></script>
-		<script src="./src/scenes/beach.js"></script> 
+		<script src="./lib/MTLLoader.js"></script>
+
+
+		<!-- Scenes -->
+		<!-- dynamically change according to timing of music -->
+		<script id="currentScene" src="./src/scenes/space.js"></script> 
 		
 		<script>
+			/* todo: 
+				make platform shrubery 
+			*/
+
 			/* audio object interfaces songs */ 
 			var AudioContext, theway;
+
 			AudioContext = window.AudioContext || window.webkitAudioContext;
 			theway = document.getElementById('audio');
 
@@ -49,6 +63,7 @@
 
 
 			function playAudio() { 
+
 				console.log("play audio")
 
 				context.resume().then( () => { 
@@ -59,6 +74,7 @@
 				});
 				
 			}
+
 			var analyser = context.createAnalyser();
 
 
@@ -75,8 +91,11 @@
 			var pitch_array = new Uint8Array(bufferlen);
 			var volume_array = new Uint8Array(bufferlen);
 
-			
-			
+			/* instantiate loaders */ 
+			var objLoader = new THREE.OBJLoader();
+			var textureLoader = new THREE.TextureLoader();
+			var mtlLoader = new THREE.MTLLoader();
+
 			var scene = new THREE.Scene();
 
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
@@ -84,12 +103,27 @@
 			/* initialize renderer */
 			var renderer = new THREE.WebGLRenderer({alpha: true});
 
+
 			renderer.setSize( window.innerWidth, window.innerHeight );
+			
+			/* shadow map renderer */ 
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+			renderer.shadowCameraNear = 3;
+			renderer.shadowCameraFar = camera.far;
+			renderer.shadowCameraFov = 50;
+
+			renderer.shadowMapBias = 0.0039;
+			renderer.shadowMapDarkness = 0.7;
+			renderer.shadowMapWidth = 1024;
+			renderer.shadowMapHeight = 1024;
+
 			document.body.appendChild( renderer.domElement );
 
 
 
 			var controls = new THREE.OrbitControls(camera);
+			
 			controls.zoomSpeed = .5;
 			controls.minAzimuthAngle = - Math.PI/2;
 			controls.maxAzimuthAngle = Math.PI/2;
@@ -99,7 +133,10 @@
 
 
 			/* add platform and car other universal scene objects*/
-			var cliff, plane;
+			var cliff, plane, car;
+		
+			var shrubs = [];
+
 
 			function initPlatform() { 
 				
@@ -115,7 +152,7 @@
 				})
 
 				let geometry = new THREE.TorusGeometry( 10, 3, 8, 50 );
-				let planeGeometry = new THREE.PlaneGeometry( 18, 18, 16, 16 );
+				let planeGeometry = new THREE.PlaneGeometry( 16, 16, 16, 16 );
 
 				
 				planeGeometry.rotateX(Math.PI);
@@ -123,7 +160,6 @@
 
 				geometry.merge(planeGeometry);
 				jitter(geometry,0.2);
-
 
 				let material = new THREE.MeshPhongMaterial( { 
 					color: 0xEDC9AF,
@@ -135,68 +171,74 @@
 				cliff.rotation.x = Math.PI/2;
 				cliff.position.y = -10
 				cliff.position.z = 60;
-				
 
 				scene.add( cliff );
+				
 
 			}
 
-			initPlatform();
 
+			/* load each file */
+			var objFiles = ["carBody","backLeftWheel", "backRightWheel", "frontLeftWheel", "frontRightWheel", "carHood"];
 
-			var loader = new THREE.OBJLoader();
+			mtlLoader.setPath( './assets/models/car_model/' );
 
-			// load a resource
-			loader.load(
-				'./assets/models/car_model_halfsize.obj',
+			objFiles.forEach( (objFile) => { 
 
-				function ( car ) {
+				mtlLoader.load( objFile + '.mtl', 
 					
-					car.rotation.y = Math.PI;
-					car.traverse( function ( child ) {
-                             if ( child instanceof THREE.Mesh ) {
-								  child.material = new THREE.MeshStandardMaterial({
-									  color: 0x404040, 
-								  })
-                                 
-                                 }
-                             } );
+					function ( materials ) {
 
-					car.position.z = -5;  
-					car.rotateX(Math.PI/2);
-					car.rotateY(7*Math.PI/6);
+						materials.preload();
+							// load a car
+						objLoader.setMaterials( materials );	
+						objLoader.setPath( './assets/models/car_model/' );
+						objLoader.load( objFile + '.obj',
+
+							function ( obj ) {
+								
+								obj.rotation.y = Math.PI;
+								setCar(obj);
+
+							},
+						
+							function ( xhr ) {
+
+								console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+							},
+							
+							function ( error ) {
+
+								console.log( 'An error happened' );
+
+							}
+						);
+
+		});
+
+		})
 			
-					window.car = car;
 			
-					cliff.add( car );
 
-				},
-				
-				function ( xhr ) {
-
-					console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-				},
-				
-				function ( error ) {
-
-					console.log( 'An error happened' );
-
-				}
-			);
-
-	
 			// initalize first scene
 			function render(){ 
 
 				requestAnimationFrame(render);
 
+			
 				animate();
+
 
 				renderer.render( scene, camera );
 
 			}
 
+			// timer class
+			// class Timer () { }
+
+
+			initPlatform();
 			initScene();
 			render();
 		

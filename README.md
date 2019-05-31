@@ -2,7 +2,25 @@
 # Music visualizer for the CMMND EP
 
 ## Implementation
+Scene Handling 
 
+Each Scene will be a separate instance of THREE.Scene(), the transitions to these scenes will be
+handled by Tween and will covered by some transition postprocessing shader. 
+
+Two ways
+  1. Render a new scene for each scene
+  2. Switch out the objecs for each scene
+
+Using timer to track time between scenes and initiate scene changes. Keep checking timer throughout 
+Timer will hold default scene progression (extend THREE.Clock ??)
+
+```
+var au = document.createElement('audio');
+au.addEventListener('loadedmetadata',function(){
+    au.setAttribute('data-time',au.duration);
+},false);
+
+```
 
 ## Web Audio API 
 There are only several things you need to worry about for the Web Audio API
