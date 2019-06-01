@@ -144,7 +144,13 @@ function getMirrors() {
         mirror.position.set(50*Math.sin(step*i),0, 50*Math.cos(step*i))
         mirror.lookAt(0,0,0);
         scene.add( mirror );
-        
+
+        // let color = new THREE.Color( 1, 0, 0 );
+        // let spotlight = new THREE.DirectionalLight( "rgb(100%, 0%, 0%)", 1 );
+
+        // spotlight.position.y = 2;
+        // spotlight.castShadow = true;
+        // scene.add(spotlight);
     }
 
 
@@ -165,14 +171,14 @@ function initScene() {
     logoLight.position.z = 0;
     scene.add(logoLight)
     
-    // underlight blue 
-    var underlight = new THREE.PointLight( 0xff0000, 1, 100 );
+    // underlight red
+    var underlight = new THREE.PointLight( 0xff0000, .8, 100 );
     underlight.position.set( 0, -2, 0 );
     platform.add(underlight);
     
 
     // spotlights red
-    var spotlight = new THREE.DirectionalLight( 0xc30000, 1 );
+    var spotlight = new THREE.DirectionalLight( 0xc30000, .8 );
 
     spotlight.position.y = 2;
     spotlight.castShadow = true;
