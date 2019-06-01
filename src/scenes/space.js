@@ -176,12 +176,12 @@ function initScene(){
 
 		camera.position.z = 20;
 		
-		scene.background = new THREE.Color( 0x000000 )
+		scene.background = new THREE.Color( 0x000000 );
+
 		// controls.autoRotate = true;
 		controls.update();
 
 		
-
 		//------------------------------- STARS -------------------------------------------
 		geometry1 = new THREE.SphereGeometry(500,500,50);
 		geometry2 = new THREE.SphereGeometry(500,500,50);

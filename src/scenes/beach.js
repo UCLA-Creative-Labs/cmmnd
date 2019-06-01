@@ -252,14 +252,25 @@ function initScene() {
     getParticles();
 
     var dynamicGeometry = new THREE.IcosahedronBufferGeometry(20, 0);
-    var dynamicMaterial = new THREE.MeshPhongMaterial({ 
 
-        color: 0xffffff,
-        shading: THREE.FlatShading
+    textureLoader.load('../../assets/cmmnd_logo.png', function(cmmndTexture) { 
+		console.log('mat loaded');
+		cmmndTexture.wrapS = cmmndTexture.wrapT = THREE.RepeatWrapping;
+		cmmndTexture.offset.set( 0, 0 );
+		cmmndTexture.repeat.set( 3, 3 );
+		polygon.material = new THREE.MeshLambertMaterial({ 
+			map: cmmndTexture, 
+			color: 0xd0d5d2
+		});	
+	})
+    // var dynamicMaterial = new THREE.MeshPhongMaterial({ 
 
-    } );
+    //     color: 0xffffff,
+    //     shading: THREE.FlatShading
 
-    polygon = new THREE.Mesh(dynamicGeometry, dynamicMaterial);
+    // } );
+
+    polygon = new THREE.Mesh(dynamicGeometry);
     polygon.position.set(0,10,-80)
     polygon.lights = true;
     scene.add(polygon);
