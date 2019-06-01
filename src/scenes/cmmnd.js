@@ -9,6 +9,7 @@
 var platform, logo;
 var carPart;
 var car = new THREE.Group();
+
 // call each time a new scene is rendered
 function setCar(obj) { 
 

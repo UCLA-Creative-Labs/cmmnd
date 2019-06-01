@@ -9,7 +9,7 @@ var logo;
 var carPart;
 var cmmndCar = new THREE.Group();
 
-var count = 0;
+var count = freq = 0;
 
 function getLogo() { 
 
@@ -112,26 +112,60 @@ function rotateAroundWorldAxis(obj, axis, radians) {
 	obj.setRotationFromMatrix(obj.matrix);
 
 }
+
+function update() { 
+	for (var i = 0; i < bufferlen; i++) {
+
+		let p = pitch_array[i] ; //normalize
+		
+		// freq += p/128;
+		count += .000001 * p;
+		// cmmndCar.rotation.z += p/2560000.;
+
+		let norm = 1.5 + Math.sin(count);
+		if( pitch_array[i] > 120  ) { 
+			stars1.scale.set(norm, norm, norm);
+		}
+		else if( pitch_array[i] > 80 && pitch_array[i] < 120 ) { 
+			stars2.scale.set(norm, norm, norm);
+		}
+
+		else if( pitch_array[i] > 50 && pitch_array[i] < 80 ) {
+			stars3.scale.set(norm, norm, norm);
+		}
+			
+		else { 
+			stars4.scale.set(norm, norm, norm);
+		}
+			
+	  }
+}
+
 	
 //animate function
 function animate() {
-	
-	let norm = 1.5 + Math.sin(count);
+
 	//renamve
+	cmmndCar.rotation.y += .002;
+	cmmndCar.rotation.x += .005;
 	
 	orbit.rotation.y += .005;
 
 	logo.rotation.y += .02;
 	logo.rotation.z += .01;
-	cmmndCar.rotation.y += .002;
-	cmmndCar.rotation.x += .005;
 
-	stars1.scale.set(norm, norm, norm);
-	stars2.scale.set(norm, norm, norm);
-	stars3.scale.set(norm, norm, norm);
-	stars4.scale.set(norm, norm, norm);
+	// stars1.scale.set(norm, norm, norm);
+	// stars2.scale.set(norm, norm, norm);
+	// stars3.scale.set(norm, norm, norm);
+	// stars4.scale.set(norm, norm, norm);
 
-	count += .05;
+	//deals with pitch (and bass)
+	analyser.getByteFrequencyData(pitch_array);
+	//deals with volume
+	analyser.getByteTimeDomainData(volume_array);
+
+	update();
+
 	
 }
 

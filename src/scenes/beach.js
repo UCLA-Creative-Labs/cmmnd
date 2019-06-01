@@ -264,7 +264,6 @@ function initScene() {
     polygon.lights = true;
     scene.add(polygon);
 
-
     //blue light
     const light = new THREE.DirectionalLight( 0x11e8bb, .5 );
     light.position.set( 0, -10, 0 ).normalize();
