@@ -83,7 +83,7 @@
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
 			/* initialize renderer */
-			var renderer = new THREE.WebGLRenderer({alpha: true});
+			var renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
@@ -136,7 +136,7 @@
 				cliff.rotation.x = Math.PI/2;
 				cliff.position.y = -10
 				cliff.position.z = 60;
-				
+				cliff.receiveShadow = true;
 
 				scene.add( cliff );
 
@@ -171,6 +171,9 @@
 			
 					cliff.add( car );
 
+					initTwinPeaksScene();
+					renderTwinPeaks();
+
 				},
 				
 				function ( xhr ) {
@@ -198,9 +201,16 @@
 
 			}
 
+			function renderTwinPeaks(){
+				requestAnimationFrame(renderTwinPeaks);
+
+				animateTwinPeaks();
+
+				renderer.render(twinPeaksScene, camera);
+			}
+
 			// initScene();
-			initTwinPeaksScene();
-			render();
+			// render();
 		
 		</script>
 	</body>
