@@ -33,7 +33,7 @@ var volume_array = new Uint8Array(bufferlen);
 var scene = new THREE.Scene();
 
 var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
-camera.position.z = 150;
+camera.position.z = 90;
 
 /* initialize renderer */
 var renderer = new THREE.WebGLRenderer({alpha: true});
@@ -48,7 +48,15 @@ controls.maxAzimuthAngle = Math.PI/2;
 
 controls.enablePan = true;
 
-// add platform 
+let buildings = []
+let tweens = []
+let car;
+
+function setCar(obj) {
+    car = obj;
+    scene.add(car);
+}
+
 function addFloor() {
     const width = 200;
     const height = 200;
@@ -71,7 +79,6 @@ function addFloor() {
   
     this.scene.add(plane);
   }
-
 
 function initScene() { 
     clock = new THREE.Clock();
@@ -111,157 +118,47 @@ function initScene() {
 // also calls update functions of common objects
 
 var loader = new THREE.OBJLoader();
+var mtlLoader = new THREE.MTLLoader();
+
+// mtlLoader.setPath('./assets/models/buildings/');
 
 // load buildings
 // buildings: https://free3d.com/3d-model/array-house-example-3033.html
-loader.load(
-    './assets/models/buildings/building_02.obj',
-    
-    function(building) {
-        building.position.y = -15
-        building.rotation.y = Math.PI/4;
-        building.position.z = -15
-        building.scale.set(2, 2, 2)
-        building.traverse(function(child) {
-                    if (child instanceof THREE.Mesh) {
-                        child.material = new THREE.MeshStandardMaterial({
-                            color: 0x404040, 
-                        })
-                        }
-                    } );
-    
-        window.building = building;
-        scene.add(building);
-    },
-        
-    function(xhr) {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-    },
-        
-    function(error) {
-        console.log('An error happened');
-    }
-);
 
-loader.load(
-    './assets/models/buildings/building_03.obj',
-
-    function(building) {
-        building.position.y = -15
-        building.rotation.y = Math.PI/4;
-        building.position.z = -60
-        building.position.x = 35
-        building.scale.set(2.5, 2.5, 2.5)
-        building.traverse(function(child) {
-                    if (child instanceof THREE.Mesh) {
-                        child.material = new THREE.MeshStandardMaterial({
-                            color: 0x404040, 
-                        })
-                        }
-                    } );
-    
-        window.building = building;
-        scene.add(building);
-    },
-        
-    function(xhr) {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-    },
-        
-    function(error) {
-        console.log('An error happened');
-    }
-)
-
-loader.load(
-    './assets/models/buildings/building_01.obj',
-
-    function(building) {
-        building.position.y = -15
-        building.rotation.y = Math.PI/4;
-        building.position.z = 45
-        building.position.x = -65
-        building.scale.set(2, 2, 2)
-        building.traverse(function(child) {
-                    if (child instanceof THREE.Mesh) {
-                        child.material = new THREE.MeshStandardMaterial({
-                            color: 0x404040, 
-                        })
-                        }
-                    } );
-    
-        window.building = building;
-        scene.add(building);
-    },
-        
-    function(xhr) {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-    },
-        
-    function(error) {
-        console.log('An error happened');
-    }
-)
-
-loader.load(
-    './assets/models/buildings/building_04.obj',
-    
-    function(building) {
-        building.position.y = -15
-        building.rotation.y = Math.PI/4;
-        building.position.z = 50
-        building.position.x = 65
-        building.scale.set(1.5, 1.5, 1.5)
-        building.traverse(function(child) {
-                    if (child instanceof THREE.Mesh) {
-                        child.material = new THREE.MeshStandardMaterial({
-                            color: 0x404040, 
-                        })
-                        }
-                    } );
-    
-        window.building = building;
-        scene.add(building);
-    },
-        
-    function(xhr) {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-    },
-        
-    function(error) {
-        console.log('An error happened');
-    }
-);
-
-loader.load(
-    './assets/models/buildings/building_05.obj',
-    
-    function(building) {
-        building.position.y = -15
-        building.rotation.y = Math.PI/4;
-        building.position.z = 115
-        building.position.x = 0
-        building.scale.set(1.5, 1.5, 1.5)
-        building.traverse(function(child) {
-                    if (child instanceof THREE.Mesh) {
-                        child.material = new THREE.MeshStandardMaterial({
-                            color: 0x404040, 
-                        })
-                        }
-                    } );
-    
-        window.building = building;
-        scene.add(building);
-    },
-        
-    function(xhr) {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-    },
-        
-    function(error) {
-        console.log('An error happened');
-    }
-);
+// mtlLoader.load('/assets/models/buildings/Residential Buildings 002.mtl', 
+// 					function (materials) {
+// 						materials.preload();
+//                         loader.setMaterials(materials);	
+//                         console.log(materials)
+// 						loader.load( './assets/models/buildings/Residential Buildings 002.obj',
+//                             function(building) {
+//                                 building.position.y = -15
+//                                 building.rotation.y = Math.PI/4;
+//                                 building.position.z = -15
+//                                 building.scale.set(2, 2, 2)
+//                                 // building.traverse(function(child) {
+//                                 //             if (child instanceof THREE.Mesh) {
+//                                 //                 child.material = new THREE.MeshStandardMaterial({
+//                                 //                     color: 0x404040, 
+//                                 //                 })
+//                                 //                 }
+//                                 //             } );
+                            
+//                                 window.building = building;
+//                                 scene.add(building);
+//                                 buildings.push(building);
+//                             },
+						
+// 							function (xhr) {
+//                                 console.log('object loaded')
+// 								console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+// 							},
+							
+// 							function (error) {
+// 								console.log( 'An error happened' );
+// 							}
+// 						);
+// 					});
 
 // load car 
 loader.load(
@@ -285,7 +182,7 @@ loader.load(
 
         window.car = car;
 
-        scene.add(car);
+        setCar(car)
     },
     
     function(xhr) {
@@ -297,104 +194,121 @@ loader.load(
     }
 );
 
-// load gas station
-loader.load(
-    '../../assets/models/gasStationNoSign.obj',
-
-    function(gasStation) {
-        gasStation.position.z = 20
-        gasStation.position.x = -20
-        gasStation.position.y = -15
-        gasStation.rotation.y = -Math.PI/4;
-        gasStation.scale.set(0.3, 0.3, 0.3)
-        gasStation.traverse(function(child) {
-                 if (child instanceof THREE.Mesh) {
-                      child.material = new THREE.MeshStandardMaterial({
-                          color: 0x404040, 
-                      })
-                     }
-                 });
-
-        window.gasStation = gasStation;
-
-        scene.add(gasStation);
-    },
+function loadMiscObjects(path, pos_x, pos_y, pos_z, rot_y, scale) {
+    loader.load(
+        path,
+        function(object) {
+            object.position.z = pos_z
+            object.position.x = pos_x
+            object.position.y = pos_y
+            object.rotation.y = rot_y
+            object.scale.set(scale, scale, scale)
+            object.traverse( function ( child ) {
+                     if ( child instanceof THREE.Mesh ) {
+                          child.material = new THREE.MeshStandardMaterial({
+                              color: 0x404040, 
+                          })
+                         
+                         }
+                     } );
     
-    function(xhr) {
-        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-    },
+            window.object = object;
+            scene.add(object);
+        },
+
+        function(xhr) {
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+        },
+        
+        function(error) {
+            console.log( 'An error happened' );
+        }
+    )
+}
+
+function loadBuildings(path, pos_x, pos_y, pos_z, rot_y, scale) {
+    loader.load(
+        path,
+        function(object) {
+            object.position.z = pos_z
+            object.position.x = pos_x
+            object.position.y = pos_y
+            object.rotation.y = rot_y
+            object.scale.set(scale, scale, scale)
+            object.traverse( function ( child ) {
+                     if ( child instanceof THREE.Mesh ) {
+                          child.material = new THREE.MeshStandardMaterial({
+                              color: 0x404040, 
+                          })
+                         }
+                     } );
     
-    function(error) {
-        console.log( 'An error happened' );
-    }
-);
+            window.object = object;
+            scene.add(object);
+            buildings.push(object)
+        },
 
-// load gas station sign
+        function(xhr) {
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+        },
+        
+        function(error) {
+            console.log( 'An error happened' );
+        }
+    )
+}
 
-loader.load(
-    '../../assets/models/gasStationSign.obj',
+loadBuildings('./assets/models/buildings/Residential Buildings 002.obj', 0, -15, -15, Math.PI/4, 2)
+loadBuildings('./assets/models/buildings/Residential Buildings 003.obj', 35, -15, -60, Math.PI/4, 2.5)
+loadBuildings('./assets/models/buildings/Residential Buildings 001.obj', -65, -15, 45, Math.PI/4, 2)
+loadBuildings('./assets/models/buildings/Residential Buildings 004.obj', 65, -15, 50, Math.PI/4, 1.5)
+loadBuildings('./assets/models/buildings/Residential Buildings 005.obj', 0, -15, 115, Math.PI/4,1.5)
 
-    function(gasStationSign) {
-        gasStationSign.position.x = -100
-        gasStationSign.position.y = -15
-        gasStationSign.position.z = 15
-        gasStationSign.rotation.y = Math.PI/4
-        gasStationSign.scale.set(0.5, 0.5, 0.5)
-        gasStationSign.traverse(function(child) {
-                 if(child instanceof THREE.Mesh) {
-                      child.material = new THREE.MeshStandardMaterial({
-                          color: 0x404040, 
-                      })
-                     }
-                 } );
+loadMiscObjects('../../assets/models/gasStationNoSign.obj', -20, -15, 20, -Math.PI/4, 0.3)
+loadMiscObjects('../../assets/models/gasStationSign.obj', -100, -15, 15, Math.PI/4, 0.5)
+loadMiscObjects('../../assets/models/stoplight.obj', 42, 8, 40, -Math.PI/4, 0.2)
+loadMiscObjects('../../assets/models/streetLightLakeMerritt.obj', -15, -3, 50, 0, 0.1)
 
-        window.gasStationSign = gasStationSign;
+// create tween objects for each building
+// inspired by: https://gist.github.com/toto-castaldi/269b4f3b515355f8e2ef
 
-        scene.add(gasStationSign);
-    },
-    
-    function(xhr) {
-        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-    },
-    
-    function(error) {
-        console.log( 'An error happened' );
-    }
-);
+let shrinkBuildings = []
+let growBuildings = []
 
-// load streetlight
-loader.load(
-    '../../assets/models/streetLightLakeMerritt.obj',
+for (let i = 0; i < 5; i++) {
+    growBuildings.push({grow: function() {return new TWEEN.Tween({
+        scale: 0
+    }).to ({
+        scale: 2
+    }, 2000).onUpdate(function () {
+                buildings[i].scale.y = this.scale;
+            }).onComplete(function () {
+                shrinkBuildings[i].shrink().start();
+        })
+    }})
+}
 
-    function(streetlight) {
-        streetlight.position.z = 50
-        streetlight.position.x = -10
-        streetlight.scale.set(0.1, 0.1, 0.1)
-        streetlight.traverse( function ( child ) {
-                 if ( child instanceof THREE.Mesh ) {
-                      child.material = new THREE.MeshStandardMaterial({
-                          color: 0x404040, 
-                      })
-                     
-                     }
-                 } );
+for (let i = 0; i < 5; i++) {
+    shrinkBuildings.push({shrink: function() {return new TWEEN.Tween({
+        scale: 2
+    }).to ({
+        scale: 0
+    }, 2000).onUpdate(function () {
+                buildings[i].scale.y = this.scale;
+            }).onComplete(function () {
+                growBuildings[i].grow().start();
+        })
+    }})
+}
 
-        window.streetlight = streetlight;
-
-        scene.add(streetlight);
-    },
-    
-    function(xhr) {
-        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-    },
-    
-    function(error) {
-        console.log( 'An error happened' );
-    }
-);
+console.log(buildings.length)
+for (let i = 0; i < 5; i++) {
+    growBuildings[i].grow().start();
+}
 
 function update() { 
-    // car.rotation.y -= 0.05;
+    car.rotation.y -= 0.05;
+    TWEEN.update();
 }
 
 // animate scene based on time
