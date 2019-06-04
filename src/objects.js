@@ -1,6 +1,4 @@
-/* add car and other universal scene objects*/
-var car;
-var cliff;
+
 
 /* load each file */
 function getCar() { 
@@ -26,7 +24,7 @@ function getCar() {
 
                         idx++;
                         obj.rotation.y = Math.PI;
-                        setCar(obj );
+                        car.add(obj);
                         
                     },
                 
@@ -49,7 +47,51 @@ function getCar() {
 
 }
 
+function getLogo() { 
 
+    objLoader.setPath( './assets/' );
+
+    objLoader.load(
+        'archCmmndLogo.obj',
+
+        function ( obj ) {
+        
+            obj.traverse( function ( child ) {
+                     if ( child instanceof THREE.Mesh ) {
+                          child.material = new THREE.MeshStandardMaterial({
+                              color: 0xd3d3d3, 
+                          })
+                         
+                         }
+                     } );
+                    
+            // obj.scale.set( .1, .1, .1 ) 
+			obj.position.y = 80;
+			obj.position.x = -50;
+            obj.position.z = -250;
+            
+            logo = obj;
+            logo.castShadow = true;
+            logo.receiveShadow = true;
+            
+            orbit.add(logo);
+
+        },
+        
+        function ( xhr ) {
+
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+        },
+        
+        function ( error ) {
+
+            console.log( 'An error happened' );
+
+        }
+    );
+    
+}
 
 function getPlatform() { 
     
@@ -76,10 +118,10 @@ function getPlatform() {
     cliff.position.y = -10
     cliff.position.z = 60;
     cliff.receiveShadow = true;
-    scene.add( cliff );
+    return cliff;
 }
 
-function getLogo() { 
+function getPolygonLogo() { 
     var dynamicGeometry = new THREE.IcosahedronBufferGeometry(20, 0);
 
     textureLoader.load('../../assets/cmmnd_logo.png', function(cmmndTexture) { 

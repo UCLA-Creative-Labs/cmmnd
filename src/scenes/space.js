@@ -11,52 +11,6 @@ var cmmndCar = new THREE.Group();
 
 var count = freq = 0;
 
-function getLogo() { 
-
-    objLoader.setPath( './assets/' );
-
-    objLoader.load(
-        'archCmmndLogo.obj',
-
-        function ( obj ) {
-        
-            obj.traverse( function ( child ) {
-                     if ( child instanceof THREE.Mesh ) {
-                          child.material = new THREE.MeshStandardMaterial({
-                              color: 0xd3d3d3, 
-                          })
-                         
-                         }
-                     } );
-                    
-            // obj.scale.set( .1, .1, .1 ) 
-			obj.position.y = 80;
-			obj.position.x = -50;
-            obj.position.z = -250;
-            
-            logo = obj;
-            logo.castShadow = true;
-            logo.receiveShadow = true;
-            
-            orbit.add(logo);
-
-        },
-        
-        function ( xhr ) {
-
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-        },
-        
-        function ( error ) {
-
-            console.log( 'An error happened' );
-
-        }
-    );
-    
-}
-
 function setCar(obj){ 
 
 	obj.rotation.y = Math.PI/2;
@@ -290,6 +244,21 @@ function SpaceScene(){
 	sun.position.set(0,0, 250)
 	orbit.add(sun);
 
+	// add sprite within the sun
+	var spriteMaterial = new THREE.SpriteMaterial(
+		{
+			map: new THREE.ImageUtils.loadTexture("./assets/images/glow.png")
+			, useScreenCoordinates: false
+			, color: 0xffffee
+			, transparent: false
+			, blending: THREE.AdditiveBlending
+		});
+	var sprite = new THREE.Sprite(spriteMaterial);
+	sprite.scale.set(150, 150, 1.0);
+	sun.add(sprite); // This centers the glow at the sun.
+
+	}
+
 	//cmmnd moon
 	var moonGeometry = new THREE.SphereGeometry(20, 100, 100);
 	loader.load('../../assets/cmmnd_logo.png', function(cmmndTexture) { 
@@ -317,18 +286,32 @@ function SpaceScene(){
 // scene.add(ambientLight);
 
 // Create the glow of the sun.
-var spriteMaterial = new THREE.SpriteMaterial(
-		{
-			map: new THREE.ImageUtils.loadTexture("./assets/images/glow.png")
-			, useScreenCoordinates: false
-			, color: 0xffffee
-			, transparent: false
-			, blending: THREE.AdditiveBlending
-		});
-	var sprite = new THREE.Sprite(spriteMaterial);
-	sprite.scale.set(150, 150, 1.0);
-	sun.add(sprite); // This centers the glow at the sun.
 
+
+
+/* space scene definition */
+class SpaceScene { 
+	constructor() { 
+		this.scene = new THREE.Scene();
 	}
 
+	setCar(obj) { 
+		// set position of passed in car object
+	}
+	
+	initScene() { 
+		// initialize scene objects using common object or helper functions
+		// add objects to this.scene
+	}
 
+	update(pitch_array) {
+		// update objects within the scene
+	}
+
+	animate() {
+        const pitch_array = audio.getFreqData();
+		this.update(pitch_array);
+		// calls update
+    }
+
+}

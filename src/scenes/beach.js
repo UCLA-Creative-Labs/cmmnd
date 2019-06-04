@@ -33,16 +33,6 @@ var count = 0; // time
 
 
 // set position of car object
-function setCar(obj) { 
-  obj.position.z = 60;  
-  obj.position.y = -5;
-  obj.rotateY(7*Math.PI/6);
-
-  car = obj;
-  car.name = "OldCar"
-
-  scene.add( car );
-}
 
 /* inspired by https://github.com/chebyrash/Waves/blob/master/static/js/projector.js */
 function getWaveParticles(){ 
@@ -221,17 +211,27 @@ class BeachScene {
         this.waveParticles = getWaveParticles();
         this.clouds = getClouds();
         this.particleSystem = getParticles();
-        this.logo = getLogo();
+        this.logo = getPolygonLogo();
         // set other params  
         renderer.alpha = false;
         camera.position.z = 85;
 
     }
 
-    initScene() { 
+    setCar(obj) { 
+        obj.position.z = 60;  
+        obj.position.y = -5;
+        obj.rotateY(7*Math.PI/6);
+      
+        return obj;
+    }
 
+    initScene() { 
+        // add car after place is set
+        this.scene.add(this.setCar(car));
+        this.scene.add(getPlatform())
         this.scene.add(this.sun);
-        //for loops
+    
         
         for( let r of this.waveParticles ) { 
             for( let p of r ) { 
@@ -289,9 +289,6 @@ class BeachScene {
 
         const pitch_array = audio.getFreqData();
         this.update(pitch_array);
-        
-        end = Date.now();
-        timeDiff = start - end; 
 
     }
 }

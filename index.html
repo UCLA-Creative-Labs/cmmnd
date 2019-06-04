@@ -211,9 +211,13 @@
 			/* play loop on click */ 
 			const audio = new AudioController(); 
 
-
 			/* three.js initialization */
 			const clock = new THREE.Clock();
+
+			/* common objects */
+			/* add car and other universal scene objects*/
+			var car = new THREE.Group();
+			var cliff;
 
 			const manager = new THREE.LoadingManager();
 
@@ -227,7 +231,9 @@
 
 				console.log( 'Loading complete!');
 				audio.playLoop();
-
+				//group
+				console.log( car );
+				
 				//instantiate beach scene
 				//initialize scene objects 
 				render();
@@ -244,6 +250,9 @@
 			const objLoader = new THREE.OBJLoader(manager);
 			const textureLoader = new THREE.TextureLoader(manager);
 			const mtlLoader = new THREE.MTLLoader(manager);
+
+			/* initialize common objects */ 
+			getCar();
 			
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
