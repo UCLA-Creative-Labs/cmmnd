@@ -50,15 +50,18 @@
 		<script src="./lib/OrbitControls.js"></script>
 		<script src="./lib/OBJLoader.js"></script>
 		<script src="./lib/MTLLoader.js"></script>
-
+		
+		
 
 		<!-- Scenes -->
-		<!-- dynamically change according to timing of music -->
+	
 		<script id="beachscene" src="./src/scenes/beach.js"></script> 
+		<script src="./src/objects.js"> </script>
+		<!-- <script src="./src/scenes/space.js"></script>  -->
 		<!-- <script src="./src/scenes/cmmnd.js"></script> 
 		<script src="./src/scenes/intersection.js"></script> 
 		<script src="./src/scenes/sunset.js"></script> 
-		<script src="./src/scenes/space.js"></script> 
+		
 		<script src="./src/scenes/twinpeaks.js"></script>  -->
 		
 		
@@ -68,13 +71,16 @@
 				- add scripts dynamically
 				- sunset scene
 				- scene merging 
-				- play audio in succession 
+				- post processing effect
+				- play audio in succession (done)
 			*/ 
 
 			const context = window.AudioContext || window.webkitAudioContext;
 
-			
-			/* audioController object 
+			var clock = new THREE.Clock();
+
+			/* 
+			audioController object 
 				controls audio data 
 				interfaces user audio interaction
 				controls order of scenes in playloop()
@@ -99,6 +105,19 @@
 						INDAROCKET: new Audio("./assets/cmmnd_live/6.wav"),
 					}
 
+					// scene name to audio mapping
+					this.scenes = { 
+						// test
+						INTRO: "BEACH", 
+						THEWAY: "SPACE"
+						// INTRO: "CMMND", 
+						// THEWAY: "SUNSET",
+						// TENTOES: "BEACH",
+						// BAGFLIP: "INTERSECTION",
+						// SUICIDE: "TWINPEAKS",
+						// INDAROCKET: "SPACE",
+					}
+				
 					this.titles = Object.keys(this.songs);
 			
 					// new array of audio sources
@@ -108,16 +127,17 @@
 						this.sources.push(this.context.createMediaElementSource(this.songs[title]));
 					});
 
-					this.currentSong = this.songs[this.titles[0]];
+					// the current scene being rendered 
+					this.currentScene; 		
+					this.currentSong;
 					this.index = 0;
 
 				}
 
-			
+		
 				// returns the audio for the next song
 				getAudio () { 
 					const title = this.titles[this.index];
-					console.log(this.songs[title])
 					return this.songs[title];
 				};
 
@@ -127,20 +147,24 @@
 					return this.pitch_array;
 				}
 
+				
 				getVolumeData() {
 					this.analyser.getByteTimeDomainData(this.volume_array);
-					return this.volume_array
+					return this.volume_array;
 				}
+
 				// setup webaudio to play next song
 				// add event listener to each song
 				// callback increments index
 				// last callback restarts the index
 				// play first song
 				playLoop() { 
+
 					// play first song
 					const i = this.index;
 					this.currentSong = this.songs[this.titles[i]];
 					this.currentSong.addEventListener("ended", function(){
+
 							// play the next song
 							console.log("play next")
 							this.index++;
@@ -150,7 +174,7 @@
 								console.log('song loop ended') 
 								return; 
 							} // restart audio
-
+						
 						}.bind(this));
 
 					this.getAudio().play();
@@ -160,16 +184,11 @@
 				}
 		
 			}
-		
+
 			/* play loop on click */ 
 			const audio = new AudioController(); 
 			audio.playLoop();
 			
-			/* instantiate loaders */ 
-			const objLoader = new THREE.OBJLoader();
-			const textureLoader = new THREE.TextureLoader();
-			const mtlLoader = new THREE.MTLLoader();
-
 			var scene = new THREE.Scene();
 
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
@@ -203,104 +222,10 @@
 
 			controls.enablePan = true;
 
-
-			/* add platform and car other universal scene objects*/
-			var cliff, plane, car;
-		
-			var shrubs = [];
-
-
-			function initPlatform() { 
-				
-				const map = (val, smin, smax, emin, emax) => (emax-emin)*(val-smin)/(smax-smin) + emin
-
-				//randomly displace the x,y,z coords by the `per` value
-				const jitter = (geo,per) => geo.vertices.forEach(v => {
-
-					v.x += map(Math.random(),0,1,-per,per)
-					v.y += map(Math.random(),0,1,-per,per)
-					v.z += map(Math.random(),0,1,-per,per)
-
-				})
-
-				let geometry = new THREE.TorusGeometry( 10, 3, 8, 50 );
-				let planeGeometry = new THREE.PlaneGeometry( 16, 16, 16, 16 );
-
-				
-				planeGeometry.rotateX(Math.PI);
-				planeGeometry.translate(0,0,-2);
-
-				geometry.merge(planeGeometry);
-				jitter(geometry,0.2);
-
-				let material = new THREE.MeshPhongMaterial( { 
-					color: 0xEDC9AF,
-					flatShading: true
-				} );
-
-
-				cliff = new THREE.Mesh( geometry, material );
-				cliff.rotation.x = Math.PI/2;
-				cliff.position.y = -10
-				cliff.position.z = 60;
-
-				scene.add( cliff );
-				
-
-			}
-
-
-			/* load each file */
-			const objFiles = ["carBody","backLeftWheel", "backRightWheel", "frontLeftWheel", "frontRightWheel", "carHood"];
-
-			var idx = 0;
-
-			mtlLoader.setPath( './assets/models/car_model/' );
-
-			objFiles.forEach( (objFile) => { 
-
-				mtlLoader.load( objFile + '.mtl', 
-					
-					function ( materials ) {
-
-						materials.preload();
-							// load a car
-						objLoader.setMaterials( materials );	
-						objLoader.setPath( './assets/models/car_model/' );
-						objLoader.load( objFile + '.obj',
-
-							function ( obj ) {
-
-								idx++;
-								obj.rotation.y = Math.PI;
-								setCar(obj );
-								
-							},
-						
-							function ( xhr ) {
-
-								console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-							},
-							
-							function ( error ) {
-
-								console.log( 'An error happened' );
-
-							}
-						);
-
-					});
-
-		});
-
-
-			
-			
-
 			// initalize first scene
 			function render(){ 
 
+				// switch to decide which scene to render
 				requestAnimationFrame(render);
 
 			
@@ -313,7 +238,7 @@
 
 
 			initPlatform();
-			initScene();
+			BeachScene();
 			render();
 		
 		</script>

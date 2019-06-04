@@ -161,7 +161,7 @@ function animate() {
 }
 
 //add objects to the scene	
-function initScene(){	
+function SpaceScene(){	
 
 		scene.remove( cliff );
 

@@ -237,7 +237,7 @@ function getParticles() {
     
 }
 
-function initScene() {
+function BeachScene() {
     
     renderer.alpha = false;
 
