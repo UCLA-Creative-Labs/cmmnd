@@ -184,8 +184,15 @@
 					this.scene = this.sceneObjects[this.currentScene];
 					console.log(this.scene, "current scene obj");
 
+					controls = new THREE.OrbitControls(this.scene.camera);
+					controls.zoomSpeed = .5;
+					// controls.minAzimuthAngle = - Math.PI/2;
+					// controls.maxAzimuthAngle = Math.PI/2;
+					controls.enablePan = true;
+
 					// initializes next scene
 					this.scene.initScene();
+
 					this.currentSong.addEventListener("ended", function(){
 
 							// play the next song
@@ -242,7 +249,7 @@
 			const objLoader = new THREE.OBJLoader(manager);
 			const textureLoader = new THREE.TextureLoader(manager);
 			const mtlLoader = new THREE.MTLLoader(manager);
-
+			var controls;
 			var audio = new AudioController();;
 
 			/* common objects */
@@ -255,19 +262,15 @@
 			getArchLogo(); // arch logo
 
 			/* initialize renderer */
+	
+
 			var renderer = new THREE.WebGLRenderer({alpha: true});
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			
 
 			document.body.appendChild( renderer.domElement );
 
-			var controls = new THREE.OrbitControls(camera);
-			
-			controls.zoomSpeed = .5;
-			controls.minAzimuthAngle = - Math.PI/2;
-			controls.maxAzimuthAngle = Math.PI/2;
 
-			controls.enablePan = true;
 
 
 			// updated scene
@@ -280,7 +283,7 @@
 
 				audio.animationID = requestAnimationFrame(() => (render(audio.scene)));
 				scene.animate();
-				renderer.render( scene.scene, camera );
+				renderer.render( scene.scene, scene.camera );
 
 			}
 		

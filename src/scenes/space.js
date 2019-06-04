@@ -56,7 +56,7 @@ var count = freq = 0;
 		//generate particles 
 	}
 
-	function getSun() {
+	function getSun2() {
 				//draw sun
 		let sun;
 		let material;
@@ -106,14 +106,14 @@ var count = freq = 0;
 	class SpaceScene { 
 		constructor() { 
 			this.scene = new THREE.Scene();
-			this.this.camera = new THREE.Perspectivethis.camera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+			this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
 			this.stars1 = getStars(500);
 			this.stars2 = getStars(520, "RED", 10000);
 			this.stars3 = getStars(490, "ORANGE", 5000);
 			this.stars4 = getStars(480, "WHITE", 50000);
 
-			this.sun = getSun();
+			this.sun = getSun2();
 			this.moon = getMoon();
 			this.orbit = new THREE.Group();
 			/* scene setup */

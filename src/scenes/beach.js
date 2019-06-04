@@ -158,7 +158,7 @@ function getSun() {
     });
     
     sun = new THREE.Mesh( sunGeometry, sunMaterial );
-    sun.position.z = -550;
+    sun.position.z = -500;
     sun.position.y = 300;
     return sun;
 
@@ -222,7 +222,7 @@ class BeachScene {
     setCar(obj) { 
         obj.position.z = 60;  
         obj.position.y = -5;
-        obj.rotateY(7*Math.PI/6);
+        obj.rotateY(1*Math.PI/6 );
       
         return obj;
     }
@@ -231,8 +231,7 @@ class BeachScene {
 
         // set other params  
         renderer.alpha = false;
-        this.camera.position.z = 85;
-
+        this.camera.position.z = 80;
         // add car after place is set
         this.scene.add(this.setCar(car));
         this.scene.add(this.platform)
@@ -301,7 +300,7 @@ class BeachScene {
 
         const pitch_array = audio.getFreqData();
         this.update(pitch_array);
-
+     
     }
 }
 

@@ -101,7 +101,7 @@ class CMMNDScene {
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.shadowCameraNear = 3;
-        renderer.shadowCameraFar = camera.far;
+        renderer.shadowCameraFar = this.camera.far;
         renderer.shadowCameraFov = 50;
 
         renderer.shadowMapBias = 0.0039;
