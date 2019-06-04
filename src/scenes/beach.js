@@ -2,6 +2,7 @@
 
 /* to do: effects and ideas 
 - birds
+<<<<<<< HEAD
 - headlights (pointlights)
 - fish under the sea
 - cmmnd UV wrapping 
@@ -9,6 +10,16 @@
 - sun flare
 - add sun shader (lines over time)
 */ 
+=======
+- lo poly clouds
+- gradient sunset 
+- fog and light source
+- lo poly waves with slight reflectance
+- rotate car slightly
+*/
+
+// import {background} from "./materials.js";
+>>>>>>> 6874dd7825b1303a3ad5cad6c061ffd5ae194121
 
 /* scene objects */ 
 var clouds, sun, particle, particles, polygon;
@@ -25,7 +36,7 @@ const CLOUD_NUM = 25;
 const AMOUNT = 50; 
 const SEPARATION = 4;
 
-const MAXSIZE = .2;
+const MAXSIZE = 0.2;
 const WAVESIZE = 2;
 let WAVE_Y = -35;
 var count = 0; // time
@@ -83,8 +94,6 @@ const update = () => {
             let scale = (Math.sin((x + count) * 0.3) + 1) * MAXSIZE + (Math.sin((y + count) * 0.5) + 1) * MAXSIZE;
             particle.scale.x = particle.scale.y = scale;
             prevSpeed = speed;
-        }
-    }
     
 
     //update icosahedron
@@ -148,6 +157,45 @@ function initClouds() {
 
     }
 
+    //generate random clouds
+    let cloudGeo = new THREE.BoxGeometry(3, 3, 3);
+    cloudGeo.translate(-side * 2, rand1 * 3, 0);
+    cloudGeo.rotateX(rand1);
+    let cloudGeo2 = new THREE.BoxGeometry(2, 2, 2);
+    cloudGeo2.translate(0, rand2, 0);
+    cloudGeo2.rotateY(rand2);
+    let cloudGeo3 = new THREE.BoxGeometry(1, 1, 1);
+    cloudGeo3.translate(side * 2, rand3 * 3, 0);
+    cloudGeo2.rotateZ(rand3);
+
+    let cloudMaterial = new THREE.MeshPhongMaterial({
+      color: 0xd9e9ff,
+      flatShading: true,
+      opacity: 0.5
+    });
+
+    //cloudMaterial.fog = true;
+    //merge
+    cloudGeo.merge(cloudGeo2);
+    cloudGeo.merge(cloudGeo3);
+    cloudGeo.mergeVertices();
+
+    //randomize vertices (jitter)
+    // cloudGeo.vertices.forEach(pt => {
+    // pt.x += 2%Math.sin(Math.random()*2*Math.PI)*2;
+    // pt.y += 2%Math.sin(Math.random()*2*Math.PI)*2;
+    // pt.z += 2%Math.sin(Math.random()*2*Math.PI)*2;
+    // });
+
+    clouds[i] = new THREE.Mesh(cloudGeo, cloudMaterial);
+    clouds[i].scale.set(20, 15, 20);
+    clouds[i].position.set(
+      500 * Math.cos(angle + rand1),
+      rand2 * 20 + 50,
+      -500 * Math.sin(angle + rand3)
+    );
+    scene.add(clouds[i]);
+  }
 }
 
 function initSky() { 
@@ -192,10 +240,14 @@ function initSky() {
 
 function getParticles() { 
 
+  dynamicShape = new THREE.Mesh(dynamicGeometry, dynamicMaterial);
+  dynamicShape.position.set(0, 10, -80);
+  dynamicShape.lights = true;
+  scene.add(dynamicShape);
 
-    //particles 
-    // create the particle variables
-    var particleCount = 1800,
+  //particles
+  // create the particle variables
+  var particleCount = 1800,
     particles = new THREE.Geometry(),
     pMaterial = new THREE.PointCloudMaterial({
         color: 0xFFFFC2,
@@ -203,20 +255,21 @@ function getParticles() {
         opacity: .8
     });
 
-    // now create the individual particles
-    for (var p = 0; p < particleCount; p++) {
+  // now create the individual particles
+  for (var p = 0; p < particleCount; p++) {
+    // create a particle with random
+    // position values, -250 -> 250
+    particle = new THREE.Vector3();
 
-        // create a particle with random
-        // position values, -250 -> 250
-        particle = new THREE.Vector3();
+    (particle.x = Math.random() * 500 - 250),
+      (particle.y = Math.random() * 500 - 250),
+      (particle.z = Math.random() * 500 - 250),
+      // add it to the geometry
+      particles.vertices.push(particle);
+  }
 
-        particle.x = Math.random() * 500 - 250,
-        particle.y = Math.random() * 500 - 250,
-        particle.z = Math.random() * 500 - 250,
-
-        // add it to the geometry
-        particles.vertices.push(particle);
-    }
+  // create the particle system
+  var particleSystem = new THREE.PointCloud(particles, pMaterial);
 
     var particleSystem = new THREE.PointCloud(
         particles,
@@ -275,13 +328,14 @@ function initScene() {
     polygon.lights = true;
     scene.add(polygon);
 
-    //blue light
-    const light = new THREE.DirectionalLight( 0x11e8bb, .5 );
-    light.position.set( 0, -10, 0 ).normalize();
+  //yellow light
+  const sunLight = new THREE.DirectionalLight(0xffc922, 1);
+  sunLight.position.set(0, 10, -10).normalize();
 
-    //yellow light
-    const sunLight = new THREE.DirectionalLight( 0xffc922, 1); 
-    sunLight.position.set( 0, 10, -10 ).normalize();
+  //pink light
+  //add the pink light to car headlights
+  // const pinkLight = new THREE.DirectionalLight( 0x8200c9, 1);
+  // pinkLight.position.set( 0, 5, -10 ).normalize();
 
     //pink light
     //add the pink light to car headlights
@@ -292,13 +346,11 @@ function initScene() {
     sun.add(sunLight);
     scene.add(pinkLight);
 
-    //ambient light
-    scene.add(new THREE.AmbientLight( 0xffffff, .5));
+  //ambient light
+  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-    camera.position.z = 85;
+  camera.position.z = 85;
 }
-
-
 
 function animate() {
     update();
@@ -311,4 +363,3 @@ function animate() {
     timeDiff = start - end; 
 
 }
-
