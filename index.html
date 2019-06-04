@@ -55,11 +55,12 @@
 
 		<!-- Scenes -->
 	
+		<script src="./src/scenes/cmmnd.js"></script> 
 		<script id="beachscene" src="./src/scenes/beach.js"></script> 
 		<script src="./src/scenes/space.js"></script> 
 		<script src="./src/objects.js"> </script>
 		
-		<!-- <script src="./src/scenes/cmmnd.js"></script> 
+		<!-- 
 		<script src="./src/scenes/intersection.js"></script> 
 		<script src="./src/scenes/sunset.js"></script> 
 		
@@ -71,7 +72,8 @@
 			/* TODO: 
 				- add scripts dynamically
 				- sunset scene
-				- scene merging***
+				- scene merging*** (works)
+					- fix positioning bug
 				- post processing effect
 				- play audio in succession (done)
 				- loading manager (wait for car to load before beginning scene)
@@ -112,9 +114,8 @@
 					/* scene name to audio mapping */
 					this.scenes = { 
 						// test
-						INTRO: "BEACH", 
-						THEWAY: "SPACE"
-						// INTRO: "CMMND", 
+						INTRO: "CMMND", 
+						THEWAY: "BEACH"
 						// THEWAY: "SUNSET",
 						// TENTOES: "BEACH",
 						// BAGFLIP: "INTERSECTION",
@@ -123,6 +124,7 @@
 					}
 
 					this.sceneObjects = { 
+						"CMMND": new CMMNDScene,
 						"BEACH": new BeachScene,
 						"SPACE": new SpaceScene
 					}
@@ -245,12 +247,12 @@
 
 			/* common objects */
 			var car = new THREE.Group();
-			var logo;
+			var archLogo;
 			var cliff;
 			
 			/* initialize common objects */ 
 			getCar();
-			getLogo();
+			getArchLogo(); // arch logo
 			
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 

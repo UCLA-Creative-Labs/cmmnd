@@ -47,7 +47,7 @@ function getCar() {
 
 }
 
-function getLogo() { 
+function getArchLogo() { 
 
     objLoader.setPath( './assets/' );
 
@@ -65,14 +65,10 @@ function getLogo() {
                          }
                      } );
                     
-            // obj.scale.set( .1, .1, .1 ) 
-			obj.position.y = 80;
-			obj.position.x = -50;
-            obj.position.z = -250;
-            
-            logo = obj;
-            logo.castShadow = true;
-            logo.receiveShadow = true;
+            obj.scale.set( .1, .1, .1 ) 
+            archLogo = obj;
+            archLogo.castShadow = true;
+            archLogo.receiveShadow = true;
 
 
         },
@@ -92,7 +88,7 @@ function getLogo() {
     
 }
 
-function getPlatform() { 
+function getCliff() { 
     
     const map = (val, smin, smax, emin, emax) => (emax-emin)*(val-smin)/(smax-smin) + emin
     //randomly displace the x,y,z coords by the `per` value
@@ -118,6 +114,7 @@ function getPlatform() {
     cliff.position.z = 60;
     cliff.receiveShadow = true;
     return cliff;
+    
 }
 
 function getPolygonLogo() { 

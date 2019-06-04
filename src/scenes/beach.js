@@ -211,7 +211,7 @@ class BeachScene {
         this.waveParticles = getWaveParticles();
         this.clouds = getClouds();
         this.particleSystem = getParticles();
-        this.platform = getPlatform();
+        this.platform = getCliff();
 
         // unique texture, objs etc. will load 
         this.polygon = getPolygonLogo();
