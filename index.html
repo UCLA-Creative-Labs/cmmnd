@@ -60,9 +60,9 @@
 		<!-- <script src="./src/scenes/space.js"></script>  -->
 		<!-- <script src="./src/scenes/cmmnd.js"></script> 
 		<script src="./src/scenes/intersection.js"></script> 
-		<script src="./src/scenes/sunset.js"></script> 
+		<script src="./src/scenes/sunset.js"></script>  -->
 		
-		<script src="./src/scenes/twinpeaks.js"></script>  -->
+		<script src="./src/scenes/twinpeaks.js"></script>
 		
 		
 		
@@ -257,7 +257,7 @@
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
 			/* initialize renderer */
-			var renderer = new THREE.WebGLRenderer({alpha: true});
+			var renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			
 			/* shadow map renderer */ 
@@ -281,9 +281,6 @@
 			controls.maxAzimuthAngle = Math.PI/2;
 
 			controls.enablePan = true;
-
-			var scene = new BeachScene; 
-			scene.initScene();
 
 			// use audio.getScene to get the scene class to render 
 			// pass the scene object we need in to render through a callback function that calls render
