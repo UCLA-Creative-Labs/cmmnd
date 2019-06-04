@@ -70,9 +70,10 @@
 			/* TODO: 
 				- add scripts dynamically
 				- sunset scene
-				- scene merging 
+				- scene merging***
 				- post processing effect
 				- play audio in succession (done)
+				- loading manager (wait for car to load before beginning scene)
 			*/ 
 
 			const context = window.AudioContext || window.webkitAudioContext;
@@ -86,9 +87,8 @@
 				controls order of scenes in playloop()
 			*/ 
 			class AudioController { 
-			//web audio api stuff
 				constructor() { 
-
+					/* web audio stuff */
 					this.context = new context;
 					this.analyser = this.context.createAnalyser();
 					this.analyser.smoothingTimeConstant = .8;
@@ -96,6 +96,10 @@
 					this.pitch_array = new Uint8Array(this.bufferlen);
 					this.volume_array = new Uint8Array(this.bufferlen);
 
+					/* animation stuff */
+					this.animationID;
+
+					/* audio and scene render */
 					this.songs = { 
 						INTRO: new Audio("./assets/cmmnd_live/1.wav"),
 						THEWAY: new Audio("./assets/cmmnd_live/2.wav"),
@@ -133,7 +137,6 @@
 					this.index = 0;
 
 				}
-
 		
 				// returns the audio for the next song
 				getAudio () { 
@@ -141,6 +144,27 @@
 					return this.songs[title];
 				};
 
+
+				// gets scene to render based off the current scene
+				getScene () { 
+					switch(this.currentScene) { 
+						case "CMMND":
+						// instantiates the scene class
+						break;
+						case "SUNSET": 
+						break; 
+						case "TENTOES":
+						break; 
+						case "INTERSECTION":
+						break;
+						case "TWINPEAKS":
+						break;
+						case "SUNSET": 
+						break; 
+						case "SPACE":
+						break;
+					}
+				}
 				
 				getFreqData() { 
 					this.analyser.getByteFrequencyData(this.pitch_array);
@@ -159,10 +183,10 @@
 				// last callback restarts the index
 				// play first song
 				playLoop() { 
-
 					// play first song
 					const i = this.index;
 					this.currentSong = this.songs[this.titles[i]];
+					this.currentScene = this.scenes[this.titles[i]];
 					this.currentSong.addEventListener("ended", function(){
 
 							// play the next song
@@ -171,8 +195,9 @@
 							this.playLoop(this.index); 
 							if (this.index === 6) 
 							{
-								console.log('song loop ended') 
-								return; 
+								this.index = 0;
+								this.playLoop(this.index);
+								console.log('song loop ended');
 							} // restart audio
 						
 						}.bind(this));
@@ -180,7 +205,6 @@
 					this.getAudio().play();
 					this.sources[i].connect(this.analyser);
 					this.analyser.connect(this.context.destination);
-
 				}
 		
 			}
@@ -188,14 +212,11 @@
 			/* play loop on click */ 
 			const audio = new AudioController(); 
 			audio.playLoop();
-			
-			var scene = new THREE.Scene();
 
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
 			/* initialize renderer */
 			var renderer = new THREE.WebGLRenderer({alpha: true});
-
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			
 			/* shadow map renderer */ 
@@ -212,8 +233,6 @@
 
 			document.body.appendChild( renderer.domElement );
 
-
-
 			var controls = new THREE.OrbitControls(camera);
 			
 			controls.zoomSpeed = .5;
@@ -222,24 +241,26 @@
 
 			controls.enablePan = true;
 
-			// initalize first scene
+			//instantiate beach scene
+			//initialize scene objects 
+			var scene = new BeachScene; 
+			scene.initScene();
+
+			// use audio.getScene to get the scene class to render 
+			// pass the scene object we need in to render through a callback function that calls render
+			// sceneScene.scene, sceneScene.animate (call these two functions)
+			// save render id somewhere to cancel it 
 			function render(){ 
 
-				// switch to decide which scene to render
-				requestAnimationFrame(render);
-
-			
-				animate();
-
-
-				renderer.render( scene, camera );
+				audio.animationID = requestAnimationFrame(render);
+				scene.animate();
+				renderer.render( scene.scene, camera );
 
 			}
 
-
-			initPlatform();
-			BeachScene();
+			// getPlatform();
 			render();
+
 		
 		</script>
 	</body>

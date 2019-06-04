@@ -12,7 +12,7 @@
 
 /* scene objects */ 
 var clouds, sun, particle, particles, polygon;
-
+var waveParticles;
 
 /* scene timer */ 
 var start = Date.now();
@@ -31,6 +31,7 @@ let WAVE_Y = -35;
 var count = 0; // time
 
 
+
 // set position of car object
 function setCar(obj) { 
   obj.position.z = 60;  
@@ -44,12 +45,12 @@ function setCar(obj) {
 }
 
 /* inspired by https://github.com/chebyrash/Waves/blob/master/static/js/projector.js */
-function initWaveParticles(){ 
+function getWaveParticles(){ 
 
-    particles = [];
+    waveParticles = [];
 
     for (let x = 0; x < AMOUNT; x++) {
-        particles.push([]);
+        waveParticles.push([]);
 
         for (let y = 0; y < AMOUNT; y++) {
 
@@ -75,42 +76,17 @@ function initWaveParticles(){
             particle.position.x = x * SEPARATION - ((AMOUNT * SEPARATION) / 2);
             particle.position.z = y * SEPARATION - ((AMOUNT * SEPARATION) / 2);
             particle.position.y = WAVE_Y;
-            particles[x].push(particle);
-            scene.add(particle);
-
+            waveParticles[x].push(particle);
+            
         }
 
     }
+    console.log(waveParticles);
+    return waveParticles;
 
 }
 
-const update = (pitch_array) => { 
-
-    var prevSpeed = 0 ; 
-    var speed = 0;
-    for (let x = 0; x < AMOUNT; x++) {
-        for (let y = 0; y < AMOUNT; y++) {
-            let particle = particles[x][y];
-            //add frequency data to each particle
-            //average with prev freq data
-            speed = (.1*pitch_array[0] + prevSpeed)/2.;
-            particle.position.y = (Math.sin((x + count) * 0.3) * (WAVESIZE + speed)) + (Math.sin((y + count) * 0.5) * WAVESIZE) + WAVE_Y;
-            let scale = (Math.sin((x + count) * 0.3) + 1) * MAXSIZE + (Math.sin((y + count) * 0.5) + 1) * MAXSIZE;
-            particle.scale.x = particle.scale.y = scale;
-            prevSpeed = speed;
-        }
-      }
-
-    //update icosahedron
-    polygon.rotation.x += .01;
-    polygon.rotation.y += .01;
-    polygon.position.y += -Math.sin(count);
-    
-    count += .03;
-  
-}
-
-function initClouds() { 
+function getClouds() { 
 
     //clouds (procedural)
     clouds = [];
@@ -151,17 +127,15 @@ function initClouds() {
         cloudGeo.merge(cloudGeo3);
         cloudGeo.mergeVertices();
 
-
-
         clouds[i] = new THREE.Mesh(cloudGeo, cloudMaterial);
         clouds[i].scale.set(20,15,20)
         clouds[i].position.set(500*Math.cos(angle+rand1), rand2*20 + 50 ,-500*Math.sin(angle+rand3))
-        scene.add(clouds[i]);
-
     }
+
+    return clouds;
 }
 
-function initSky() { 
+function getSun() { 
     //sun
     var sunGeometry = new THREE.CircleGeometry( 50, 32 );;
     var sunMaterial = new THREE.ShaderMaterial({
@@ -196,7 +170,7 @@ function initSky() {
     sun = new THREE.Mesh( sunGeometry, sunMaterial );
     sun.position.z = -550;
     sun.position.y = 300;
-    scene.add( sun );
+    return sun;
 
 }
 
@@ -233,57 +207,93 @@ function getParticles() {
         pMaterial);
 
 
-    scene.add(particleSystem);
+    return particleSystem;
     
 }
 
-function BeachScene() {
+
+class BeachScene { 
+    constructor() { 
+
+        // BeachScene.scene
+        this.scene = new THREE.Scene();
+        this.sun = getSun();
+        this.waveParticles = getWaveParticles();
+        this.clouds = getClouds();
+        this.particleSystem = getParticles();
+        this.logo = getLogo();
+        // set other params  
+        renderer.alpha = false;
+        camera.position.z = 85;
+
+    }
+
+    initScene() { 
+
+        this.scene.add(this.sun);
+        //for loops
+        
+        for( let r of this.waveParticles ) { 
+            for( let p of r ) { 
+                this.scene.add( p );
+            }
+        }
     
-    renderer.alpha = false;
+        for( let c of this.clouds ) { 
+            this.scene.add( c );
+        }
 
-    initSky();
-    initClouds();
-    initWaveParticles();
-    getParticles();
+        this.scene.add(this.particleSystem);
+        this.scene.add(this.logo);
 
-    var dynamicGeometry = new THREE.IcosahedronBufferGeometry(20, 0);
+        // add lights
+        const sunLight = new THREE.DirectionalLight(0xffc922, 1);
+        sunLight.position.set(0, 10, -10).normalize();
 
-    textureLoader.load('../../assets/cmmnd_logo.png', function(cmmndTexture) { 
-		console.log('mat loaded');
-		cmmndTexture.wrapS = cmmndTexture.wrapT = THREE.RepeatWrapping;
-		cmmndTexture.offset.set( 0, 0 );
-		cmmndTexture.repeat.set( 3, 3 );
-		polygon.material = new THREE.MeshLambertMaterial({ 
-        map: cmmndTexture, 
-        color: 0xd0d5d2
-      });	
-  	});
- 
-    polygon = new THREE.Mesh(dynamicGeometry);
-    polygon.position.set(0,10,-80)
-    polygon.lights = true;
-    scene.add(polygon);
+        const pinkLight = new THREE.DirectionalLight( 0x8200c9, .5); 
+        pinkLight.position.set( 0, 5, -10 ).normalize();
+        
+        sun.add(sunLight);
+        this.scene.add(pinkLight);
+        this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
+    }
 
-    const sunLight = new THREE.DirectionalLight(0xffc922, 1);
-    sunLight.position.set(0, 10, -10).normalize();
+    update(pitch_array) { 
 
-    const pinkLight = new THREE.DirectionalLight( 0x8200c9, .5); 
-    pinkLight.position.set( 0, 5, -10 ).normalize();
+        var prevSpeed = 0 ; 
+        var speed = 0;
+        for (let x = 0; x < AMOUNT; x++) {
+            for (let y = 0; y < AMOUNT; y++) {
+                let particle = this.waveParticles[x][y];
+                //add frequency data to each particle
+                //average with prev freq data
+                speed = (.1*pitch_array[0] + prevSpeed)/2.;
+                particle.position.y = (Math.sin((x + count) * 0.3) * (WAVESIZE + speed)) + (Math.sin((y + count) * 0.5) * WAVESIZE) + WAVE_Y;
+                let scale = (Math.sin((x + count) * 0.3) + 1) * MAXSIZE + (Math.sin((y + count) * 0.5) + 1) * MAXSIZE;
+                particle.scale.x = particle.scale.y = scale;
+                prevSpeed = speed;
+            }
+          }
     
-    sun.add(sunLight);
-    scene.add(pinkLight);
+        //update icosahedron
+        polygon.rotation.x += .01;
+        polygon.rotation.y += .01;
+        polygon.position.y += -Math.sin(count);
+        
+        count += .03;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    }
 
-  camera.position.z = 85;
+    animate() {
+
+        const pitch_array = audio.getFreqData();
+        this.update(pitch_array);
+        
+        end = Date.now();
+        timeDiff = start - end; 
+
+    }
 }
 
-function animate() {
-    const pitch_array = audio.getFreqData();
-    update(pitch_array);
-    
-    end = Date.now();
-    timeDiff = start - end; 
 
-}
