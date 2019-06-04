@@ -106,6 +106,7 @@ var count = freq = 0;
 	class SpaceScene { 
 		constructor() { 
 			this.scene = new THREE.Scene();
+			this.this.camera = new THREE.Perspectivethis.camera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
 			this.stars1 = getStars(500);
 			this.stars2 = getStars(520, "RED", 10000);
@@ -127,7 +128,7 @@ var count = freq = 0;
 		initScene() { 
 
 			this.scene.background = new THREE.Color( 0x000000 );
-			camera.position.z = 20;
+			this.camera.position.z = 20;
 			
 			this.scene.add(this.setCar(car));
 			car.position.set(0,0,0)

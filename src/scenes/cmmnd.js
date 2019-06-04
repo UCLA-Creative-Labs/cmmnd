@@ -73,6 +73,7 @@ function getMirrors() {
 class CMMNDScene { 
 	constructor() { 
         this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
         this.platform = getPlatform(); //car platform 
         this.mirrors = getMirrors(); //array of mirrors to draw
         // this.logo = getArchLogo();
@@ -96,10 +97,22 @@ class CMMNDScene {
     }	
 
 	initScene() { 
+        /* shadow map renderer */ 
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowCameraNear = 3;
+        renderer.shadowCameraFar = camera.far;
+        renderer.shadowCameraFov = 50;
+
+        renderer.shadowMapBias = 0.0039;
+        renderer.shadowMapDarkness = 0.7;
+        renderer.shadowMapWidth = 1024;
+        renderer.shadowMapHeight = 1024;
+
         this.scene.background =  new THREE.Color( 0x000000 );
         // move camera
-        camera.position.z = 25;
-        camera.position.y = 3;
+        this.camera.position.z = 25;
+        this.camera.position.y = 3;
 
         for (let mirror of this.mirrors) { 
             this.scene.add(mirror);

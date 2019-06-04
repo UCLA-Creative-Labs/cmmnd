@@ -253,24 +253,11 @@
 			/* initialize common objects */ 
 			getCar();
 			getArchLogo(); // arch logo
-			
-			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
 			/* initialize renderer */
 			var renderer = new THREE.WebGLRenderer({alpha: true});
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			
-			/* shadow map renderer */ 
-			renderer.shadowMap.enabled = true;
-			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-			renderer.shadowCameraNear = 3;
-			renderer.shadowCameraFar = camera.far;
-			renderer.shadowCameraFov = 50;
-
-			renderer.shadowMapBias = 0.0039;
-			renderer.shadowMapDarkness = 0.7;
-			renderer.shadowMapWidth = 1024;
-			renderer.shadowMapHeight = 1024;
 
 			document.body.appendChild( renderer.domElement );
 
