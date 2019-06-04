@@ -59,10 +59,6 @@ function getLogo() {
 
 function setCar(obj){ 
 
-	// obj.position.z = -20;
-	// obj.position.y = -1.5;
-	// obj.position.x = 1;
-
 	obj.rotation.y = Math.PI/2;
 
 	carPart = obj;
@@ -153,11 +149,6 @@ function animate() {
 
 	logo.rotation.y += .02;
 	logo.rotation.z += .01;
-
-	// stars1.scale.set(norm, norm, norm);
-	// stars2.scale.set(norm, norm, norm);
-	// stars3.scale.set(norm, norm, norm);
-	// stars4.scale.set(norm, norm, norm);
 
 	//deals with pitch (and bass)
 	analyser.getByteFrequencyData(pitch_array);

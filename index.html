@@ -11,105 +11,171 @@
 			z-index: 100;
 		}
 
-		html {
-		width: 100%;
-		height: 100%;
-		
-		background: #8200c9; /* Old browsers */
-		background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
-		background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* Chrome10-25,Safari5.1-6 */
-		background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8200c9', endColorstr='#11e8bb',GradientType=0 ); /* IE6-9 */
-		}
+		.mediaPlayer{ 
+			width: 50%;
+			height: 60%;
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			margin: auto;
+			background-image: url("./assets/media_player.jpg");
+			background-repeat: no-repeat;
+			background-size:100% 100%;
 
+		}
+		
+		body { margin: 0; }
+
+		canvas { 
+			
+			background: #8200c9; /* Old browsers */
+			background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
+			background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* Chrome10-25,Safari5.1-6 */
+			background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+			
+		 }
 	</style> 
 	<head>
 		<meta charset=utf-8>
+		<title>CMMND EP X Creative Labs</title>
+		<!-- <div class="mediaPlayer"> </div> -->
 	</head>
 	<body> 
-		<title>CMMND EP X Creative Labs</title>
-			<style>
-				body { margin: 0; }
-				canvas { width: 100%; height: 100% }
-			</style>
-			<button class="play-button" onclick="playAudio()" >play</button>
-			<audio id="audio" controls>
-				<source src="./assets/cmmnd_live/1.wav" type="audio/mpeg">
-			</audio> 
+		
 	</body>
         <!-- Load libs -->
 		<script src="./lib/three.min.js"></script>
 		<script src="./lib/OrbitControls.js"></script>
 		<script src="./lib/OBJLoader.js"></script>
-<<<<<<< HEAD
 		<script src="./lib/MTLLoader.js"></script>
 
 
 		<!-- Scenes -->
 		<!-- dynamically change according to timing of music -->
-		<script id="currentScene" src="./src/scenes/beach.js"></script> 
+		<script id="beachscene" src="./src/scenes/beach.js"></script> 
+		<!-- <script src="./src/scenes/cmmnd.js"></script> 
+		<script src="./src/scenes/intersection.js"></script> 
+		<script src="./src/scenes/sunset.js"></script> 
+		<script src="./src/scenes/space.js"></script> 
+		<script src="./src/scenes/twinpeaks.js"></script>  -->
 		
-=======
-		<script src='./lib/threex.proceduralcity.js'></script>
-		<script src="./src/scenes/beach.js"></script> 
-		<script src="./src/scenes/twinpeaks.js"></script>
->>>>>>> 6874dd7825b1303a3ad5cad6c061ffd5ae194121
+		
+		
 		<script>
-			/* todo: 
-				make platform shrubery 
-			*/
+			/* TODO: 
+				- add scripts dynamically
+				- sunset scene
+				- scene merging 
+				- play audio in succession 
+			*/ 
 
-			/* audio object interfaces songs */ 
-			var AudioContext, theway;
+			const context = window.AudioContext || window.webkitAudioContext;
 
-			AudioContext = window.AudioContext || window.webkitAudioContext;
-			theway = document.getElementById('audio');
+			
+			/* audioController object 
+				controls audio data 
+				interfaces user audio interaction
+				controls order of scenes in playloop()
+			*/ 
+			class AudioController { 
+			//web audio api stuff
+				constructor() { 
 
+					this.context = new context;
+					this.analyser = this.context.createAnalyser();
+					this.analyser.smoothingTimeConstant = .8;
+					this.bufferlen = this.analyser.frequencyBinCount;
+					this.pitch_array = new Uint8Array(this.bufferlen);
+					this.volume_array = new Uint8Array(this.bufferlen);
 
-			var context = new AudioContext;
+					this.songs = { 
+						INTRO: new Audio("./assets/cmmnd_live/1.wav"),
+						THEWAY: new Audio("./assets/cmmnd_live/2.wav"),
+						TENTOES: new Audio("./assets/cmmnd_live/3.wav"),
+						BAGFLIP: new Audio("./assets/cmmnd_live/4.wav"),
+						SUICIDE: new Audio("./assets/cmmnd_live/5.wav"),
+						INDAROCKET: new Audio("./assets/cmmnd_live/6.wav"),
+					}
 
+					this.titles = Object.keys(this.songs);
+			
+					// new array of audio sources
+					this.sources = [];
+					
+					this.titles.forEach((title) => { 
+						this.sources.push(this.context.createMediaElementSource(this.songs[title]));
+					});
 
-			function playAudio() { 
+					this.currentSong = this.songs[this.titles[0]];
+					this.index = 0;
 
-				console.log("play audio")
+				}
 
-				context.resume().then( () => { 
+			
+				// returns the audio for the next song
+				getAudio () { 
+					const title = this.titles[this.index];
+					console.log(this.songs[title])
+					return this.songs[title];
+				};
 
-					audio.load()
-					audio.play();
-
-				});
 				
+				getFreqData() { 
+					this.analyser.getByteFrequencyData(this.pitch_array);
+					return this.pitch_array;
+				}
+
+				getVolumeData() {
+					this.analyser.getByteTimeDomainData(this.volume_array);
+					return this.volume_array
+				}
+				// setup webaudio to play next song
+				// add event listener to each song
+				// callback increments index
+				// last callback restarts the index
+				// play first song
+				playLoop() { 
+					// play first song
+					const i = this.index;
+					this.currentSong = this.songs[this.titles[i]];
+					this.currentSong.addEventListener("ended", function(){
+							// play the next song
+							console.log("play next")
+							this.index++;
+							this.playLoop(this.index); 
+							if (this.index === 6) 
+							{
+								console.log('song loop ended') 
+								return; 
+							} // restart audio
+
+						}.bind(this));
+
+					this.getAudio().play();
+					this.sources[i].connect(this.analyser);
+					this.analyser.connect(this.context.destination);
+
+				}
+		
 			}
-
-			var analyser = context.createAnalyser();
-
-
-			var source = context.createMediaElementSource(theway);
-			source.connect(analyser); 
-
-
-			analyser.connect(context.destination);
-			analyser.smoothingTimeConstant = .8;
-			analyser.fftSize = 1024;
-
-
-			var bufferlen = analyser.frequencyBinCount;
-			var pitch_array = new Uint8Array(bufferlen);
-			var volume_array = new Uint8Array(bufferlen);
-
+		
+			/* play loop on click */ 
+			const audio = new AudioController(); 
+			audio.playLoop();
+			
 			/* instantiate loaders */ 
-			var objLoader = new THREE.OBJLoader();
-			var textureLoader = new THREE.TextureLoader();
-			var mtlLoader = new THREE.MTLLoader();
+			const objLoader = new THREE.OBJLoader();
+			const textureLoader = new THREE.TextureLoader();
+			const mtlLoader = new THREE.MTLLoader();
 
 			var scene = new THREE.Scene();
 
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
 			/* initialize renderer */
-			var renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
-
+			var renderer = new THREE.WebGLRenderer({alpha: true});
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			
@@ -136,7 +202,6 @@
 			controls.maxAzimuthAngle = Math.PI/2;
 
 			controls.enablePan = true;
-	
 
 
 			/* add platform and car other universal scene objects*/
@@ -178,10 +243,6 @@
 				cliff.rotation.x = Math.PI/2;
 				cliff.position.y = -10
 				cliff.position.z = 60;
-<<<<<<< HEAD
-=======
-				cliff.receiveShadow = true;
->>>>>>> 6874dd7825b1303a3ad5cad6c061ffd5ae194121
 
 				scene.add( cliff );
 				
@@ -190,7 +251,7 @@
 
 
 			/* load each file */
-			var objFiles = ["carBody","backLeftWheel", "backRightWheel", "frontLeftWheel", "frontRightWheel", "carHood"];
+			const objFiles = ["carBody","backLeftWheel", "backRightWheel", "frontLeftWheel", "frontRightWheel", "carHood"];
 
 			var idx = 0;
 
@@ -202,20 +263,11 @@
 					
 					function ( materials ) {
 
-<<<<<<< HEAD
 						materials.preload();
 							// load a car
 						objLoader.setMaterials( materials );	
 						objLoader.setPath( './assets/models/car_model/' );
 						objLoader.load( objFile + '.obj',
-=======
-					initTwinPeaksScene();
-					renderTwinPeaks();
-
-				},
-				
-				function ( xhr ) {
->>>>>>> 6874dd7825b1303a3ad5cad6c061ffd5ae194121
 
 							function ( obj ) {
 
@@ -238,9 +290,11 @@
 							}
 						);
 
+					});
+
 		});
 
-		})
+
 			
 			
 
@@ -257,26 +311,10 @@
 
 			}
 
-<<<<<<< HEAD
-			// timer class
-			// class Timer () { }
-
 
 			initPlatform();
 			initScene();
 			render();
-=======
-			function renderTwinPeaks(){
-				requestAnimationFrame(renderTwinPeaks);
-
-				animateTwinPeaks();
-
-				renderer.render(twinPeaksScene, camera);
-			}
-
-			// initScene();
-			// render();
->>>>>>> 6874dd7825b1303a3ad5cad6c061ffd5ae194121
 		
 		</script>
 	</body>

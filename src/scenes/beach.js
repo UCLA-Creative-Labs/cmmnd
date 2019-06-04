@@ -2,7 +2,6 @@
 
 /* to do: effects and ideas 
 - birds
-<<<<<<< HEAD
 - headlights (pointlights)
 - fish under the sea
 - cmmnd UV wrapping 
@@ -10,16 +9,6 @@
 - sun flare
 - add sun shader (lines over time)
 */ 
-=======
-- lo poly clouds
-- gradient sunset 
-- fog and light source
-- lo poly waves with slight reflectance
-- rotate car slightly
-*/
-
-// import {background} from "./materials.js";
->>>>>>> 6874dd7825b1303a3ad5cad6c061ffd5ae194121
 
 /* scene objects */ 
 var clouds, sun, particle, particles, polygon;
@@ -41,6 +30,19 @@ const WAVESIZE = 2;
 let WAVE_Y = -35;
 var count = 0; // time
 
+
+// set position of car object
+function setCar(obj) { 
+  obj.position.z = 60;  
+  obj.position.y = -5;
+  obj.rotateY(7*Math.PI/6);
+
+  car = obj;
+  car.name = "OldCar"
+
+  scene.add( car );
+}
+
 /* inspired by https://github.com/chebyrash/Waves/blob/master/static/js/projector.js */
 function initWaveParticles(){ 
 
@@ -48,6 +50,7 @@ function initWaveParticles(){
 
     for (let x = 0; x < AMOUNT; x++) {
         particles.push([]);
+
         for (let y = 0; y < AMOUNT; y++) {
 
             let material = new THREE.MeshPhongMaterial({
@@ -67,7 +70,7 @@ function initWaveParticles(){
             let normalizeX = x/AMOUNT;
             let normalizeY = y/AMOUNT;
             material.color = new THREE.Color(normalizeX, normalizeY, normalizeX);
-            //let particleGeometry = new THREE.Sprite();
+            
             let particle = new THREE.Sprite(material);
             particle.position.x = x * SEPARATION - ((AMOUNT * SEPARATION) / 2);
             particle.position.z = y * SEPARATION - ((AMOUNT * SEPARATION) / 2);
@@ -76,11 +79,12 @@ function initWaveParticles(){
             scene.add(particle);
 
         }
+
     }
 
 }
 
-const update = () => { 
+const update = (pitch_array) => { 
 
     var prevSpeed = 0 ; 
     var speed = 0;
@@ -94,7 +98,8 @@ const update = () => {
             let scale = (Math.sin((x + count) * 0.3) + 1) * MAXSIZE + (Math.sin((y + count) * 0.5) + 1) * MAXSIZE;
             particle.scale.x = particle.scale.y = scale;
             prevSpeed = speed;
-    
+        }
+      }
 
     //update icosahedron
     polygon.rotation.x += .01;
@@ -102,8 +107,7 @@ const update = () => {
     polygon.position.y += -Math.sin(count);
     
     count += .03;
-    
-
+  
 }
 
 function initClouds() { 
@@ -124,7 +128,6 @@ function initClouds() {
             side = -1
         }
         
-
         //generate random clouds   
         let cloudGeo = new THREE.BoxGeometry( 3, 3, 3);
         cloudGeo.translate(-side*2,rand1*3,0);
@@ -156,46 +159,6 @@ function initClouds() {
         scene.add(clouds[i]);
 
     }
-
-    //generate random clouds
-    let cloudGeo = new THREE.BoxGeometry(3, 3, 3);
-    cloudGeo.translate(-side * 2, rand1 * 3, 0);
-    cloudGeo.rotateX(rand1);
-    let cloudGeo2 = new THREE.BoxGeometry(2, 2, 2);
-    cloudGeo2.translate(0, rand2, 0);
-    cloudGeo2.rotateY(rand2);
-    let cloudGeo3 = new THREE.BoxGeometry(1, 1, 1);
-    cloudGeo3.translate(side * 2, rand3 * 3, 0);
-    cloudGeo2.rotateZ(rand3);
-
-    let cloudMaterial = new THREE.MeshPhongMaterial({
-      color: 0xd9e9ff,
-      flatShading: true,
-      opacity: 0.5
-    });
-
-    //cloudMaterial.fog = true;
-    //merge
-    cloudGeo.merge(cloudGeo2);
-    cloudGeo.merge(cloudGeo3);
-    cloudGeo.mergeVertices();
-
-    //randomize vertices (jitter)
-    // cloudGeo.vertices.forEach(pt => {
-    // pt.x += 2%Math.sin(Math.random()*2*Math.PI)*2;
-    // pt.y += 2%Math.sin(Math.random()*2*Math.PI)*2;
-    // pt.z += 2%Math.sin(Math.random()*2*Math.PI)*2;
-    // });
-
-    clouds[i] = new THREE.Mesh(cloudGeo, cloudMaterial);
-    clouds[i].scale.set(20, 15, 20);
-    clouds[i].position.set(
-      500 * Math.cos(angle + rand1),
-      rand2 * 20 + 50,
-      -500 * Math.sin(angle + rand3)
-    );
-    scene.add(clouds[i]);
-  }
 }
 
 function initSky() { 
@@ -229,7 +192,6 @@ function initSky() {
         }
         `
     });
-
     
     sun = new THREE.Mesh( sunGeometry, sunMaterial );
     sun.position.z = -550;
@@ -239,11 +201,6 @@ function initSky() {
 }
 
 function getParticles() { 
-
-  dynamicShape = new THREE.Mesh(dynamicGeometry, dynamicMaterial);
-  dynamicShape.position.set(0, 10, -80);
-  dynamicShape.lights = true;
-  scene.add(dynamicShape);
 
   //particles
   // create the particle variables
@@ -280,28 +237,13 @@ function getParticles() {
     
 }
 
-// call each time a new scene is rendered
-function setCar(obj) { 
-    obj.position.z = 60;  
-    obj.position.y = -5;
-    obj.rotateY(7*Math.PI/6);
-
-    car = obj;
-    car.name = "OldCar"
-
-    scene.add( car );
-}
-
 function initScene() {
     
     renderer.alpha = false;
 
     initSky();
-
     initClouds();
-
     initWaveParticles();
-
     getParticles();
 
     var dynamicGeometry = new THREE.IcosahedronBufferGeometry(20, 0);
@@ -312,53 +254,35 @@ function initScene() {
 		cmmndTexture.offset.set( 0, 0 );
 		cmmndTexture.repeat.set( 3, 3 );
 		polygon.material = new THREE.MeshLambertMaterial({ 
-			map: cmmndTexture, 
-			color: 0xd0d5d2
-		});	
-	})
-    // var dynamicMaterial = new THREE.MeshPhongMaterial({ 
-
-    //     color: 0xffffff,
-    //     shading: THREE.FlatShading
-
-    // } );
-
+        map: cmmndTexture, 
+        color: 0xd0d5d2
+      });	
+  	});
+ 
     polygon = new THREE.Mesh(dynamicGeometry);
     polygon.position.set(0,10,-80)
     polygon.lights = true;
     scene.add(polygon);
 
-  //yellow light
-  const sunLight = new THREE.DirectionalLight(0xffc922, 1);
-  sunLight.position.set(0, 10, -10).normalize();
 
-  //pink light
-  //add the pink light to car headlights
-  // const pinkLight = new THREE.DirectionalLight( 0x8200c9, 1);
-  // pinkLight.position.set( 0, 5, -10 ).normalize();
+    const sunLight = new THREE.DirectionalLight(0xffc922, 1);
+    sunLight.position.set(0, 10, -10).normalize();
 
-    //pink light
-    //add the pink light to car headlights
     const pinkLight = new THREE.DirectionalLight( 0x8200c9, .5); 
     pinkLight.position.set( 0, 5, -10 ).normalize();
     
-    scene.add(light);
     sun.add(sunLight);
     scene.add(pinkLight);
 
-  //ambient light
-  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
   camera.position.z = 85;
 }
 
 function animate() {
-    update();
-    //deals with pitch (and bass)
-    analyser.getByteFrequencyData(pitch_array);
-    //deals with volume
-    analyser.getByteTimeDomainData(volume_array);
-
+    const pitch_array = audio.getFreqData();
+    update(pitch_array);
+    
     end = Date.now();
     timeDiff = start - end; 
 
