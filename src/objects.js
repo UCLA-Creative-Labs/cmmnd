@@ -2,12 +2,6 @@
 var car;
 var cliff;
 
-/* instantiate loaders */ 
-const objLoader = new THREE.OBJLoader();
-const textureLoader = new THREE.TextureLoader();
-const mtlLoader = new THREE.MTLLoader();
-
-
 /* load each file */
 function getCar() { 
     const objFiles = ["carBody","backLeftWheel", "backRightWheel", "frontLeftWheel", "frontRightWheel", "carHood"];

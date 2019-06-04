@@ -60,12 +60,7 @@ function getLogo() {
 function setCar(obj){ 
 
 	obj.rotation.y = Math.PI/2;
-
-	carPart = obj;
-
-	cmmndCar.add(carPart);
-
-	scene.add(cmmndCar);
+	scene.add(obj);
 
 }
 

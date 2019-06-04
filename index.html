@@ -74,11 +74,10 @@
 				- post processing effect
 				- play audio in succession (done)
 				- loading manager (wait for car to load before beginning scene)
+					- on load to play audio
 			*/ 
 
 			const context = window.AudioContext || window.webkitAudioContext;
-
-			var clock = new THREE.Clock();
 
 			/* 
 			audioController object 
@@ -211,8 +210,41 @@
 
 			/* play loop on click */ 
 			const audio = new AudioController(); 
-			audio.playLoop();
 
+
+			/* three.js initialization */
+			const clock = new THREE.Clock();
+
+			const manager = new THREE.LoadingManager();
+
+			manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
+
+				console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+
+			};
+
+			manager.onLoad = function ( ) {
+
+				console.log( 'Loading complete!');
+				audio.playLoop();
+
+				//instantiate beach scene
+				//initialize scene objects 
+				render();
+
+
+			}
+
+			manager.onError = function ( url ) {
+
+				console.log( 'There was an error loading ' + url );
+
+			};
+
+			const objLoader = new THREE.OBJLoader(manager);
+			const textureLoader = new THREE.TextureLoader(manager);
+			const mtlLoader = new THREE.MTLLoader(manager);
+			
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
 			/* initialize renderer */
@@ -241,8 +273,6 @@
 
 			controls.enablePan = true;
 
-			//instantiate beach scene
-			//initialize scene objects 
 			var scene = new BeachScene; 
 			scene.initScene();
 
@@ -257,10 +287,6 @@
 				renderer.render( scene.scene, camera );
 
 			}
-
-			// getPlatform();
-			render();
-
 		
 		</script>
 	</body>
