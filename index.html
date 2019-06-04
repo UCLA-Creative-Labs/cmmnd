@@ -50,8 +50,12 @@
 		<script src="./lib/OrbitControls.js"></script>
 		<script src="./lib/OBJLoader.js"></script>
 		<script src="./lib/MTLLoader.js"></script>
-		
-		
+		<script src="./lib/threex.proceduralcity.js"></script>
+		<!-- <script src="./lib/CopyShader.js"></script>
+		<script src="./lib/EffectComposer.js"></script>
+        <script src="./lib/RenderPass.js"></script>
+        <script src="./lib/ShaderPass.js"></script>
+		 -->
 
 		<!-- Scenes -->
 	
@@ -234,6 +238,9 @@
 				//group
 				console.log( car );
 				
+				scene = new TwinPeaksScene
+				scene.initScene();
+
 				//instantiate beach scene
 				//initialize scene objects 
 				render();
@@ -282,16 +289,18 @@
 
 			controls.enablePan = true;
 
+			// var scene = new BeachScene; 
+			// var scene = new TwinPeaksScene
+			// scene.initScene();
+
 			// use audio.getScene to get the scene class to render 
 			// pass the scene object we need in to render through a callback function that calls render
 			// sceneScene.scene, sceneScene.animate (call these two functions)
 			// save render id somewhere to cancel it 
 			function render(){ 
-
 				audio.animationID = requestAnimationFrame(render);
 				scene.animate();
 				renderer.render( scene.scene, camera );
-
 			}
 		
 		</script>
