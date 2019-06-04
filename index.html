@@ -56,8 +56,9 @@
 		<!-- Scenes -->
 	
 		<script id="beachscene" src="./src/scenes/beach.js"></script> 
+		<script src="./src/scenes/space.js"></script> 
 		<script src="./src/objects.js"> </script>
-		<!-- <script src="./src/scenes/space.js"></script>  -->
+		
 		<!-- <script src="./src/scenes/cmmnd.js"></script> 
 		<script src="./src/scenes/intersection.js"></script> 
 		<script src="./src/scenes/sunset.js"></script> 
@@ -108,7 +109,7 @@
 						INDAROCKET: new Audio("./assets/cmmnd_live/6.wav"),
 					}
 
-					// scene name to audio mapping
+					/* scene name to audio mapping */
 					this.scenes = { 
 						// test
 						INTRO: "BEACH", 
@@ -120,6 +121,12 @@
 						// SUICIDE: "TWINPEAKS",
 						// INDAROCKET: "SPACE",
 					}
+
+					this.sceneObjects = { 
+						"BEACH": new BeachScene,
+						"SPACE": new SpaceScene
+					}
+
 				
 					this.titles = Object.keys(this.songs);
 			
@@ -131,7 +138,8 @@
 					});
 
 					// the current scene being rendered 
-					this.currentScene; 		
+					this.currentScene; 	
+					this.scene;	
 					this.currentSong;
 					this.index = 0;
 
@@ -146,31 +154,16 @@
 
 				// gets scene to render based off the current scene
 				getScene () { 
-					switch(this.currentScene) { 
-						case "CMMND":
-						// instantiates the scene class
-						break;
-						case "SUNSET": 
-						break; 
-						case "TENTOES":
-						break; 
-						case "INTERSECTION":
-						break;
-						case "TWINPEAKS":
-						break;
-						case "SUNSET": 
-						break; 
-						case "SPACE":
-						break;
-					}
+					return this.sceneObjects[this.currentScene];
 				}
 				
+				// web audio freq data
 				getFreqData() { 
 					this.analyser.getByteFrequencyData(this.pitch_array);
 					return this.pitch_array;
 				}
 
-				
+				// web audio vol data
 				getVolumeData() {
 					this.analyser.getByteTimeDomainData(this.volume_array);
 					return this.volume_array;
@@ -186,17 +179,22 @@
 					const i = this.index;
 					this.currentSong = this.songs[this.titles[i]];
 					this.currentScene = this.scenes[this.titles[i]];
+					this.scene = this.sceneObjects[this.currentScene];
+					console.log(this.scene, "current scene obj");
+
+					// initializes next scene
+					this.scene.initScene();
 					this.currentSong.addEventListener("ended", function(){
 
 							// play the next song
-							console.log("play next")
+							console.log("play next");
 							this.index++;
 							this.playLoop(this.index); 
 							if (this.index === 6) 
 							{
 								this.index = 0;
 								this.playLoop(this.index);
-								console.log('song loop ended');
+								console.log('song loop restarted');
 							} // restart audio
 						
 						}.bind(this));
@@ -208,17 +206,8 @@
 		
 			}
 
-			/* play loop on click */ 
-			const audio = new AudioController(); 
-
 			/* three.js initialization */
 			const clock = new THREE.Clock();
-
-			/* common objects */
-			/* add car and other universal scene objects*/
-			var car = new THREE.Group();
-			var cliff;
-
 			const manager = new THREE.LoadingManager();
 
 			manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
@@ -227,16 +216,17 @@
 
 			};
 
-			manager.onLoad = function ( ) {
+			manager.onLoad = function () {
 
+				// initialize audio when objects load
+						/* audio controller controls audio + scene integration */ 	
 				console.log( 'Loading complete!');
 				audio.playLoop();
-				//group
 				console.log( car );
 				
 				//instantiate beach scene
 				//initialize scene objects 
-				render();
+				render(audio.scene);
 
 
 			}
@@ -251,8 +241,16 @@
 			const textureLoader = new THREE.TextureLoader(manager);
 			const mtlLoader = new THREE.MTLLoader(manager);
 
+			var audio = new AudioController();;
+
+			/* common objects */
+			var car = new THREE.Group();
+			var logo;
+			var cliff;
+			
 			/* initialize common objects */ 
 			getCar();
+			getLogo();
 			
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
@@ -282,16 +280,16 @@
 
 			controls.enablePan = true;
 
-			var scene = new BeachScene; 
-			scene.initScene();
 
+			// updated scene
+			
 			// use audio.getScene to get the scene class to render 
 			// pass the scene object we need in to render through a callback function that calls render
 			// sceneScene.scene, sceneScene.animate (call these two functions)
 			// save render id somewhere to cancel it 
-			function render(){ 
+			function render(scene){ 
 
-				audio.animationID = requestAnimationFrame(render);
+				audio.animationID = requestAnimationFrame(() => (render(audio.scene)));
 				scene.animate();
 				renderer.render( scene.scene, camera );
 

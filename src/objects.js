@@ -73,8 +73,7 @@ function getLogo() {
             logo = obj;
             logo.castShadow = true;
             logo.receiveShadow = true;
-            
-            orbit.add(logo);
+
 
         },
         
@@ -123,20 +122,25 @@ function getPlatform() {
 
 function getPolygonLogo() { 
     var dynamicGeometry = new THREE.IcosahedronBufferGeometry(20, 0);
+    polygon = new THREE.Mesh(dynamicGeometry);
+    polygon.position.set(0,10,-80);
+    polygon.lights = true;
+    getLogoTexture(polygon, 3);
+    return polygon;
+}
+
+/* cmmnd logo texture */ 
+function getLogoTexture(obj, rpt) { 
 
     textureLoader.load('../../assets/cmmnd_logo.png', function(cmmndTexture) { 
         console.log('mat loaded');
         cmmndTexture.wrapS = cmmndTexture.wrapT = THREE.RepeatWrapping;
         cmmndTexture.offset.set( 0, 0 );
-        cmmndTexture.repeat.set( 3, 3 );
-        polygon.material = new THREE.MeshLambertMaterial({ 
-        map: cmmndTexture, 
-        color: 0xd0d5d2
+        cmmndTexture.repeat.set( rpt, rpt );
+        obj.material = new THREE.MeshLambertMaterial({ 
+            map: cmmndTexture, 
+            color: 0xd0d5d2
         });	
         });
-    
-    polygon = new THREE.Mesh(dynamicGeometry);
-    polygon.position.set(0,10,-80)
-    polygon.lights = true;
-    return polygon;
+
 }
