@@ -33,7 +33,7 @@
 			background: #120A8F; /* Old browsers */
 			/* background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
 			/* background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); Chrome10-25,Safari5.1-6 */
-			/* background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */ */
+			/* background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */ 
 			
 		 }
 
@@ -47,6 +47,7 @@
 	<body> 
 		<button id="prev">prev</button>
 		<button id="next">next</button>
+		<button id="play">play</button>
 	</body>
         <!-- Load libs -->
 		<script src="./lib/three.min.js"></script>
@@ -110,7 +111,7 @@
 					/* audio and scene render */
 					this.songs = { 
 						INTRO: new Audio("./assets/cmmnd_live/1.wav"),
-						THEWAY: new Audio("./assets/cmmnd_live/2.wav"),
+						THEWAY: new Audio("./assets/cmmnd_live/4.wav"),
 						TENTOES: new Audio("./assets/cmmnd_live/3.wav"),
 						BAGFLIP: new Audio("./assets/cmmnd_live/4.wav"),
 						SUICIDE: new Audio("./assets/cmmnd_live/5.wav"),
@@ -124,6 +125,7 @@
 						THEWAY: "BEACH",
 						TENTOES: "SPACE",
 						BAGFLIP: "TWINPEAKS",
+						SUICIDE: "INTERSECTION",
 						// THEWAY: "SUNSET",
 						// TENTOES: "BEACH",
 						// BAGFLIP: "INTERSECTION",
@@ -132,10 +134,10 @@
 					}
 
 					this.sceneObjects = { 
-						"CMMND": new CMMNDScene,
-						"BEACH": new BeachScene,
+						"CMMND": new BeachScene,
+						"BEACH": new IntersectionScene,
 						"SPACE": new SpaceScene,
-						"TWINPEAKS": new TwinPeaksScene
+						"TWINPEAKS": new TwinPeaksScene,
 					}
 
 					// if scene is initiated
@@ -276,12 +278,8 @@
 				// initialize audio when objects load
 						/* audio controller controls audio + scene integration */ 	
 				console.log( 'Loading complete!');
-				audio.playLoop();
+				// display play button
 				console.log( car );
-
-				//instantiate beach scene
-				//initialize scene objects 
-				render(audio.scene);
 
 
 			}
@@ -300,7 +298,11 @@
 			var renderer = new THREE.WebGLRenderer({alpha: true});
 			renderer.setSize( window.innerWidth, window.innerHeight );
 
-			var audio = new AudioController();;
+			/* common objects */
+			var audio = new AudioController();
+				var car = new THREE.Group();
+				var archLogo;
+				var cliff, grass;
 
 			/* buttons */ 
 			document.getElementById('next').addEventListener('click', function(){
@@ -310,15 +312,20 @@
 				audio.playPrev();
 			});
 
-			/* common objects */
-			var car = new THREE.Group();
-			var archLogo;
-			var cliff, grass;
-			
+			document.getElementById('play').addEventListener("click",  function(){
+				audio.context.resume();
+				audio.playLoop();
+				
+				//instantiate beach scene
+				//initialize scene objects 
+				render(audio.scene);
+				
+			});
+	
 			/* initialize common objects */ 
-			getCar();
-			getArchLogo(); // arch logo
-			getGrass();
+				getCar();
+				getArchLogo(); // arch logo
+				getGrass();
 
 			/* initialize renderer */
 
@@ -338,8 +345,8 @@
 
 			// initPlatform();
 			// BeachScene();
-			initScene();
-			render();
+			// initScene();
+			// render();
 			// updated scene
 			// use audio.getScene to get the scene class to render 
 			// pass the scene object we need in to render through a callback function that calls render
