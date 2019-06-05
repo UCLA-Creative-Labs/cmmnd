@@ -47,6 +47,42 @@ function getCar() {
 
 }
 
+function getStereo() { 
+    
+    objLoader.load(
+        './assets/models/radioObject.obj',
+
+        function ( obj ) {
+        
+            obj.traverse( function ( child ) {
+                     if ( child instanceof THREE.Mesh ) {
+                          child.material = new THREE.MeshStandardMaterial({
+                              color: 0xd3d3d3, 
+                          })
+                         
+                         }
+                     } );
+                    
+            obj.scale.set( .01, .01, .01 );
+
+            stereo = obj;
+            
+
+        },
+        
+        function ( xhr ) {
+
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+        },
+        
+        function ( error ) {
+
+            console.log( 'An error happened' );
+
+        }
+    );
+}
 
 function getGrass() { 
 

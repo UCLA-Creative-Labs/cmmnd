@@ -64,8 +64,8 @@ function getWaveParticles(){
             material.color = new THREE.Color(normalizeX, normalizeY, normalizeX);
             
             let particle = new THREE.Sprite(material);
-            particle.position.x = x * SEPARATION - ((AMOUNT * SEPARATION) / 2);
-            particle.position.z = y * SEPARATION - ((AMOUNT * SEPARATION) / 2);
+            particle.position.x = y * SEPARATION - ((AMOUNT * SEPARATION) / 2) ;
+            particle.position.z = x * SEPARATION - ((AMOUNT * SEPARATION) / 2) + 60;
             particle.position.y = WAVE_Y;
             waveParticles[x].push(particle);
             
@@ -127,8 +127,9 @@ function getClouds() {
 }
 
 function getSun() { 
+
     //sun
-    var sunGeometry = new THREE.CircleGeometry( 50, 32 );;
+    var sunGeometry = new THREE.SphereGeometry( 50, 32, 32 );;
     var sunMaterial = new THREE.ShaderMaterial({
         uniforms: {
         color1: {
@@ -157,10 +158,22 @@ function getSun() {
         }
         `
     });
+
     
     sun = new THREE.Mesh( sunGeometry, sunMaterial );
     sun.position.z = -500;
     sun.position.y = 300;
+
+   var geom = new THREE.OctahedronGeometry(80);
+
+    var mesh = new THREE.Mesh( geom, new THREE.MeshBasicMaterial({ 
+        color: 0xffffff,
+        wireframe: true
+    }));
+
+    // mesh.position.set(0, -60, 0)
+    sun.add(mesh);
+
     return sun;
 
 }
@@ -230,7 +243,8 @@ class BeachScene {
     }
 
     setGrass() { 
-        grass.position.set(0, 30, 2)
+        grass.rotateX(-Math.PI/2)
+        grass.position.set(-3, 5, -2);
     }
 
     initScene() { 
@@ -244,6 +258,20 @@ class BeachScene {
         this.scene.add(this.platform)
         this.scene.add(this.sun);
         cliff.add(grass);
+        let grass2 = grass.clone();
+        grass2.scale.set(.005,.005,.005);
+        //grass2.rotateX(Math.PI/2);
+        grass2.rotateY(3*Math.PI/5);
+        grass2.position.set(-3.5, 6, -2);
+        cliff.add(grass2);
+
+        // let geometry = new THREE.Triangle(new THREE.Vector3(0,0,0), new THREE.Vector3(0,50,0), new THREE.Vector3(0,0,50))
+        // let material = new THREE.LineBasicMaterial({ 
+        //     color: 0xffffff,
+        //     linewidth: 3
+        // });
+    
+        // this.scene.add(new THREE.Mesh(geometry, material));
 
         this.scene.add(this.particleSystem);
         this.scene.add(this.polygon);
@@ -273,6 +301,7 @@ class BeachScene {
     }
 
     update(pitch_array) { 
+        this.sun.rotation.y =+ .005;
 
         var prevSpeed = 0 ; 
         var speed = 0;

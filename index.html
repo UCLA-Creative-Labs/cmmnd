@@ -45,6 +45,11 @@
 	<body> 
 		<button id="prev">prev</button>
 		<button id="next">next</button>
+		<div class="loading"> 
+			<img src=""> </img> 
+			<
+		</div>
+
 	</body>
         <!-- Load libs -->
 		<script src="./lib/three.min.js"></script>
@@ -96,7 +101,7 @@
 					/* web audio stuff */
 					this.context = new context;
 					this.analyser = this.context.createAnalyser();
-					this.analyser.smoothingTimeConstant = .8;
+					this.analyser.smoothingTimeConstant = .90;
 					this.bufferlen = this.analyser.frequencyBinCount;
 					this.pitch_array = new Uint8Array(this.bufferlen);
 					this.volume_array = new Uint8Array(this.bufferlen);
@@ -271,7 +276,7 @@
 			manager.onLoad = function () {
 
 				// initialize audio when objects load
-						/* audio controller controls audio + scene integration */ 	
+						/* audio controller controls audio + scene inteation */ 	
 				console.log( 'Loading complete!');
 				audio.playLoop();
 				console.log( car );
@@ -310,14 +315,13 @@
 			/* common objects */
 			var car = new THREE.Group();
 			var archLogo;
-			var cliff, grass;
+			var cliff, stereo;
 			
 			/* initialize common objects */ 
 			getCar();
 			getArchLogo(); // arch logo
 			getGrass();
-
-			/* initialize renderer */
+			getStereo();
 
 			/* post processing effects use these on your scene */
 			// effect composer
@@ -341,8 +345,9 @@
 				scene.animate();
 				renderer.render( scene.scene, scene.camera );
 
-			}
-		
+			} 
+
+
 		</script>
 	</body>
 </html>
