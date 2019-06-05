@@ -219,27 +219,31 @@ class BeachScene {
     }
 
     setObjects() { 
-        
+        this.setCar();
+        this.setGrass();
     }
-    
-    setCar(obj) { 
-        obj.position.z = 60;  
-        obj.position.y = -5;
-        obj.rotateY(1*Math.PI/6 );
-      
-        return obj;
+
+    setCar() { 
+        car.position.z = 60;  
+        car.position.y = -5;
+        car.rotateY(1*Math.PI/6 );
+    }
+
+    setGrass() { 
+        grass.position.set(0, 30, 2)
     }
 
     initScene() { 
 
+        this.setObjects();
         // set other params  
         renderer.alpha = false;
         this.camera.position.z = 80;
         // add car after place is set
-        this.scene.add(this.setCar(car));
+        this.scene.add(car);
         this.scene.add(this.platform)
         this.scene.add(this.sun);
-    
+        cliff.add(grass);
 
         this.scene.add(this.particleSystem);
         this.scene.add(this.polygon);

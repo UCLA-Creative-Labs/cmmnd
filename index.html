@@ -54,9 +54,9 @@
 		<script src="./lib/EffectComposer.js"></script>
 		<script src="./lib/RenderPass.js"></script>
 		<script src="./lib/ShaderPass.js"></script>
-		<script src="./lib/MaskPass.js"></script>
 		<script src="./lib/CopyShader.js"></script>
 		<script src="./lib/BadTVShader.js"></script>
+		<script src="./lib/threex.proceduralcity.js"></script>
 
 		<!-- Scenes -->
 	
@@ -120,6 +120,7 @@
 						INTRO: "CMMND", 
 						THEWAY: "BEACH",
 						TENTOES: "SPACE",
+						BAGFLIP: "TWINPEAKS",
 						// THEWAY: "SUNSET",
 						// TENTOES: "BEACH",
 						// BAGFLIP: "INTERSECTION",
@@ -130,7 +131,8 @@
 					this.sceneObjects = { 
 						"CMMND": new CMMNDScene,
 						"BEACH": new BeachScene,
-						"SPACE": new SpaceScene
+						"SPACE": new SpaceScene,
+						"TWINPEAKS": new TwinPeaksScene
 					}
 
 					// if scene is initiated
@@ -211,7 +213,7 @@
 					function songEnded(){
 
 						console.log("ended");
-						// play the next song
+						// // play the next song
 						console.log("play next");
 						this.index++;
 						this.playLoop(); 
@@ -273,7 +275,7 @@
 				console.log( 'Loading complete!');
 				audio.playLoop();
 				console.log( car );
-				
+
 				//instantiate beach scene
 				//initialize scene objects 
 				render(audio.scene);
@@ -308,14 +310,14 @@
 			/* common objects */
 			var car = new THREE.Group();
 			var archLogo;
-			var cliff;
+			var cliff, grass;
 			
 			/* initialize common objects */ 
 			getCar();
 			getArchLogo(); // arch logo
+			getGrass();
 
 			/* initialize renderer */
-
 
 			/* post processing effects use these on your scene */
 			// effect composer
@@ -328,11 +330,7 @@
 			
 			document.body.appendChild( renderer.domElement );
 
-
-
-
 			// updated scene
-			
 			// use audio.getScene to get the scene class to render 
 			// pass the scene object we need in to render through a callback function that calls render
 			// sceneScene.scene, sceneScene.animate (call these two functions)
