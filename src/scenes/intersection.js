@@ -117,6 +117,7 @@ function getFloor() {
 }
 
 function getStreets() {
+    console.log('getting streets')
     let streets = []
     const width = 40;
     const len1 = 80;
@@ -162,6 +163,40 @@ function getStreets() {
     return streets
 }
 
+function getDonuts() {
+    console.log('getting donuts')
+    let donut_geo = new THREE.TorusGeometry(1, 0.7, 16, 100)
+    let donut_material
+    let donuts = []
+    
+    // generate various sizes of donuts
+    for (let i = 0; i <= 100; i++) {
+        // donut_geo = new THREE.TorusGeometry(1.5, 1, 16, 100)
+
+        if (i % 2 == 0) {
+            donut_material = new THREE.MeshPhongMaterial({ color: 0xffffff })
+        } else {
+            donut_material = new THREE.MeshPhongMaterial({ color: 0xffff00 })
+        }
+
+        let donut = new THREE.Mesh(donut_geo, donut_material);
+
+        donut.position.x = (Math.random() * 200 - 100)
+        donut.position.y = (Math.random() * 100 - 30)
+        donut.position.z = (Math.random() * 200 - 100)
+        
+        if (i % 2 == 0) {
+            donut.rotation.x = Math.PI/3
+        } else {
+            donut.rotation.x = -Math.PI/3
+        }
+
+        donuts.push(donut)
+    }
+
+    return donuts
+}
+
 loadBuildings('./assets/models/buildings/Residential Buildings 002.obj', -5, -15, -17, Math.PI/4, 2)
 loadBuildings('./assets/models/buildings/Residential Buildings 003.obj', 35, -15, -58, Math.PI/4, 2.5)
 loadBuildings('./assets/models/buildings/Residential Buildings 001.obj', -65, -15, 45, Math.PI/4, 2)
@@ -180,6 +215,9 @@ class IntersectionScene {
         this.floor = getFloor()
         this.streets = getStreets()
         this.circle = getCircle()
+        this.donuts = getDonuts()
+        this.donut_y_positions = []
+        this.donut_amplitudes = []
         this.default_scales = [2, 2.5, 2, 1.5, 1.5]
         this.max_scales = [2/80, 2.5/80, 1.5/80, 1.5/80, 1.5/80]
         this.buildings = []
@@ -214,9 +252,13 @@ class IntersectionScene {
         }
         this.setObjects()
 
-        // Add lights
-        // let brightness = new THREE.AmbientLight(0xffffff, .7);
-        // this.scene.add(brightness);
+        console.log(this.donuts.length)
+        for (let donut of this.donuts) {
+            console.log('adding donuts to the scene')
+            this.scene.add(donut)
+            this.donut_amplitudes.push(donut.position.y)
+            this.donut_y_positions.push(donut.position.y)
+        }
     
         let light = new THREE.PointLight(0xFFFFFF);
         light.position.set(3, -3, 18)
@@ -265,7 +307,7 @@ class IntersectionScene {
         }
     }
 
-    // scale buildings according to audio
+    // scale buildings, move car + move donuts according to audio
     update(pitch_array) {
         for (let i = 0; i < this.buildings.length; i++) {
             let a = (pitch_array[1] * this.max_scales[i])/2 + 1
@@ -281,8 +323,20 @@ class IntersectionScene {
             let default_xz = this.default_scales[i]
             this.buildings[i].scale.set(default_xz, norm, default_xz)
         }
-                      
-        this.circle.rotation.y += 0.05
+
+        for (let i = 0; i < this.donuts.length; i++) {
+            this.donuts[i].rotation.x += 0.05
+            this.donuts[i].rotation.y += 0.05
+
+            let a = this.donut_amplitudes[i] += 1
+            this.donuts[i].position.y = a * this.donut_y_positions[i] * Math.sin(this.delta)
+        }
+        
+        if (pitch_array[1]/3500 < 0.04) {
+            this.circle.rotation.y += 0.04
+        } else {
+            this.circle.rotation.y += pitch_array[1]/3500
+        }
     }
 
     // move smoke according to time
@@ -297,8 +351,6 @@ class IntersectionScene {
     animate() { 
         this.delta = clock.getDelta();
         this.evolveSmoke();
-        // this.blue_light.power = 4 * Math.PI * Math.sin(this.delta);
-        // red_light.power = 4 * Math.PI * Math.cos(this.delta);
         const pitch_array = audio.getFreqData();
         this.update(pitch_array);
     }
