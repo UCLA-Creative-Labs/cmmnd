@@ -53,21 +53,25 @@
 		<script src="./lib/OrbitControls.js"></script>
 		<script src="./lib/OBJLoader.js"></script>
 		<script src="./lib/MTLLoader.js"></script>
-		
-		
+		<script src="./lib/threex.proceduralcity.js"></script>
+		<!-- <script src="./lib/CopyShader.js"></script>
+		<script src="./lib/EffectComposer.js"></script>
+        <script src="./lib/RenderPass.js"></script>
+        <script src="./lib/ShaderPass.js"></script>
+		 -->
 
 		<!-- Scenes -->
 	
-		<!-- <script id="beachscene" src="./src/scenes/beach.js"></script>  -->
-		<script src="./src/objects.js"></script>
-		<script id="intersection" src="./src/scenes/intersection.js"></script>
-	
-		<!-- <script src="./src/scenes/space.js"></script>  -->
-		<!-- <script src="./src/scenes/cmmnd.js"></script> 
-		<script src="./src/scenes/intersection.js"></script> 
-		<script src="./src/scenes/sunset.js"></script> 
+		<script src="./src/scenes/cmmnd.js"></script> 
+		<script id="beachscene" src="./src/scenes/beach.js"></script> 
+		<script src="./src/scenes/space.js"></script> 
+		<script src="./src/objects.js"> </script>
 		
-		<script src="./src/scenes/twinpeaks.js"></script>  -->
+		<!-- 
+		<script src="./src/scenes/intersection.js"></script> 
+		<script src="./src/scenes/sunset.js"></script>  -->
+		
+		<script src="./src/scenes/twinpeaks.js"></script>
 		
 		
 		
@@ -75,14 +79,15 @@
 			/* TODO: 
 				- add scripts dynamically
 				- sunset scene
-				- scene merging 
+				- scene merging*** (works)
+					- fix positioning bug
 				- post processing effect
 				- play audio in succession (done)
+				- loading manager (wait for car to load before beginning scene)
+					- on load to play audio
 			*/ 
 
 			const context = window.AudioContext || window.webkitAudioContext;
-
-			var clock = new THREE.Clock();
 
 			/* 
 			audioController object 
@@ -91,9 +96,8 @@
 				controls order of scenes in playloop()
 			*/ 
 			class AudioController { 
-			//web audio api stuff
 				constructor() { 
-
+					/* web audio stuff */
 					this.context = new context;
 					this.analyser = this.context.createAnalyser();
 					this.analyser.smoothingTimeConstant = .8;
@@ -101,6 +105,10 @@
 					this.pitch_array = new Uint8Array(this.bufferlen);
 					this.volume_array = new Uint8Array(this.bufferlen);
 
+					/* animation stuff */
+					this.animationID;
+
+					/* audio and scene render */
 					this.songs = { 
 						INTRO: new Audio("./assets/cmmnd_live/1.wav"),
 						THEWAY: new Audio("./assets/cmmnd_live/2.wav"),
@@ -110,18 +118,25 @@
 						INDAROCKET: new Audio("./assets/cmmnd_live/6.wav"),
 					}
 
-					// scene name to audio mapping
+					/* scene name to audio mapping */
 					this.scenes = { 
 						// test
-						INTRO: "BEACH", 
-						THEWAY: "SPACE"
-						// INTRO: "CMMND", 
+						INTRO: "CMMND", 
+						THEWAY: "BEACH"
 						// THEWAY: "SUNSET",
 						// TENTOES: "BEACH",
 						// BAGFLIP: "INTERSECTION",
 						// SUICIDE: "TWINPEAKS",
 						// INDAROCKET: "SPACE",
 					}
+
+					this.sceneObjects = { 
+						"CMMND": new CMMNDScene,
+						"BEACH": new BeachScene,
+						"SPACE": new SpaceScene,
+						"TWINPEAKS": new TwinPeaksScene
+					}
+
 				
 					this.titles = Object.keys(this.songs);
 			
@@ -133,12 +148,12 @@
 					});
 
 					// the current scene being rendered 
-					this.currentScene; 		
+					this.currentScene; 	
+					this.scene;	
 					this.currentSong;
 					this.index = 0;
 
 				}
-
 		
 				// returns the audio for the next song
 				getAudio () { 
@@ -146,13 +161,19 @@
 					return this.songs[title];
 				};
 
+
+				// gets scene to render based off the current scene
+				getScene () { 
+					return this.sceneObjects[this.currentScene];
+				}
 				
+				// web audio freq data
 				getFreqData() { 
 					this.analyser.getByteFrequencyData(this.pitch_array);
 					return this.pitch_array;
 				}
 
-				
+				// web audio vol data
 				getVolumeData() {
 					this.analyser.getByteTimeDomainData(this.volume_array);
 					return this.volume_array;
@@ -164,21 +185,33 @@
 				// last callback restarts the index
 				// play first song
 				playLoop() { 
-
-					console.log('playing song now')
 					// play first song
 					const i = this.index;
 					this.currentSong = this.songs[this.titles[i]];
+					this.currentScene = this.scenes[this.titles[i]];
+					this.scene = this.sceneObjects[this.currentScene];
+					console.log(this.scene, "current scene obj");
+
+					controls = new THREE.OrbitControls(this.scene.camera);
+					controls.zoomSpeed = .5;
+					// controls.minAzimuthAngle = - Math.PI/2;
+					// controls.maxAzimuthAngle = Math.PI/2;
+					controls.enablePan = true;
+
+					// initializes next scene
+					this.scene.initScene();
+
 					this.currentSong.addEventListener("ended", function(){
 
 							// play the next song
-							console.log("play next")
+							console.log("play next");
 							this.index++;
 							this.playLoop(this.index); 
 							if (this.index === 6) 
 							{
-								console.log('song loop ended') 
-								return; 
+								this.index = 0;
+								this.playLoop(this.index);
+								console.log('song loop restarted');
 							} // restart audio
 						
 						}.bind(this));
@@ -186,66 +219,84 @@
 					this.getAudio().play();
 					this.sources[i].connect(this.analyser);
 					this.analyser.connect(this.context.destination);
-
 				}
 		
 			}
 
-			/* play loop on click */ 
-			const audio = new AudioController(); 
-			audio.playLoop();
+			/* three.js initialization */
+			const clock = new THREE.Clock();
+			const manager = new THREE.LoadingManager();
 
-			console.log(audio)
-			
-			// var scene = new THREE.Scene();
+			manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
 
-			// var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+				console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
 
-			/* initialize renderer */
-			// var renderer = new THREE.WebGLRenderer({alpha: true});
+			};
 
-			// renderer.setSize( window.innerWidth, window.innerHeight );
-			
-			// /* shadow map renderer */ 
-			// renderer.shadowMap.enabled = true;
-			// renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-			// renderer.shadowCameraNear = 3;
-			// renderer.shadowCameraFar = camera.far;
-			// renderer.shadowCameraFov = 50;
+			manager.onLoad = function () {
 
-			// renderer.shadowMapBias = 0.0039;
-			// renderer.shadowMapDarkness = 0.7;
-			// renderer.shadowMapWidth = 1024;
-			// renderer.shadowMapHeight = 1024;
+				// initialize audio when objects load
+						/* audio controller controls audio + scene integration */ 	
+				console.log( 'Loading complete!');
+				audio.playLoop();
+				console.log( car );
 
-			// document.body.appendChild( renderer.domElement );
+				//instantiate beach scene
+				//initialize scene objects 
+				render(audio.scene);
 
-
-
-			// var controls = new THREE.OrbitControls(camera);
-			
-			// controls.zoomSpeed = .5;
-			// controls.minAzimuthAngle = - Math.PI/2;
-			// controls.maxAzimuthAngle = Math.PI/2;
-
-			// controls.enablePan = true;
-
-			// initalize first scene
-			function render(){ 
-
-				// switch to decide which scene to render
-				requestAnimationFrame(render);
-				animate();
-
-				renderer.render( scene, camera );
 
 			}
+
+			manager.onError = function ( url ) {
+
+				console.log( 'There was an error loading ' + url );
+
+			};
+
+			const objLoader = new THREE.OBJLoader(manager);
+			const textureLoader = new THREE.TextureLoader(manager);
+			const mtlLoader = new THREE.MTLLoader(manager);
+			var controls;
+			var audio = new AudioController();;
+
+			/* common objects */
+			var car = new THREE.Group();
+			var archLogo;
+			var cliff;
+			
+			/* initialize common objects */ 
+			getCar();
+			getArchLogo(); // arch logo
+
+			/* initialize renderer */
+			var renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			
+
+			document.body.appendChild( renderer.domElement );
+
+
 
 
 			// initPlatform();
 			// BeachScene();
 			initScene();
 			render();
+			// updated scene
+			
+			// use audio.getScene to get the scene class to render 
+			// pass the scene object we need in to render through a callback function that calls render
+			// sceneScene.scene, sceneScene.animate (call these two functions)
+			// save render id somewhere to cancel it 
+			function render(scene){ 
+
+				audio.animationID = requestAnimationFrame(() => (render(audio.scene)));
+				scene.animate();
+				renderer.render( scene.scene, scene.camera );
+
+			}
+		
 		</script>
 	</body>
 </html>

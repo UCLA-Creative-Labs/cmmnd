@@ -1,23 +1,24 @@
-/* add car and other universal scene objects*/
-var car;
-var cliff;
-
-/* instantiate loaders */ 
-const objLoader = new THREE.OBJLoader();
-const textureLoader = new THREE.TextureLoader();
-const mtlLoader = new THREE.MTLLoader();
 
 
 /* load each file */
+function getCar() { 
+    const objFiles = ["carBody","backLeftWheel", "backRightWheel", "frontLeftWheel", "frontRightWheel", "carHood"];
 
-const objFiles = ["carBody","backLeftWheel", "backRightWheel", "frontLeftWheel", "frontRightWheel", "carHood"];
+    var idx = 0;
 
-var idx = 0;
+    mtlLoader.setPath( './assets/models/car_model/' );
 
+<<<<<<< HEAD
 
+=======
+    objFiles.forEach( (objFile) => { 
+>>>>>>> 22910520aaf15b5658fcb08e6bbb6b4a5cc6ac14
 
-objFiles.forEach( (objFile) => { 
+        mtlLoader.load( objFile + '.mtl', 
+            
+            function ( materials ) {
 
+<<<<<<< HEAD
     mtlLoader.load( "./assets/models/car_model/" + objFile + ".mtl", 
         
         function ( materials ) {
@@ -26,45 +27,74 @@ objFiles.forEach( (objFile) => {
                 // load a car
             objLoader.setMaterials( materials );	
             objLoader.load(  "./assets/models/car_model/" + objFile + '.obj',
+=======
+                materials.preload();
+                    // load a car
+                objLoader.setMaterials( materials );	
+                objLoader.setPath( './assets/models/car_model/' );
+                objLoader.load( objFile + '.obj',
 
-                function ( obj ) {
+                    function ( obj ) {
 
-                    idx++;
-                    obj.rotation.y = Math.PI;
-                    setCar(obj );
-                    
-                },
-            
-                function ( xhr ) {
-
-                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-                },
+                        idx++;
+                        obj.rotation.y = Math.PI;
+                        car.add(obj);
+                        
+                    },
                 
-                function ( error ) {
+                    function ( xhr ) {
+>>>>>>> 22910520aaf15b5658fcb08e6bbb6b4a5cc6ac14
 
-                    console.log( 'An error happened' );
+                        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
 
-                }
-            );
+                    },
+                    
+                    function ( error ) {
 
-        });
+                        console.log( 'An error happened' );
 
-});
+                    }
+                );
 
+            });
 
-    function initPlatform() { 
+    });
+
+}
+
+function getArchLogo() { 
+
+    objLoader.setPath( './assets/' );
+
+    objLoader.load(
+        'archCmmndLogo.obj',
+
+        function ( obj ) {
         
-        const map = (val, smin, smax, emin, emax) => (emax-emin)*(val-smin)/(smax-smin) + emin
-        //randomly displace the x,y,z coords by the `per` value
-        const jitter = (geo,per) => geo.vertices.forEach(v => {
-            v.x += map(Math.random(),0,1,-per,per)
-            v.y += map(Math.random(),0,1,-per,per)
-            v.z += map(Math.random(),0,1,-per,per)
-        })
-        let geometry = new THREE.TorusGeometry( 10, 3, 8, 50 );
-        let planeGeometry = new THREE.PlaneGeometry( 18, 18, 16, 16 );
+            obj.traverse( function ( child ) {
+                     if ( child instanceof THREE.Mesh ) {
+                          child.material = new THREE.MeshStandardMaterial({
+                              color: 0xd3d3d3, 
+                          })
+                         
+                         }
+                     } );
+                    
+            obj.scale.set( .1, .1, .1 ) 
+            archLogo = obj;
+            archLogo.castShadow = true;
+            archLogo.receiveShadow = true;
+
+
+        },
         
+        function ( xhr ) {
+
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+        },
+        
+<<<<<<< HEAD
         planeGeometry.rotateX(Math.PI);
         planeGeometry.translate(0,0,-2);
         geometry.merge(planeGeometry);
@@ -82,3 +112,67 @@ objFiles.forEach( (objFile) => {
         
     }
    // initPlatform();
+=======
+        function ( error ) {
+
+            console.log( 'An error happened' );
+
+        }
+    );
+    
+}
+
+function getCliff() { 
+    
+    const map = (val, smin, smax, emin, emax) => (emax-emin)*(val-smin)/(smax-smin) + emin
+    //randomly displace the x,y,z coords by the `per` value
+    const jitter = (geo,per) => geo.vertices.forEach(v => {
+        v.x += map(Math.random(),0,1,-per,per)
+        v.y += map(Math.random(),0,1,-per,per)
+        v.z += map(Math.random(),0,1,-per,per)
+    })
+    let geometry = new THREE.TorusGeometry( 10, 3, 8, 50 );
+    let planeGeometry = new THREE.PlaneGeometry( 18, 18, 16, 16 );
+    
+    planeGeometry.rotateX(Math.PI);
+    planeGeometry.translate(0,0,-2);
+    geometry.merge(planeGeometry);
+    jitter(geometry,0.2);
+    let material = new THREE.MeshPhongMaterial( { 
+        color: 0xEDC9AF,
+        flatShading: true
+    } );
+    cliff = new THREE.Mesh( geometry, material );
+    cliff.rotation.x = Math.PI/2;
+    cliff.position.y = -10
+    cliff.position.z = 60;
+    cliff.receiveShadow = true;
+    return cliff;
+    
+}
+
+function getPolygonLogo() { 
+    var dynamicGeometry = new THREE.IcosahedronBufferGeometry(20, 0);
+    polygon = new THREE.Mesh(dynamicGeometry);
+    polygon.position.set(0,10,-80);
+    polygon.lights = true;
+    getLogoTexture(polygon, 3);
+    return polygon;
+}
+
+/* cmmnd logo texture */ 
+function getLogoTexture(obj, rpt) { 
+
+    textureLoader.load('../../assets/cmmnd_logo.png', function(cmmndTexture) { 
+        console.log('mat loaded');
+        cmmndTexture.wrapS = cmmndTexture.wrapT = THREE.RepeatWrapping;
+        cmmndTexture.offset.set( 0, 0 );
+        cmmndTexture.repeat.set( rpt, rpt );
+        obj.material = new THREE.MeshLambertMaterial({ 
+            map: cmmndTexture, 
+            color: 0xd0d5d2
+        });	
+        });
+
+}
+>>>>>>> 22910520aaf15b5658fcb08e6bbb6b4a5cc6ac14
