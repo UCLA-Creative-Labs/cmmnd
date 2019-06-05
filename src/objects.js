@@ -14,19 +14,18 @@ const objFiles = ["carBody","backLeftWheel", "backRightWheel", "frontLeftWheel",
 
 var idx = 0;
 
-mtlLoader.setPath( './assets/models/car_model/' );
+
 
 objFiles.forEach( (objFile) => { 
 
-    mtlLoader.load( objFile + '.mtl', 
+    mtlLoader.load( "./assets/models/car_model/" + objFile + ".mtl", 
         
         function ( materials ) {
 
             materials.preload();
                 // load a car
             objLoader.setMaterials( materials );	
-            objLoader.setPath( './assets/models/car_model/' );
-            objLoader.load( objFile + '.obj',
+            objLoader.load(  "./assets/models/car_model/" + objFile + '.obj',
 
                 function ( obj ) {
 
@@ -80,5 +79,6 @@ objFiles.forEach( (objFile) => {
         cliff.position.z = 60;
         cliff.receiveShadow = true;
         scene.add( cliff );
+        
     }
    // initPlatform();

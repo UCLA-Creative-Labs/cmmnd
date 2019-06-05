@@ -30,12 +30,14 @@
 
 		canvas { 
 			
-			background: #8200c9; /* Old browsers */
-			background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
-			background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* Chrome10-25,Safari5.1-6 */
-			background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+			background: #120A8F; /* Old browsers */
+			/* background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
+			/* background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); Chrome10-25,Safari5.1-6 */
+			/* background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */ */
 			
 		 }
+
+
 	</style> 
 	<head>
 		<meta charset=utf-8>
@@ -43,7 +45,7 @@
 		<!-- <div class="mediaPlayer"> </div> -->
 	</head>
 	<body> 
-		
+		<button class="play-button">play</button>
 	</body>
         <!-- Load libs -->
 		<script src="./lib/three.min.js"></script>
@@ -57,8 +59,9 @@
 		<!-- Scenes -->
 	
 		<!-- <script id="beachscene" src="./src/scenes/beach.js"></script>  -->
+		<script src="./src/objects.js"></script>
 		<script id="intersection" src="./src/scenes/intersection.js"></script>
-		<script src="./src/objects.js"> </script>
+	
 		<!-- <script src="./src/scenes/space.js"></script>  -->
 		<!-- <script src="./src/scenes/cmmnd.js"></script> 
 		<script src="./src/scenes/intersection.js"></script> 
@@ -162,6 +165,7 @@
 				// play first song
 				playLoop() { 
 
+					console.log('playing song now')
 					// play first song
 					const i = this.index;
 					this.currentSong = this.songs[this.titles[i]];
@@ -190,8 +194,10 @@
 			/* play loop on click */ 
 			const audio = new AudioController(); 
 			audio.playLoop();
+
+			console.log(audio)
 			
-			var scene = new THREE.Scene();
+			// var scene = new THREE.Scene();
 
 			// var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
@@ -225,15 +231,15 @@
 			// controls.enablePan = true;
 
 			// initalize first scene
-			// function render(){ 
+			function render(){ 
 
-			// 	// switch to decide which scene to render
-			// 	requestAnimationFrame(render);
-			// 	animate();
+				// switch to decide which scene to render
+				requestAnimationFrame(render);
+				animate();
 
-			// 	renderer.render( scene, camera );
+				renderer.render( scene, camera );
 
-			// }
+			}
 
 
 			// initPlatform();

@@ -4,7 +4,7 @@
 var scene = new THREE.Scene();
 
 var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
-camera.position.z = 90;
+camera.position.z = 100;
 
 /* initialize renderer */
 var renderer = new THREE.WebGLRenderer({alpha: true});
@@ -19,17 +19,39 @@ controls.maxAzimuthAngle = Math.PI/2;
 
 controls.enablePan = true;
 
-let buildings = []
+let buildings = [];
+let building;
+
+var scene = new THREE.Scene();
+
+const circleGeo = new THREE.CircleGeometry(8, 50)
+const circleMaterial = new THREE.MeshBasicMaterial(
+    {color: '#000',
+    metalness: 0,
+    emissive: '#000000',
+    opacity: 0,
+    depthWrite: false})
+
+circleGeo.rotateX(-Math.PI/2);
+circleGeo.rotateY(-Math.PI/4);
+
+let circle = new THREE.Mesh(circleGeo, circleMaterial);
+circle.position.y = -15
+circle.position.z = 60
+
+scene.add(circle)
 
 function setCar(obj) { 
-    obj.position.z = 65;  
-    obj.position.y = -12;
-    obj.rotateY(7*Math.PI/6);
+    obj.position.y = 2;
+    obj.position.x = -10;
+    obj.rotateY(3*Math.PI/2);
   
     car = obj;
     car.name = "OldCar"
   
-    scene.add( car );
+    console.log(car)
+    console.log('hi')
+    circle.add( car );
   }
 
 function addFloor() {
@@ -39,10 +61,12 @@ function addFloor() {
   
     // all materials can be changed according to your taste and needs
     const planeMaterial = new THREE.MeshStandardMaterial({
-      color: '#fff',
+      color: '#ca2c92',
       metalness: 0,
       emissive: '#000000',
       roughness: 0,
+      depthWrite: 0,
+      opacity: 1
     });
   
     const plane = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -55,32 +79,117 @@ function addFloor() {
     scene.add(plane);
 }
 
+function addStreets() {
+    const width = 40;
+    const len1 = 80;
+    const len2 = 200;
+
+    const street1Geo = new THREE.PlaneGeometry(width, len1);
+    const street2Geo = new THREE.PlaneGeometry(width, len2);
+
+    const streetMaterial = new THREE.MeshStandardMaterial({
+        color: '#1e1e1e',
+        metalness: 0,
+        emissive: '#000000',
+        depthWrite: false,
+        roughness: 10,
+    })
+
+    const street1 = new THREE.Mesh(street1Geo, streetMaterial);
+    const street2 = new THREE.Mesh(street2Geo, streetMaterial);
+    const street3 = new THREE.Mesh(street2Geo, streetMaterial);
+
+    street1Geo.rotateX(-Math.PI/2);
+    street1Geo.rotateY(Math.PI/4);
+
+    street2Geo.rotateX(-Math.PI/2);
+    street2Geo.rotateY((3*Math.PI)/4);
+
+    street1.position.y = -15;
+    street1.position.x = 15;
+    street1.position.z = 70;
+
+    street2.position.y = -15;
+    street2.position.x = 28;
+    street2.position.z = 28;
+
+    street3.position.y = -15;
+    street3.position.x = -50;
+    street3.position.z = -50;
+
+    scene.add(street1);
+    scene.add(street2);
+    scene.add(street3);
+}
+
 function initScene() { 
     clock = new THREE.Clock();
 
     THREE.ImageUtils.crossOrigin = ''; //Need this to pull in crossdomain images from AWS
     addFloor();
+    addStreets();
+    // addInvisibleCarPlatform();
+    let brightness = new THREE.AmbientLight(0xffffff, .7);
+    scene.add(brightness)
 
-    for (let i = 0; i < 100; i += 10) {
-        blue_light = new THREE.SpotLight(0x0000FF);
-        blue_light.position.set(i,i,i);
+    let light = new THREE.PointLight(0xFFFFFF);
+    light.position.set(3, -3, 18)
+    scene.add(light)
+
+    let ambientLight = new THREE.AmbientLight( 0xbc13fe ); // soft white light
+    scene.add(ambientLight);
+
+    for (let i = 0; i < 200; i += 10) {
+        blue_light = new THREE.PointLight(0x0000FF, 1., 100);
+        blue_light.position.set(10,i,i);
 
         scene.add(blue_light);
     }
 
-    for (let i = 5; i < 105; i += 10) {
-        red_light = new THREE.SpotLight(0xff0000);
-        red_light.position.set(i,i,i);
+    for (let i = 5; i < 205; i += 10) {
+        red_light = new THREE.PointLight(0xff0000, 1., 100);
+        red_light.position.set(i,10,i);
 
         scene.add(red_light);
     }
   
+    // mtlLoader.load('/assets/models/buildings/Residential Buildings 002.mtl', 
+    // function (materials) {
+    //     materials.preload();
+    //     objLoader.setMaterials(materials);	
+    //     console.log(materials, "materials");
+    //     objLoader.load( '/assets/models/buildings/Residential Buildings 002.obj',
+    //         function(obj) {
+    //             obj.position.y = -15
+    //             obj.rotation.y = Math.PI/4;
+    //             obj.position.z = -15
+    //             obj.scale.set(2, 2, 2)
+                
+    //             console.log(obj, "building");
+    //             //window.building = building;
+    //             building = obj;
+    //             scene.add(building);
+                
+    //             buildings.push(obj);
+    //         },
+        
+    //         function (xhr) {
+    //             console.log('object loaded')
+    //             console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+    //         },
+            
+    //         function (error) {
+    //             console.log( 'An error happened' );
+    //         }
+    //     );
+    // });
+
     smokeTexture = THREE.ImageUtils.loadTexture('https://s3-us-west-2.amazonaws.com/s.cdpn.io/95637/Smoke-Element.png');
-    smokeMaterial = new THREE.MeshLambertMaterial({color: 0xffffff, map: smokeTexture, transparent: true});
+    smokeMaterial = new THREE.MeshLambertMaterial({color: 0xff69b4, map: smokeTexture, transparent: true});
     smokeGeo = new THREE.PlaneGeometry(300,300);
     smokeParticles = [];
 
-    for (p = -125; p < -70; p++) {
+    for (p = -80; p < -70; p++) {
         var particle = new THREE.Mesh(smokeGeo,smokeMaterial);
         particle.position.set(Math.random()*500-250,Math.random()*500-250,Math.random()*1000-100);
         particle.rotation.z = Math.random() * 360;
@@ -89,54 +198,11 @@ function initScene() {
     }
 }
 
-// update scene dynamically according to music
-// also calls update functions of common objects
-
 var loader = new THREE.OBJLoader();
 // var mtlLoader = new THREE.MTLLoader();
 
-// mtlLoader.setPath('./assets/models/buildings/');
-
-// load buildings
-// buildings: https://free3d.com/3d-model/array-house-example-3033.html
-
-// mtlLoader.load('/assets/models/buildings/Residential Buildings 002.mtl', 
-// 					function (materials) {
-// 						materials.preload();
-//                         loader.setMaterials(materials);	
-//                         console.log(materials)
-// 						loader.load( './assets/models/buildings/Residential Buildings 002.obj',
-//                             function(building) {
-//                                 building.position.y = -15
-//                                 building.rotation.y = Math.PI/4;
-//                                 building.position.z = -15
-//                                 building.scale.set(2, 2, 2)
-//                                 // building.traverse(function(child) {
-//                                 //             if (child instanceof THREE.Mesh) {
-//                                 //                 child.material = new THREE.MeshStandardMaterial({
-//                                 //                     color: 0x404040, 
-//                                 //                 })
-//                                 //                 }
-//                                 //             } );
-                            
-//                                 window.building = building;
-//                                 scene.add(building);
-//                                 buildings.push(building);
-//                             },
-						
-// 							function (xhr) {
-//                                 console.log('object loaded')
-// 								console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-// 							},
-							
-// 							function (error) {
-// 								console.log( 'An error happened' );
-// 							}
-// 						);
-// 					});
-
 function loadMiscObjects(path, pos_x, pos_y, pos_z, rot_y, scale) {
-    loader.load(
+    objLoader.load(
         path,
         function(object) {
             object.position.z = pos_z
@@ -207,60 +273,30 @@ loadBuildings('./assets/models/buildings/Residential Buildings 005.obj', 0, -15,
 
 loadMiscObjects('../../assets/models/gasStationNoSign.obj', -20, -15, 20, -Math.PI/4, 0.3)
 loadMiscObjects('../../assets/models/gasStationSign.obj', -100, -15, 15, Math.PI/4, 0.5)
-loadMiscObjects('../../assets/models/stoplight.obj', 42, 8, 40, -Math.PI/4, 0.2)
-loadMiscObjects('../../assets/models/streetLightLakeMerritt.obj', -15, -3, 50, 0, 0.1)
+loadMiscObjects('../../assets/models/stoplight.obj', 30, 8, 52, -Math.PI/4, 0.2)
+loadMiscObjects('../../assets/models/streetLightLakeMerritt.obj', 2, -1, 18, -Math.PI/4, 0.12)
 
-// create tween objects for each building
-// inspired by: https://gist.github.com/toto-castaldi/269b4f3b515355f8e2ef
 
-let shrinkBuildings = []
-let growBuildings = []
+// scale buildings according to audio
 
-for (let i = 0; i < 5; i++) {
-    growBuildings.push({grow: function(val) {return new TWEEN.Tween({
-        scale: 0
-    }).to ({
-        scale: 2
-    }, val).onUpdate(function () {
-                buildings[i].scale.y = this.scale;
-            }).onComplete(function () {
-                shrinkBuildings[i].shrink().start();
-        })
-    }})
-}
-
-for (let i = 0; i < 5; i++) {
-    shrinkBuildings.push({shrink: function(val) {return new TWEEN.Tween({
-        scale: 2
-    }).to ({
-        scale: 0
-    }, val).onUpdate(function () {
-                buildings[i].scale.y = this.scale;
-            }).onComplete(function () {
-                growBuildings[i].grow().start();
-        })
-    }})
-}
-
-console.log(buildings.length)
+default_scales = [2, 2.5, 2, 1.5, 1.5]
+max_scales = [0.02, 0.025, 0.02, 0.015, 0.015]
 
 function update(pitch_array) { 
-    // car.rotation.y -= 0.05;
-    console.log(pitch_array[0])
-    for (let i = 0; i < 5; i++) {
-        growBuildings[i].grow(pitch_array[0]).start();
+    for (let i = 0; i < pitch_array.length; i++) {
+
+		let p = pitch_array[i] ; //normalize
+
+        for (let j = 0; j < buildings.length; j++) {
+            let a = (p * max_scales[j])/2
+            let b = (p * max_scales[j])/2 + 0.5
+            let norm = b + (a * Math.sin(delta - (Math.PI/2)))
+            let default_xz = default_scales[j]
+            buildings[j].scale.set(default_xz, norm, default_xz)
+        }
     }
-    TWEEN.update();
-}
-
-// animate scene based on time
-// callse update
-function animate() { 
-    delta = clock.getDelta();
-    evolveSmoke();
-
-    const pitch_array = audio.getFreqData()
-    update(pitch_array);
+			      
+    circle.rotation.y += 0.05
 }
 
 function evolveSmoke() {
@@ -270,12 +306,24 @@ function evolveSmoke() {
     }
 }
 
-// initalize scene
-function render(){ 
-    requestAnimationFrame(render);
-    animate();
-    renderer.render( scene, camera );
+// animate scene based on time
+// callse update
+function animate() { 
+    delta = clock.getDelta();
+    evolveSmoke();
+
+    blue_light.power = 4 * Math.PI * Math.sin(delta);
+    red_light.power = 4 * Math.PI * Math.cos(delta);
+    const pitch_array = audio.getFreqData();
+    update(pitch_array);
 }
+
+// initalize scene
+// function animate(){ 
+//     // requestAnimationFrame(render);
+//     // animate();
+//     // renderer.render( scene, camera );
+// }
 
 // initScene();
 // render();
