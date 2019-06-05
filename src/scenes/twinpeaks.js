@@ -29,7 +29,13 @@ class TwinPeaksScene {
   constructor() {
     this.scene = new THREE.Scene();
     this.postprocessing = false;
-    camera.position.z = 85;
+    this.camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    this.camera.position.z = 85;
   }
 
   setCar(obj) {
@@ -98,7 +104,7 @@ class TwinPeaksScene {
 
     const city = new THREEx.ProceduralCity();
     this.scene.add(city);
-    camera.position.z = 85;
+    this.camera.position.z = 85;
   }
 
   update(pitch_array) {

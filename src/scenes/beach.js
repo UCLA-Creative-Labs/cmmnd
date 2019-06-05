@@ -158,7 +158,7 @@ function getSun() {
     });
     
     sun = new THREE.Mesh( sunGeometry, sunMaterial );
-    sun.position.z = -550;
+    sun.position.z = -500;
     sun.position.y = 300;
     return sun;
 
@@ -207,31 +207,39 @@ class BeachScene {
 
         // BeachScene.scene
         this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
         this.sun = getSun();
         this.waveParticles = getWaveParticles();
         this.clouds = getClouds();
         this.particleSystem = getParticles();
-        this.logo = getPolygonLogo();
-        // set other params  
-        renderer.alpha = false;
-        camera.position.z = 85;
+        this.platform = getCliff();
+
+        // unique texture, objs etc. will load 
+        this.polygon = getPolygonLogo();
 
     }
 
     setCar(obj) { 
         obj.position.z = 60;  
         obj.position.y = -5;
-        obj.rotateY(7*Math.PI/6);
+        obj.rotateY(1*Math.PI/6 );
       
         return obj;
     }
 
     initScene() { 
+
+        // set other params  
+        renderer.alpha = false;
+        this.camera.position.z = 80;
         // add car after place is set
         this.scene.add(this.setCar(car));
-        this.scene.add(getPlatform())
+        this.scene.add(this.platform)
         this.scene.add(this.sun);
     
+
+        this.scene.add(this.particleSystem);
+        this.scene.add(this.polygon);
         
         for( let r of this.waveParticles ) { 
             for( let p of r ) { 
@@ -243,8 +251,6 @@ class BeachScene {
             this.scene.add( c );
         }
 
-        this.scene.add(this.particleSystem);
-        this.scene.add(this.logo);
 
         // add lights
         const sunLight = new THREE.DirectionalLight(0xffc922, 1);
@@ -253,7 +259,7 @@ class BeachScene {
         const pinkLight = new THREE.DirectionalLight( 0x8200c9, .5); 
         pinkLight.position.set( 0, 5, -10 ).normalize();
         
-        sun.add(sunLight);
+        this.sun.add(sunLight);
         this.scene.add(pinkLight);
         this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
@@ -263,16 +269,21 @@ class BeachScene {
 
         var prevSpeed = 0 ; 
         var speed = 0;
+        let indx = 0
         for (let x = 0; x < AMOUNT; x++) {
             for (let y = 0; y < AMOUNT; y++) {
                 let particle = this.waveParticles[x][y];
                 //add frequency data to each particle
                 //average with prev freq data
-                speed = (.1*pitch_array[0] + prevSpeed)/2.;
+                speed = (.1*pitch_array[indx] + prevSpeed)/2.;
                 particle.position.y = (Math.sin((x + count) * 0.3) * (WAVESIZE + speed)) + (Math.sin((y + count) * 0.5) * WAVESIZE) + WAVE_Y;
                 let scale = (Math.sin((x + count) * 0.3) + 1) * MAXSIZE + (Math.sin((y + count) * 0.5) + 1) * MAXSIZE;
                 particle.scale.x = particle.scale.y = scale;
                 prevSpeed = speed;
+                if( indx < pitch_array.length )
+                    indx++;
+                else
+                    indx--;
             }
           }
     
@@ -289,7 +300,7 @@ class BeachScene {
 
         const pitch_array = audio.getFreqData();
         this.update(pitch_array);
-
+     
     }
 }
 

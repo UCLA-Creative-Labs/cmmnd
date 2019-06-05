@@ -47,7 +47,7 @@ function getCar() {
 
 }
 
-function getLogo() { 
+function getArchLogo() { 
 
     objLoader.setPath( './assets/' );
 
@@ -65,16 +65,11 @@ function getLogo() {
                          }
                      } );
                     
-            // obj.scale.set( .1, .1, .1 ) 
-			obj.position.y = 80;
-			obj.position.x = -50;
-            obj.position.z = -250;
-            
-            logo = obj;
-            logo.castShadow = true;
-            logo.receiveShadow = true;
-            
-            orbit.add(logo);
+            obj.scale.set( .1, .1, .1 ) 
+            archLogo = obj;
+            archLogo.castShadow = true;
+            archLogo.receiveShadow = true;
+
 
         },
         
@@ -93,7 +88,7 @@ function getLogo() {
     
 }
 
-function getPlatform() { 
+function getCliff() { 
     
     const map = (val, smin, smax, emin, emax) => (emax-emin)*(val-smin)/(smax-smin) + emin
     //randomly displace the x,y,z coords by the `per` value
@@ -119,24 +114,30 @@ function getPlatform() {
     cliff.position.z = 60;
     cliff.receiveShadow = true;
     return cliff;
+    
 }
 
 function getPolygonLogo() { 
     var dynamicGeometry = new THREE.IcosahedronBufferGeometry(20, 0);
+    polygon = new THREE.Mesh(dynamicGeometry);
+    polygon.position.set(0,10,-80);
+    polygon.lights = true;
+    getLogoTexture(polygon, 3);
+    return polygon;
+}
+
+/* cmmnd logo texture */ 
+function getLogoTexture(obj, rpt) { 
 
     textureLoader.load('../../assets/cmmnd_logo.png', function(cmmndTexture) { 
         console.log('mat loaded');
         cmmndTexture.wrapS = cmmndTexture.wrapT = THREE.RepeatWrapping;
         cmmndTexture.offset.set( 0, 0 );
-        cmmndTexture.repeat.set( 3, 3 );
-        polygon.material = new THREE.MeshLambertMaterial({ 
-        map: cmmndTexture, 
-        color: 0xd0d5d2
+        cmmndTexture.repeat.set( rpt, rpt );
+        obj.material = new THREE.MeshLambertMaterial({ 
+            map: cmmndTexture, 
+            color: 0xd0d5d2
         });	
         });
-    
-    polygon = new THREE.Mesh(dynamicGeometry);
-    polygon.position.set(0,10,-80)
-    polygon.lights = true;
-    return polygon;
+
 }
