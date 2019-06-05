@@ -18,16 +18,6 @@ function getCar() {
             
             function ( materials ) {
 
-<<<<<<< HEAD
-    mtlLoader.load( "./assets/models/car_model/" + objFile + ".mtl", 
-        
-        function ( materials ) {
-
-            materials.preload();
-                // load a car
-            objLoader.setMaterials( materials );	
-            objLoader.load(  "./assets/models/car_model/" + objFile + '.obj',
-=======
                 materials.preload();
                     // load a car
                 objLoader.setMaterials( materials );	
@@ -43,7 +33,6 @@ function getCar() {
                     },
                 
                     function ( xhr ) {
->>>>>>> 22910520aaf15b5658fcb08e6bbb6b4a5cc6ac14
 
                         console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
 
@@ -94,25 +83,6 @@ function getArchLogo() {
 
         },
         
-<<<<<<< HEAD
-        planeGeometry.rotateX(Math.PI);
-        planeGeometry.translate(0,0,-2);
-        geometry.merge(planeGeometry);
-        jitter(geometry,0.2);
-        let material = new THREE.MeshPhongMaterial( { 
-            color: 0xEDC9AF,
-            flatShading: true
-        } );
-        cliff = new THREE.Mesh( geometry, material );
-        cliff.rotation.x = Math.PI/2;
-        cliff.position.y = -10
-        cliff.position.z = 60;
-        cliff.receiveShadow = true;
-        scene.add( cliff );
-        
-    }
-   // initPlatform();
-=======
         function ( error ) {
 
             console.log( 'An error happened' );
@@ -175,4 +145,3 @@ function getLogoTexture(obj, rpt) {
         });
 
 }
->>>>>>> 22910520aaf15b5658fcb08e6bbb6b4a5cc6ac14
