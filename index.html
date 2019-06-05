@@ -30,12 +30,14 @@
 
 		canvas { 
 			
-			background: #8200c9; /* Old browsers */
-			background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
-			background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* Chrome10-25,Safari5.1-6 */
-			background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+			background: #120A8F; /* Old browsers */
+			/* background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
+			/* background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); Chrome10-25,Safari5.1-6 */
+			/* background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */ 
 			
 		 }
+
+
 	</style> 
 	<head>
 		<meta charset=utf-8>
@@ -45,14 +47,16 @@
 	<body> 
 		<button id="prev">prev</button>
 		<button id="next">next</button>
+		<button id="play">play</button>
 		<div class="loading"> 
 			<img src=""> </img> 
-			<
 		</div>
 
+		
 	</body>
         <!-- Load libs -->
 		<script src="./lib/three.min.js"></script>
+		<script src="./lib/tween.min.js"></script>
 		<script src="./lib/OrbitControls.js"></script>
 		<script src="./lib/OBJLoader.js"></script>
 		<script src="./lib/MTLLoader.js"></script>
@@ -111,7 +115,7 @@
 
 					/* audio and scene render */
 					this.songs = { 
-						INTRO: new Audio("./assets/cmmnd_live/1.wav"),
+						INTRO: new Audio("./assets/cmmnd_live/4.wav"),
 						THEWAY: new Audio("./assets/cmmnd_live/2.wav"),
 						TENTOES: new Audio("./assets/cmmnd_live/3.wav"),
 						BAGFLIP: new Audio("./assets/cmmnd_live/4.wav"),
@@ -126,6 +130,7 @@
 						THEWAY: "BEACH",
 						TENTOES: "SPACE",
 						BAGFLIP: "TWINPEAKS",
+						SUICIDE: "INTERSECTION",
 						// THEWAY: "SUNSET",
 						// TENTOES: "BEACH",
 						// BAGFLIP: "INTERSECTION",
@@ -137,7 +142,7 @@
 						"CMMND": new CMMNDScene,
 						"BEACH": new BeachScene,
 						"SPACE": new SpaceScene,
-						"TWINPEAKS": new TwinPeaksScene
+						"TWINPEAKS": new TwinPeaksScene,
 					}
 
 					// if scene is initiated
@@ -276,14 +281,8 @@
 			manager.onLoad = function () {
 
 				// initialize audio when objects load
-						/* audio controller controls audio + scene inteation */ 	
 				console.log( 'Loading complete!');
-				audio.playLoop();
-				console.log( car );
-
-				//instantiate beach scene
-				//initialize scene objects 
-				render(audio.scene);
+				// display play button
 
 
 			}
@@ -302,8 +301,12 @@
 			var renderer = new THREE.WebGLRenderer({alpha: true});
 			renderer.setSize( window.innerWidth, window.innerHeight );
 
-			var audio = new AudioController();;
+			/* common objects */
+			var car = new THREE.Group();
+			var cliff, grass, stereo, archLogo;
 
+			const audio = new AudioController;
+			
 			/* buttons */ 
 			document.getElementById('next').addEventListener('click', function(){
 				audio.playNext();
@@ -312,16 +315,25 @@
 				audio.playPrev();
 			});
 
-			/* common objects */
-			var car = new THREE.Group();
-			var archLogo;
-			var cliff, stereo;
-			
+			document.getElementById('play').addEventListener("click",  function(){
+				console.log("play");
+
+				audio.context.resume();
+				audio.playLoop();
+				
+				//instantiate beach scene
+				//initialize scene objects 
+				render(audio.scene);
+				
+			});
+	
 			/* initialize common objects */ 
 			getCar();
 			getArchLogo(); // arch logo
 			getGrass();
 			getStereo();
+
+			/* initialize renderer */
 
 			/* post processing effects use these on your scene */
 			// effect composer
@@ -334,6 +346,13 @@
 			
 			document.body.appendChild( renderer.domElement );
 
+
+
+
+			// initPlatform();
+			// BeachScene();
+			// initScene();
+			// render();
 			// updated scene
 			// use audio.getScene to get the scene class to render 
 			// pass the scene object we need in to render through a callback function that calls render
