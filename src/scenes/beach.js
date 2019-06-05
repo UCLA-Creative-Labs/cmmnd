@@ -2,6 +2,7 @@
 
 /* to do: effects and ideas 
 - birds
+- odezsa poster as scene inspo
 - headlights (pointlights)
 - fish under the sea
 - cmmnd UV wrapping 
@@ -205,7 +206,6 @@ function getParticles() {
 class BeachScene { 
     constructor() { 
 
-        // BeachScene.scene
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
         this.sun = getSun();
@@ -216,9 +216,12 @@ class BeachScene {
 
         // unique texture, objs etc. will load 
         this.polygon = getPolygonLogo();
-
     }
 
+    setObjects() { 
+        
+    }
+    
     setCar(obj) { 
         obj.position.z = 60;  
         obj.position.y = -5;
