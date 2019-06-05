@@ -8,11 +8,7 @@ function getCar() {
 
     mtlLoader.setPath( './assets/models/car_model/' );
 
-<<<<<<< HEAD
-
-=======
     objFiles.forEach( (objFile) => { 
->>>>>>> 22910520aaf15b5658fcb08e6bbb6b4a5cc6ac14
 
         mtlLoader.load( objFile + '.mtl', 
             
