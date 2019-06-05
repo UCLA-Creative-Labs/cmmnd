@@ -1,35 +1,6 @@
 // yt scene
 
 // initalize scene objects and scene attributes (background color, camera position, etc.)
-
-var AudioContext, theway;
-AudioContext = window.AudioContext || window.webkitAudioContext;
-theway = document.getElementById('audio');
-
-var context = new AudioContext;
-
-function playAudio() { 
-    console.log("play audio")
-
-    context.resume().then( () => { 
-        audio.load()
-        audio.play();
-    });
-    
-}
-var analyser = context.createAnalyser();
-
-var source = context.createMediaElementSource(theway);
-source.connect(analyser); 
-
-analyser.connect(context.destination);
-analyser.smoothingTimeConstant = .8;
-analyser.fftSize = 1024;
-
-var bufferlen = analyser.frequencyBinCount;
-var pitch_array = new Uint8Array(bufferlen);
-var volume_array = new Uint8Array(bufferlen);
-
 var scene = new THREE.Scene();
 
 var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
@@ -49,13 +20,17 @@ controls.maxAzimuthAngle = Math.PI/2;
 controls.enablePan = true;
 
 let buildings = []
-let tweens = []
-let car;
 
-function setCar(obj) {
+function setCar(obj) { 
+    obj.position.z = 65;  
+    obj.position.y = -12;
+    obj.rotateY(7*Math.PI/6);
+  
     car = obj;
-    scene.add(car);
-}
+    car.name = "OldCar"
+  
+    scene.add( car );
+  }
 
 function addFloor() {
     const width = 200;
@@ -77,8 +52,8 @@ function addFloor() {
   
     plane.position.y = -15;
   
-    this.scene.add(plane);
-  }
+    scene.add(plane);
+}
 
 function initScene() { 
     clock = new THREE.Clock();
@@ -118,7 +93,7 @@ function initScene() {
 // also calls update functions of common objects
 
 var loader = new THREE.OBJLoader();
-var mtlLoader = new THREE.MTLLoader();
+// var mtlLoader = new THREE.MTLLoader();
 
 // mtlLoader.setPath('./assets/models/buildings/');
 
@@ -159,40 +134,6 @@ var mtlLoader = new THREE.MTLLoader();
 // 							}
 // 						);
 // 					});
-
-// load car 
-loader.load(
-    './assets/models/car_model_halfsize.obj',
-
-    function (car) {
-        car.position.y = -12
-        car.position.z = 60;
-        car.rotation.x = Math.PI/2;
-        car.rotation.y = Math.PI;
-        car.traverse(function(child) {
-                 if (child instanceof THREE.Mesh) {
-                      child.material = new THREE.MeshStandardMaterial({
-                          color: 0x404040, 
-                      })
-                     }
-                 } );
-
-        car.rotateX(Math.PI/2);
-        car.rotateY(7*Math.PI/6);
-
-        window.car = car;
-
-        setCar(car)
-    },
-    
-    function(xhr) {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-    },
-    
-    function(error) {
-        console.log('An error happened');
-    }
-);
 
 function loadMiscObjects(path, pos_x, pos_y, pos_z, rot_y, scale) {
     loader.load(
@@ -276,11 +217,11 @@ let shrinkBuildings = []
 let growBuildings = []
 
 for (let i = 0; i < 5; i++) {
-    growBuildings.push({grow: function() {return new TWEEN.Tween({
+    growBuildings.push({grow: function(val) {return new TWEEN.Tween({
         scale: 0
     }).to ({
         scale: 2
-    }, 2000).onUpdate(function () {
+    }, val).onUpdate(function () {
                 buildings[i].scale.y = this.scale;
             }).onComplete(function () {
                 shrinkBuildings[i].shrink().start();
@@ -289,11 +230,11 @@ for (let i = 0; i < 5; i++) {
 }
 
 for (let i = 0; i < 5; i++) {
-    shrinkBuildings.push({shrink: function() {return new TWEEN.Tween({
+    shrinkBuildings.push({shrink: function(val) {return new TWEEN.Tween({
         scale: 2
     }).to ({
         scale: 0
-    }, 2000).onUpdate(function () {
+    }, val).onUpdate(function () {
                 buildings[i].scale.y = this.scale;
             }).onComplete(function () {
                 growBuildings[i].grow().start();
@@ -302,12 +243,13 @@ for (let i = 0; i < 5; i++) {
 }
 
 console.log(buildings.length)
-for (let i = 0; i < 5; i++) {
-    growBuildings[i].grow().start();
-}
 
-function update() { 
-    car.rotation.y -= 0.05;
+function update(pitch_array) { 
+    // car.rotation.y -= 0.05;
+    console.log(pitch_array[0])
+    for (let i = 0; i < 5; i++) {
+        growBuildings[i].grow(pitch_array[0]).start();
+    }
     TWEEN.update();
 }
 
@@ -316,7 +258,9 @@ function update() {
 function animate() { 
     delta = clock.getDelta();
     evolveSmoke();
-    update();
+
+    const pitch_array = audio.getFreqData()
+    update(pitch_array);
 }
 
 function evolveSmoke() {
@@ -333,5 +277,6 @@ function render(){
     renderer.render( scene, camera );
 }
 
-initScene();
-render();
+// initScene();
+// render();
+// initScene();

@@ -81,4 +81,4 @@ objFiles.forEach( (objFile) => {
         cliff.receiveShadow = true;
         scene.add( cliff );
     }
-    initPlatform();
+   // initPlatform();
