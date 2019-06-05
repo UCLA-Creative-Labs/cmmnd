@@ -45,7 +45,8 @@
 		<!-- <div class="mediaPlayer"> </div> -->
 	</head>
 	<body> 
-		<button class="play-button">play</button>
+		<button id="prev">prev</button>
+		<button id="next">next</button>
 	</body>
         <!-- Load libs -->
 		<script src="./lib/three.min.js"></script>
@@ -53,26 +54,24 @@
 		<script src="./lib/OrbitControls.js"></script>
 		<script src="./lib/OBJLoader.js"></script>
 		<script src="./lib/MTLLoader.js"></script>
-		<script src="./lib/threex.proceduralcity.js"></script>
-		<!-- <script src="./lib/CopyShader.js"></script>
 		<script src="./lib/EffectComposer.js"></script>
-        <script src="./lib/RenderPass.js"></script>
-        <script src="./lib/ShaderPass.js"></script>
-		 -->
+		<script src="./lib/RenderPass.js"></script>
+		<script src="./lib/ShaderPass.js"></script>
+		<script src="./lib/CopyShader.js"></script>
+		<script src="./lib/BadTVShader.js"></script>
+		<script src="./lib/threex.proceduralcity.js"></script>
 
 		<!-- Scenes -->
 	
 		<script src="./src/scenes/cmmnd.js"></script> 
-		<script id="beachscene" src="./src/scenes/beach.js"></script> 
+		<script src="./src/scenes/beach.js"></script> 
 		<script src="./src/scenes/space.js"></script> 
-		<script src="./src/objects.js"> </script>
-		
-		<!-- 
+	
 		<script src="./src/scenes/intersection.js"></script> 
-		<script src="./src/scenes/sunset.js"></script>  -->
+		<script src="./src/scenes/sunset.js"></script> 
+		<script src="./src/scenes/twinpeaks.js"></script>  
 		
-		<script src="./src/scenes/twinpeaks.js"></script>
-		
+		<script src="./src/objects.js"> </script>
 		
 		
 		<script>
@@ -122,7 +121,9 @@
 					this.scenes = { 
 						// test
 						INTRO: "CMMND", 
-						THEWAY: "BEACH"
+						THEWAY: "BEACH",
+						TENTOES: "SPACE",
+						BAGFLIP: "TWINPEAKS",
 						// THEWAY: "SUNSET",
 						// TENTOES: "BEACH",
 						// BAGFLIP: "INTERSECTION",
@@ -137,7 +138,9 @@
 						"TWINPEAKS": new TwinPeaksScene
 					}
 
-				
+					// if scene is initiated
+					this.isInitialized = [0,0,0,0,0]; 
+
 					this.titles = Object.keys(this.songs);
 			
 					// new array of audio sources
@@ -147,7 +150,7 @@
 						this.sources.push(this.context.createMediaElementSource(this.songs[title]));
 					});
 
-					// the current scene being rendered 
+					// the current scene object being rendered 
 					this.currentScene; 	
 					this.scene;	
 					this.currentSong;
@@ -160,7 +163,6 @@
 					const title = this.titles[this.index];
 					return this.songs[title];
 				};
-
 
 				// gets scene to render based off the current scene
 				getScene () { 
@@ -179,12 +181,53 @@
 					return this.volume_array;
 				}
 
+				// play next song
+				playNext(){ 
+
+					// pause the current song
+					this.getAudio().pause();
+					this.getAudio().currentTime = 0;
+					this.currentSong.removeEventListener("ended", this.songEnded);
+					// increment song
+					this.index++;
+					this.playLoop();
+
+				}
+
+				// play prev song
+				playPrev(){ 
+
+					this.getAudio().pause();
+					this.getAudio().currentTime = 0;
+					this.currentSong.removeEventListener("ended", this.songEnded);
+					this.index--; 
+					this.playLoop();
+				
+				}
+
 				// setup webaudio to play next song
 				// add event listener to each song
 				// callback increments index
 				// last callback restarts the index
 				// play first song
+
 				playLoop() { 
+
+					function songEnded(){
+
+						console.log("ended");
+						// // play the next song
+						console.log("play next");
+						this.index++;
+						this.playLoop(); 
+						if (this.index === 6) 
+						{
+							this.index = 0;
+							this.playLoop();
+							console.log('song loop restarted');
+						} // restart audio
+
+					}
 					// play first song
 					const i = this.index;
 					this.currentSong = this.songs[this.titles[i]];
@@ -192,33 +235,28 @@
 					this.scene = this.sceneObjects[this.currentScene];
 					console.log(this.scene, "current scene obj");
 
+					console.log(this.isInitialized[i]);
+					if (!this.isInitialized[i]) {
+						console.log("init scene")
+						this.scene.initScene();
+						this.isInitialized[i] = 1;
+					}
+					else { 
+						this.scene.setObjects();
+					}
+						
 					controls = new THREE.OrbitControls(this.scene.camera);
 					controls.zoomSpeed = .5;
 					// controls.minAzimuthAngle = - Math.PI/2;
 					// controls.maxAzimuthAngle = Math.PI/2;
 					controls.enablePan = true;
 
-					// initializes next scene
-					this.scene.initScene();
-
-					this.currentSong.addEventListener("ended", function(){
-
-							// play the next song
-							console.log("play next");
-							this.index++;
-							this.playLoop(this.index); 
-							if (this.index === 6) 
-							{
-								this.index = 0;
-								this.playLoop(this.index);
-								console.log('song loop restarted');
-							} // restart audio
-						
-						}.bind(this));
+					this.currentSong.addEventListener("ended", songEnded.bind(this) );
 
 					this.getAudio().play();
 					this.sources[i].connect(this.analyser);
 					this.analyser.connect(this.context.destination);
+
 				}
 		
 			}
@@ -258,22 +296,41 @@
 			const textureLoader = new THREE.TextureLoader(manager);
 			const mtlLoader = new THREE.MTLLoader(manager);
 			var controls;
+
+			var renderer = new THREE.WebGLRenderer({alpha: true});
+			renderer.setSize( window.innerWidth, window.innerHeight );
+
 			var audio = new AudioController();;
+
+			/* buttons */ 
+			document.getElementById('next').addEventListener('click', function(){
+				audio.playNext();
+			});
+			document.getElementById('prev').addEventListener('click', function(){
+				audio.playPrev();
+			});
 
 			/* common objects */
 			var car = new THREE.Group();
 			var archLogo;
-			var cliff;
+			var cliff, grass;
 			
 			/* initialize common objects */ 
 			getCar();
 			getArchLogo(); // arch logo
+			getGrass();
 
 			/* initialize renderer */
-			var renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			
 
+			/* post processing effects use these on your scene */
+			// effect composer
+			// each scene has a separate render pass
+			// song ends, 2 seconds to load next scene, shows a bad signal graphic
+			// renderpass is used on ending of one scene and beginning of next
+			// instantiated in initscene? or constructor 
+			// settimeout to call function that disables the renderpass after some time
+			// each scene has own composer and renderpass that uses the badTVPass
+			
 			document.body.appendChild( renderer.domElement );
 
 
@@ -284,7 +341,6 @@
 			initScene();
 			render();
 			// updated scene
-			
 			// use audio.getScene to get the scene class to render 
 			// pass the scene object we need in to render through a callback function that calls render
 			// sceneScene.scene, sceneScene.animate (call these two functions)

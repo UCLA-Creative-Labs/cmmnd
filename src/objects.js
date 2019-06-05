@@ -47,12 +47,48 @@ function getCar() {
 
 }
 
-function getArchLogo() { 
 
-    objLoader.setPath( './assets/' );
+function getGrass() { 
 
     objLoader.load(
-        'archCmmndLogo.obj',
+        './assets/models/obj_Dandelion/Dandelion.obj',
+
+        function ( obj ) {
+        
+            obj.traverse( function ( child ) {
+                     if ( child instanceof THREE.Mesh ) {
+                          child.material = new THREE.MeshStandardMaterial({
+                              color: 0xd3d3d3, 
+                          })
+                         
+                         }
+                     } );
+                    
+            obj.scale.set( .01, .01, .01 );
+
+            grass = obj;
+            
+
+        },
+        
+        function ( xhr ) {
+
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+        },
+        
+        function ( error ) {
+
+            console.log( 'An error happened' );
+
+        }
+    );
+}
+
+function getArchLogo() { 
+
+    objLoader.load(
+        './assets/archCmmndLogo.obj',
 
         function ( obj ) {
         
@@ -118,12 +154,14 @@ function getCliff() {
 }
 
 function getPolygonLogo() { 
+
     var dynamicGeometry = new THREE.IcosahedronBufferGeometry(20, 0);
     polygon = new THREE.Mesh(dynamicGeometry);
     polygon.position.set(0,10,-80);
     polygon.lights = true;
     getLogoTexture(polygon, 3);
     return polygon;
+
 }
 
 /* cmmnd logo texture */ 

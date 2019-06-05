@@ -119,10 +119,19 @@ var count = freq = 0;
 			/* scene setup */
 		}
 
-		setCar(obj) { 
-			obj.rotation.y = Math.PI/2;
-			return obj;
+		setLogo() { 
+			archLogo.position.set(0, 0, 50);
+		}
+
+		setCar() { 
+			car.rotation.y = Math.PI/2;
 			// set position of passed in car object
+		}
+
+		// move the logo
+		setObjects() { 
+			this.setCar();
+			this.setLogo();
 		}
 		
 		initScene() { 
@@ -130,8 +139,12 @@ var count = freq = 0;
 			this.scene.background = new THREE.Color( 0x000000 );
 			this.camera.position.z = 20;
 			
-			this.scene.add(this.setCar(car));
-			car.position.set(0,0,0)
+			this.setObjects();
+			this.scene.add(car);
+			this.scene.add(archLogo)
+
+			car.position.set(0,0,0);
+
 			// initialize scene objects using common object or helper functions
 			// add objects to this.scene
 			let light = new THREE.PointLight(0xFFFBE3, .3);
@@ -152,6 +165,8 @@ var count = freq = 0;
 
 			this.scene.add(this.orbit);
 			
+			this.scene.add(archLogo); 
+			
 		}
 
 		update(pitch_array) {
@@ -162,8 +177,8 @@ var count = freq = 0;
 			
 			this.orbit.rotation.y += .005;
 		
-			logo.rotation.y += .02;
-			logo.rotation.z += .01;
+			archLogo.rotation.y += .02;
+			archLogo.rotation.z += .01;
 		
 			for (var i = 0; i < bufferlen; i++) {
 

@@ -77,24 +77,39 @@ class CMMNDScene {
         this.platform = getPlatform(); //car platform 
         this.mirrors = getMirrors(); //array of mirrors to draw
         // this.logo = getArchLogo();
+
+        // postprocessing of scene
+        this.composer = new THREE.EffectComposer( renderer );
+        this.renderPass = new THREE.RenderPass( this.scene, this.camera );
+        this.composer.addPass( this.renderPass );
+        this.badTVPass = new THREE.ShaderPass( THREE.BadTVShader );
+        this.composer.addPass( this.badTVPass );
+        this.badTVPass.renderToScreen = true;
+
+        console.log(this.composer)
+        console.log(this.badTVPass.renderToScreen)
+
     }
 
-	setCar(obj) { 
+    setCar() { 
+        console.log("set car")
+        car.position.set(0, 4.6, 0)
+        
+        car.rotateY(Math.PI);
 
-        obj.position.z = 0;  
-        obj.position.y = 4.6;
-        obj.rotateY(Math.PI);
-
-        obj.castShadow = true;
-        obj.receiveShadow = true;
-        return obj;
+        car.castShadow = true;
+        car.receiveShadow = true;
         // set position of passed in car object from common objects
     }
     
-    setLogo(obj) { 
-        obj.position.set(-5,12,0);
-        return obj;
+    setLogo() { 
+        archLogo.position.set(-5,17,0);
     }	
+
+    setObjects() { 
+        this.setCar();
+        this.setLogo();
+    }
 
 	initScene() { 
         /* shadow map renderer */ 
@@ -113,14 +128,18 @@ class CMMNDScene {
         // move camera
         this.camera.position.z = 25;
         this.camera.position.y = 3;
-
+        
         for (let mirror of this.mirrors) { 
             this.scene.add(mirror);
         }
 
+        this.setObjects();
+
         this.scene.add(this.platform);
-        this.scene.add(this.setLogo(archLogo));
-        this.platform.add(this.setCar(car));
+        this.platform.add(car);
+        this.platform.add(archLogo);
+
+
         // lights 
         var redlight = new THREE.DirectionalLight( 0x0000ff, .5);
         redlight.castShadow = true;
@@ -145,7 +164,6 @@ class CMMNDScene {
 
         // ambient light
         this.scene.add(new THREE.AmbientLight( 0xffffff, .2));   
-	
 	}
 
 	update() {
