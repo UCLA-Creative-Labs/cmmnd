@@ -44,20 +44,21 @@ class TwinPeaksScene {
     obj.position.y = -5;
     obj.rotateY((7 * Math.PI) / 6);
 
-    obj.children[1].children[0].material = new THREE.MeshStandardMaterial({
-      emissive: 0x111111,
-      color: 0xf4cff3,
-      roughness: 0.5,
-      metalness: 1
-    });
+    // obj.children[4].children[0].material = new THREE.MeshStandardMaterial({
+    //   //   emissive: 0xb20a02,
+    //   emissive: 0x810803,
+    //   color: 0xf4487a,
+    //   roughness: 0.5,
+    //   metalness: 1
+    // });
 
-    obj.children[0].children[0].material = new THREE.MeshStandardMaterial({
-      //   emissive: 0xb20a02,
-      emissive: 0x810803,
-      color: 0xf4487a,
-      roughness: 0.5,
-      metalness: 1
-    });
+    // obj.children[1].children[0].material = new THREE.MeshStandardMaterial({
+    //   //   emissive: 0xb20a02,
+    //   emissive: 0xaaaaaa,
+    //   color: 0xffffff,
+    //   roughness: 0.5,
+    //   metalness: 1
+    // });
 
     console.log(obj);
 
@@ -66,28 +67,40 @@ class TwinPeaksScene {
 
   initScene() {
     this.scene.add(this.setCar(car));
-    this.scene.add(getPlatform());
-    // this.scene.add(cliff);
+    // this.scene.add(getPlatform());
+    this.scene.add(cliff);
+    this.car = car;
+    this.cliff = cliff;
 
     const sunLight = new THREE.DirectionalLight(0xe1edf0, 0.2);
     sunLight.castShadow = true;
     sunLight.position.set(10, 10, 0);
-    const sunLight2 = new THREE.DirectionalLight(0xe1edf0, 0.2);
+    const sunLight2 = new THREE.DirectionalLight(0x161e4f, 0.2);
     sunLight2.castShadow = true;
-    sunLight2.position.set(-10, 10, 0);
-    this.scene.add(sunLight);
+    sunLight2.position.set(-150, 75, 150);
+    // this.scene.add(sunLight);
     this.scene.add(sunLight2);
-    const fogColor = new THREE.Color(0xf1efff);
+
+    var hemisphereLight = new THREE.HemisphereLight(0x161e4f, 0x000000, 0.6);
+
+    var shadowLight = new THREE.DirectionalLight(0xffffff, 0.2);
+
+    shadowLight.position.set(150, 75, 150);
+
+    this.scene.add(hemisphereLight);
+    this.scene.add(shadowLight);
+
+    const fogColor = new THREE.Color(0x19022d);
     this.scene.background = fogColor;
-    this.scene.fog = new THREE.FogExp2(fogColor, 0.01);
+    // this.scene.fog = new THREE.FogExp2(fogColor, 0.01);
 
     const globe = new THREE.Mesh(
       new THREE.SphereGeometry(500),
       new THREE.MeshStandardMaterial({
-        emissive: 0x996632
+        emissive: 0x59412a
       })
     );
-    globe.position.set(0, -500, -50);
+    globe.position.set(0, -525, -50);
     this.scene.add(globe);
 
     // this.composer = new THREE.EffectComposer(renderer);
@@ -102,13 +115,75 @@ class TwinPeaksScene {
     // this.composer.addPass(pixelPass);
     // this.postprocessing = true;
 
+    // Add city
     const city = new THREEx.ProceduralCity();
     this.scene.add(city);
+    this.city = city;
+
+    // Add stars
+    var starQty = 4500;
+    let geometry = new THREE.SphereGeometry(1000, 100, 50);
+
+    let materialOptions = {
+      size: 2.0,
+      //   color: new THREE.Color(0x6721b7),
+      transparency: true,
+      opacity: 0.7
+    };
+
+    let starStuff = new THREE.PointCloudMaterial(materialOptions);
+
+    for (var i = 0; i < starQty; i++) {
+      let starVertex = new THREE.Vector3();
+      starVertex.x = Math.random() * 2000 - 1000;
+      starVertex.y = Math.random() * 2000 - 1000;
+      starVertex.z = Math.random() * 2000 - 1000;
+
+      geometry.vertices.push(starVertex);
+    }
+
+    let stars = new THREE.PointCloud(geometry, starStuff);
+    this.scene.add(stars);
+
+    // Create clouds
+    var numPivots = 3;
+    var numClouds = 7 + Math.floor(Math.random() * 7);
+    const WORLD_RADIUS = 125;
+    this.pivots = [];
+    this.clouds = [];
+    for (var i = 0; i < numPivots; i++) {
+      this.pivots[i] = new THREE.Object3D();
+      this.pivots[i].speed = 1 + Math.random() * 2;
+    }
+
+    for (var i = 0; i < numClouds; i++) {
+      var index = Math.floor(Math.random() * numPivots);
+
+      var angle = Math.random() * Math.PI * 2;
+      var x = WORLD_RADIUS * Math.cos(angle),
+        y = Math.random() * 50 + 20,
+        z = WORLD_RADIUS * Math.sin(angle);
+      var cloud = CreateCloud(this.pivots[index], x, y, z);
+
+      this.clouds.push(cloud);
+      this.scene.add(cloud.mesh);
+    }
+
     this.camera.position.z = 85;
   }
 
   update(pitch_array) {
     // update objects within the scene
+    for (var i = 0; i < this.pivots.length; i++) {
+      this.pivots[i].rotation.y += 0.001 * this.pivots[i].speed;
+    }
+
+    for (var i = 0; i < this.clouds.length; i++) {
+      this.clouds[i].update();
+    }
+
+    this.car.rotation.y += 0.001;
+    this.cliff.rotation.z -= 0.001;
   }
 
   animate() {
@@ -118,4 +193,52 @@ class TwinPeaksScene {
   }
 }
 
-function animateTwinPeaks() {}
+var CreateCloud = function(pivot, x, y, z) {
+  var mesh = new THREE.Object3D();
+
+  var mat = new THREE.MeshPhongMaterial({
+    color: 0x3f3772,
+    emissive: 0xcbd9ef,
+    side: THREE.DoubleSide,
+    opacity: 0.5,
+    transparent: true
+  });
+
+  var nBlocs = 3 + Math.floor(Math.random() * 3);
+  for (var i = 0; i < nBlocs; i++) {
+    var geom =
+      Math.random() > 0.7
+        ? new THREE.SphereGeometry(20, 6, 6)
+        : new THREE.BoxGeometry(20, 20, 20);
+
+    var m = new THREE.Mesh(geom, mat);
+
+    m.position.x = i * 15;
+    m.position.y = Math.random() * 10;
+    m.position.z = Math.random() * 10;
+    m.rotation.z = Math.random() * Math.PI * 2;
+    m.rotation.y = Math.random() * Math.PI * 2;
+
+    var s = 0.1 + Math.random() * 0.9;
+    m.scale.set(s, s, s);
+
+    m.castShadow = true;
+    m.receiveShadow = false;
+
+    mesh.add(m);
+  }
+
+  mesh.position.set(x, y, z);
+
+  pivot.add(mesh);
+
+  var speed = Math.random() * 0.8 + 0.8;
+  function update() {
+    mesh.rotation.x += speed * 0.0015;
+  }
+
+  return {
+    mesh: pivot,
+    update: update
+  };
+};

@@ -68,9 +68,29 @@
 		<script src="./src/scenes/intersection.js"></script> 
 		<script src="./src/scenes/sunset.js"></script>  -->
 		
+		<script type="vsh" id="vertexShader">
+			attribute vec3 translate;
+			attribute vec3 scale;
+			varying float vScale;
+			varying vec2 vUv;
+			void main(){
+				vUv = uv;
+				vec4 mvPosition = modelViewMatrix * vec4( translate, 1.0 );
+				
+				mvPosition.xyz += vec3(position.x * scale.x, position.y * scale.y, position.z * scale.z);
+				gl_Position = projectionMatrix * mvPosition;
+			}
+		</script>
+		<script type="fsh" id="fragmentShader">
+			precision highp float;
+			uniform sampler2D map;
+			varying float vScale;
+			varying vec2 vUv;
+			void main() {
+				gl_FragColor = vec4(.5, .5, .5, .5 );
+			}
+		</script>
 		<script src="./src/scenes/twinpeaks.js"></script>
-		
-		
 		
 		<script>
 			/* TODO: 
@@ -186,7 +206,8 @@
 					const i = this.index;
 					this.currentSong = this.songs[this.titles[i]];
 					this.currentScene = this.scenes[this.titles[i]];
-					this.scene = this.sceneObjects[this.currentScene];
+					// this.scene = this.sceneObjects[this.currentScene];
+					this.scene = this.sceneObjects['TWINPEAKS']
 					console.log(this.scene, "current scene obj");
 
 					controls = new THREE.OrbitControls(this.scene.camera);
@@ -213,7 +234,7 @@
 						
 						}.bind(this));
 
-					this.getAudio().play();
+					// this.getAudio().play();
 					this.sources[i].connect(this.analyser);
 					this.analyser.connect(this.context.destination);
 				}
