@@ -30,12 +30,14 @@
 
 		canvas { 
 			
-			background: #8200c9; /* Old browsers */
-			background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
-			background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* Chrome10-25,Safari5.1-6 */
-			background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+			background: #120A8F; /* Old browsers */
+			/* background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
+			/* background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); Chrome10-25,Safari5.1-6 */
+			/* background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */ 
 			
 		 }
+
+
 	</style> 
 	<head>
 		<meta charset=utf-8>
@@ -43,54 +45,35 @@
 		<!-- <div class="mediaPlayer"> </div> -->
 	</head>
 	<body> 
-		
+		<button id="prev">prev</button>
+		<button id="next">next</button>
+		<button id="play">play</button>
 	</body>
         <!-- Load libs -->
 		<script src="./lib/three.min.js"></script>
+		<script src="./lib/tween.min.js"></script>
 		<script src="./lib/OrbitControls.js"></script>
 		<script src="./lib/OBJLoader.js"></script>
 		<script src="./lib/MTLLoader.js"></script>
-		<script src="./lib/threex.proceduralcity.js"></script>
-		<!-- <script src="./lib/CopyShader.js"></script>
 		<script src="./lib/EffectComposer.js"></script>
-        <script src="./lib/RenderPass.js"></script>
-        <script src="./lib/ShaderPass.js"></script>
-		 -->
+		<script src="./lib/RenderPass.js"></script>
+		<script src="./lib/ShaderPass.js"></script>
+		<script src="./lib/CopyShader.js"></script>
+		<script src="./lib/BadTVShader.js"></script>
+		<script src="./lib/threex.proceduralcity.js"></script>
 
 		<!-- Scenes -->
 	
 		<script src="./src/scenes/cmmnd.js"></script> 
-		<script id="beachscene" src="./src/scenes/beach.js"></script> 
+		<script src="./src/scenes/beach.js"></script> 
 		<script src="./src/scenes/space.js"></script> 
+	
+		<script src="./src/scenes/intersection.js"></script> 
+		<script src="./src/scenes/sunset.js"></script> 
+		<script src="./src/scenes/twinpeaks.js"></script>  
+		
 		<script src="./src/objects.js"> </script>
 		
-		<!-- 
-		<script src="./src/scenes/intersection.js"></script> 
-		<script src="./src/scenes/sunset.js"></script>  -->
-		
-		<script type="vsh" id="vertexShader">
-			attribute vec3 translate;
-			attribute vec3 scale;
-			varying float vScale;
-			varying vec2 vUv;
-			void main(){
-				vUv = uv;
-				vec4 mvPosition = modelViewMatrix * vec4( translate, 1.0 );
-				
-				mvPosition.xyz += vec3(position.x * scale.x, position.y * scale.y, position.z * scale.z);
-				gl_Position = projectionMatrix * mvPosition;
-			}
-		</script>
-		<script type="fsh" id="fragmentShader">
-			precision highp float;
-			uniform sampler2D map;
-			varying float vScale;
-			varying vec2 vUv;
-			void main() {
-				gl_FragColor = vec4(.5, .5, .5, .5 );
-			}
-		</script>
-		<script src="./src/scenes/twinpeaks.js"></script>
 		
 		<script>
 			/* TODO: 
@@ -127,7 +110,7 @@
 
 					/* audio and scene render */
 					this.songs = { 
-						INTRO: new Audio("./assets/cmmnd_live/1.wav"),
+						INTRO: new Audio("./assets/cmmnd_live/4.wav"),
 						THEWAY: new Audio("./assets/cmmnd_live/2.wav"),
 						TENTOES: new Audio("./assets/cmmnd_live/3.wav"),
 						BAGFLIP: new Audio("./assets/cmmnd_live/4.wav"),
@@ -139,7 +122,10 @@
 					this.scenes = { 
 						// test
 						INTRO: "CMMND", 
-						THEWAY: "BEACH"
+						THEWAY: "BEACH",
+						TENTOES: "SPACE",
+						BAGFLIP: "TWINPEAKS",
+						SUICIDE: "INTERSECTION",
 						// THEWAY: "SUNSET",
 						// TENTOES: "BEACH",
 						// BAGFLIP: "INTERSECTION",
@@ -148,13 +134,15 @@
 					}
 
 					this.sceneObjects = { 
-						"CMMND": new CMMNDScene,
+						"CMMND": new IntersectionScene,
 						"BEACH": new BeachScene,
 						"SPACE": new SpaceScene,
-						"TWINPEAKS": new TwinPeaksScene
+						"TWINPEAKS": new TwinPeaksScene,
 					}
 
-				
+					// if scene is initiated
+					this.isInitialized = [0,0,0,0,0]; 
+
 					this.titles = Object.keys(this.songs);
 			
 					// new array of audio sources
@@ -164,7 +152,7 @@
 						this.sources.push(this.context.createMediaElementSource(this.songs[title]));
 					});
 
-					// the current scene being rendered 
+					// the current scene object being rendered 
 					this.currentScene; 	
 					this.scene;	
 					this.currentSong;
@@ -177,7 +165,6 @@
 					const title = this.titles[this.index];
 					return this.songs[title];
 				};
-
 
 				// gets scene to render based off the current scene
 				getScene () { 
@@ -196,47 +183,82 @@
 					return this.volume_array;
 				}
 
+				// play next song
+				playNext(){ 
+
+					// pause the current song
+					this.getAudio().pause();
+					this.getAudio().currentTime = 0;
+					this.currentSong.removeEventListener("ended", this.songEnded);
+					// increment song
+					this.index++;
+					this.playLoop();
+
+				}
+
+				// play prev song
+				playPrev(){ 
+
+					this.getAudio().pause();
+					this.getAudio().currentTime = 0;
+					this.currentSong.removeEventListener("ended", this.songEnded);
+					this.index--; 
+					this.playLoop();
+				
+				}
+
 				// setup webaudio to play next song
 				// add event listener to each song
 				// callback increments index
 				// last callback restarts the index
 				// play first song
+
 				playLoop() { 
+
+					function songEnded(){
+
+						console.log("ended");
+						// // play the next song
+						console.log("play next");
+						this.index++;
+						this.playLoop(); 
+						if (this.index === 6) 
+						{
+							this.index = 0;
+							this.playLoop();
+							console.log('song loop restarted');
+						} // restart audio
+
+					}
 					// play first song
 					const i = this.index;
 					this.currentSong = this.songs[this.titles[i]];
 					this.currentScene = this.scenes[this.titles[i]];
-					// this.scene = this.sceneObjects[this.currentScene];
-					this.scene = this.sceneObjects['TWINPEAKS']
+					this.scene = this.sceneObjects[this.currentScene];
 					console.log(this.scene, "current scene obj");
 
+					console.log(this.isInitialized[i]);
+					if (!this.isInitialized[i]) {
+						console.log("init scene")
+						this.scene.initScene();
+						this.isInitialized[i] = 1;
+					}
+					else { 
+						this.scene.setObjects();
+					}
+						
 					controls = new THREE.OrbitControls(this.scene.camera);
 					controls.zoomSpeed = .5;
 					// controls.minAzimuthAngle = - Math.PI/2;
 					// controls.maxAzimuthAngle = Math.PI/2;
 					controls.enablePan = true;
 
-					// initializes next scene
-					this.scene.initScene();
+					this.currentSong.addEventListener("ended", songEnded.bind(this) );
 
-					this.currentSong.addEventListener("ended", function(){
-
-							// play the next song
-							console.log("play next");
-							this.index++;
-							this.playLoop(this.index); 
-							if (this.index === 6) 
-							{
-								this.index = 0;
-								this.playLoop(this.index);
-								console.log('song loop restarted');
-							} // restart audio
-						
-						}.bind(this));
-
-					// this.getAudio().play();
+					this.getAudio().play();
 					this.sources[i].connect(this.analyser);
 					this.analyser.connect(this.context.destination);
+
 				}
 		
 			}
@@ -256,12 +278,8 @@
 				// initialize audio when objects load
 						/* audio controller controls audio + scene integration */ 	
 				console.log( 'Loading complete!');
-				audio.playLoop();
+				// display play button
 				console.log( car );
-
-				//instantiate beach scene
-				//initialize scene objects 
-				render(audio.scene);
 
 
 			}
@@ -276,29 +294,60 @@
 			const textureLoader = new THREE.TextureLoader(manager);
 			const mtlLoader = new THREE.MTLLoader(manager);
 			var controls;
-			var audio = new AudioController();;
+
+			var renderer = new THREE.WebGLRenderer({alpha: true});
+			renderer.setSize( window.innerWidth, window.innerHeight );
 
 			/* common objects */
-			var car = new THREE.Group();
-			var archLogo;
-			var cliff;
-			
+			var audio = new AudioController();
+				var car = new THREE.Group();
+				var archLogo;
+				var cliff, grass;
+
+			/* buttons */ 
+			document.getElementById('next').addEventListener('click', function(){
+				audio.playNext();
+			});
+			document.getElementById('prev').addEventListener('click', function(){
+				audio.playPrev();
+			});
+
+			document.getElementById('play').addEventListener("click",  function(){
+				audio.context.resume();
+				audio.playLoop();
+				
+				//instantiate beach scene
+				//initialize scene objects 
+				render(audio.scene);
+				
+			});
+	
 			/* initialize common objects */ 
-			getCar();
-			getArchLogo(); // arch logo
+				getCar();
+				getArchLogo(); // arch logo
+				getGrass();
 
 			/* initialize renderer */
-			var renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			
 
+			/* post processing effects use these on your scene */
+			// effect composer
+			// each scene has a separate render pass
+			// song ends, 2 seconds to load next scene, shows a bad signal graphic
+			// renderpass is used on ending of one scene and beginning of next
+			// instantiated in initscene? or constructor 
+			// settimeout to call function that disables the renderpass after some time
+			// each scene has own composer and renderpass that uses the badTVPass
+			
 			document.body.appendChild( renderer.domElement );
 
 
 
 
+			// initPlatform();
+			// BeachScene();
+			// initScene();
+			// render();
 			// updated scene
-			
 			// use audio.getScene to get the scene class to render 
 			// pass the scene object we need in to render through a callback function that calls render
 			// sceneScene.scene, sceneScene.animate (call these two functions)
