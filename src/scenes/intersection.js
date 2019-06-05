@@ -263,9 +263,12 @@ class IntersectionScene {
         let light = new THREE.PointLight(0xFFFFFF);
         light.position.set(3, -3, 18)
         this.scene.add(light)
-    
-        let ambientLight = new THREE.AmbientLight( 0xbc13fe ); // soft white light
+
+        let ambientLight = new THREE.AmbientLight( 0xFFFFFF ); // soft white light
         this.scene.add(ambientLight);
+    
+        // let ambientLight = new THREE.AmbientLight( 0xbc13fe ); // soft white light
+        // this.scene.add(ambientLight);
     
         for (let i = 0; i < 200; i += 10) {
             let blue_light = new THREE.PointLight(0x0000FF, 1., 100);
@@ -325,11 +328,37 @@ class IntersectionScene {
         }
 
         for (let i = 0; i < this.donuts.length; i++) {
-            this.donuts[i].rotation.x += 0.05
-            this.donuts[i].rotation.y += 0.05
 
-            let a = this.donut_amplitudes[i] += 1
-            this.donuts[i].position.y = a * this.donut_y_positions[i] * Math.sin(this.delta)
+            if (pitch_array[1]/2000 < 0.04) {
+                this.donuts[i].rotation.x += 0.04
+                this.donuts[i].rotation.y += 0.04
+            } else {
+                this.donuts[i].rotation.x += pitch_array[1]/2000
+                this.donuts[i].rotation.y += pitch_array[1]/2000
+            }
+
+            if (pitch_array[1] <= 80) {
+                if (i % 2 == 0) {
+                    this.donuts[i].material.color.set(0xff69b4)
+                } else {
+                    this.donuts[i].material.color.set(0xffff00)
+                }
+            } else if (pitch_array[1] > 80 && pitch_array[1] <= 160) {
+                if (i % 3 == 0) {
+                    this.donuts[i].material.color.set(0x3eb0f7)
+                } else {
+                    this.donuts[i].material.color.set(0x8A2BE2)
+                }
+            } else {
+                if (i % 4 == 0) {
+                    this.donuts[i].material.color.set(0x00FF00)
+                } else {
+                    this.donuts[i].material.color.set(0x3eb0f7)
+                }
+            }
+
+            // let a = this.donut_amplitudes[i] + 1000
+            // this.donuts[i].position.y = (a * Math.sin(this.delta / 1000)) + this.donut_y_positions[i]
         }
         
         if (pitch_array[1]/3500 < 0.04) {
