@@ -6,7 +6,7 @@ function getCar() {
 
     var idx = 0;
 
-    mtlLoader.setPath( './assets/models/car_model/' );
+    mtlLoader.setPath( '/cmmnd/assets/models/car_model/' );
 
     objFiles.forEach( (objFile) => { 
 
@@ -17,7 +17,7 @@ function getCar() {
                 materials.preload();
                     // load a car
                 objLoader.setMaterials( materials );	
-                objLoader.setPath( './assets/models/car_model/' );
+                objLoader.setPath( '/cmmnd/assets/models/car_model/' );
                 objLoader.load( objFile + '.obj',
 
                     function ( obj ) {
