@@ -170,7 +170,7 @@ function getDonuts() {
     let donuts = []
     
     // generate various sizes of donuts
-    for (let i = 0; i <= 100; i++) {
+    for (let i = 0; i <= 200; i++) {
         // donut_geo = new THREE.TorusGeometry(1.5, 1, 16, 100)
 
         if (i % 2 == 0) {
@@ -181,9 +181,9 @@ function getDonuts() {
 
         let donut = new THREE.Mesh(donut_geo, donut_material);
 
-        donut.position.x = (Math.random() * 200 - 100)
-        donut.position.y = (Math.random() * 100 - 30)
-        donut.position.z = (Math.random() * 200 - 100)
+        donut.position.x = (Math.random() * 300 - 140)
+        donut.position.y = (Math.random() * 30 + 80)
+        donut.position.z = (Math.random() * 200 - 90)
         
         if (i % 2 == 0) {
             donut.rotation.x = Math.PI/3
@@ -333,8 +333,14 @@ class IntersectionScene {
                 this.donuts[i].rotation.x += 0.04
                 this.donuts[i].rotation.y += 0.04
             } else {
-                this.donuts[i].rotation.x += pitch_array[1]/2000
-                this.donuts[i].rotation.y += pitch_array[1]/2000
+                if (i % 3 == 0) {
+                    this.donuts[i].rotation.x += pitch_array[1]/2000
+                    this.donuts[i].rotation.y += pitch_array[1]/2000
+                }
+                else {
+                    this.donuts[i].rotation.x += -pitch_array[1]/2000
+                    this.donuts[i].rotation.y += -pitch_array[1]/2000
+                }
             }
 
             if (pitch_array[1] <= 80) {
