@@ -58,12 +58,13 @@ function getStereo() {
                      if ( child instanceof THREE.Mesh ) {
                           child.material = new THREE.MeshStandardMaterial({
                               color: 0xd3d3d3, 
-                          })
+                              metalness: .5
+                          });
                          
                          }
                      } );
                     
-            obj.scale.set( .01, .01, .01 );
+            obj.scale.set( .1, .1, .1 );
 
             stereo = obj;
             

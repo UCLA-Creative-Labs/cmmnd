@@ -248,10 +248,14 @@ class BeachScene {
     }
 
     initScene() { 
+        // set other params  
+        renderer.setClearColor(0xffffff, 0);
+        this.scene.background = null;
+        renderer.alpha = true;
 
         this.setObjects();
-        // set other params  
-        renderer.alpha = false;
+        
+        
         this.camera.position.z = 80;
         // add car after place is set
         this.scene.add(car);
@@ -301,7 +305,7 @@ class BeachScene {
     }
 
     update(pitch_array) { 
-        this.sun.rotation.y =+ .005;
+        this.sun.rotation.x += .005;
 
         var prevSpeed = 0 ; 
         var speed = 0;

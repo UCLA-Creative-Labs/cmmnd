@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+	<link href="https://fonts.googleapis.com/css?family=Titillium+Web&display=swap" rel="stylesheet">
 	<style> 
 		#audio{ 
 			display: none;
@@ -25,16 +26,63 @@
 			background-size:100% 100%;
 
 		}
+
+		.loading-screen{ 
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background-color: black;
+			position:relative;
+			background-image: url("./assets/CMMND_spinning.gif");
+			background-position: center;
+			background-size: 600px 300px;
+			background-repeat: no-repeat;
+			width: 100vw;
+			height: 100vh;
+			text-align: center;
+		}
 		
+		/* .play-screen { 
+			position: fixed;
+			display:none;
+			background-color: black;
+			width: 100vw;
+			height: 100vh;
+		} */
+
+		.button.play {
+			margin: auto;
+			margin-top: 61%;
+			margin-bottom: 39%;
+			border:none;
+			background-color:black;
+			width: auto;
+		}
+		
+		p { 
+			color: white;
+			font-family: 'Titillium Web', sans-serif;
+			font-size: 18px;
+			animation: blinker 3s linear infinite;
+		}
+		@keyframes blinker{
+			50% {
+				opacity: 0;
+			}
+		}
+
+		button:focus {outline:0;}
+
+		.controls { 
+			position: fixed;
+			display: none;
+		}
 		body { margin: 0; }
 
 		canvas { 
-			
-			background: #120A8F; /* Old browsers */
-			/* background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
-			/* background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); Chrome10-25,Safari5.1-6 */
-			/* background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */ 
-			
+			background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
+			background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); 
+			background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); 
 		 }
 
 
@@ -42,15 +90,19 @@
 	<head>
 		<meta charset=utf-8>
 		<title>CMMND EP X Creative Labs</title>
-		<!-- <div class="mediaPlayer"> </div> -->
 	</head>
 	<body> 
-		<button id="prev">prev</button>
-		<button id="next">next</button>
-		<button id="play">play</button>
-		<div class="loading"> 
-			<img src=""> </img> 
+		<div class="loading-screen">
+				<audio autoplay> 
+					<source src="./assets/audio/loading_audio.mp3">
+				</audio>
 		</div>
+		<div class="controls"> 
+			<button id="prev">prev</button>
+			<button id="next">next</button>
+		</div>
+	
+	
 
 		
 	</body>
@@ -143,6 +195,7 @@
 						"BEACH": new BeachScene,
 						"SPACE": new SpaceScene,
 						"TWINPEAKS": new TwinPeaksScene,
+						"INTERSECTION": new IntersectionScene
 					}
 
 					// if scene is initiated
@@ -279,7 +332,42 @@
 			};
 
 			manager.onLoad = function () {
+				setTimeout(function() { 
 
+					/* remove loading screen and audio */ 
+					let loading = document.querySelector('.loading-screen');
+					while (loading.firstChild) {
+    					loading.removeChild(loading.firstChild);
+					}
+				
+					let btn = document.createElement("BUTTON");
+
+					btn.classList += " play button";
+					btn.id = "play"
+					btn.innerHTML = '<p>click to play</p>'
+					loading.appendChild(btn);
+
+					function playVis() { 
+						// add prev buttons 
+						let playerControls = document.querySelector('.controls');
+						playerControls.style.display = "block";
+
+
+						console.log("play");
+						audio.context.resume();
+						audio.playLoop();
+						render(audio.scene);
+						document.removeEventListener("click", playVis);
+						loading.parentNode.removeChild(loading);
+					}
+
+					document.addEventListener("click", playVis);
+					// let play = document.querySelector('.play-screen');
+					// play.style.display = "block";
+
+				}, 2000)
+				
+				
 				// initialize audio when objects load
 				console.log( 'Loading complete!');
 				// display play button
@@ -315,17 +403,7 @@
 				audio.playPrev();
 			});
 
-			document.getElementById('play').addEventListener("click",  function(){
-				console.log("play");
-
-				audio.context.resume();
-				audio.playLoop();
-				
-				//instantiate beach scene
-				//initialize scene objects 
-				render(audio.scene);
-				
-			});
+	
 	
 			/* initialize common objects */ 
 			getCar();

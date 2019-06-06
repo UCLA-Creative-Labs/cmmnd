@@ -142,11 +142,11 @@ var count = freq = 0;
 		}
 
 		setLogo() { 
-			archLogo.position.set(0, 0, 30);
+			archLogo.position.set(0, 0, -30);
 		}
 
 		setStereo() { 
-			stereo.position.set(0, -30, 0);
+			stereo.position.set(-30, 0, 0);
 		}
 
 		setCar() { 
@@ -203,6 +203,7 @@ var count = freq = 0;
 			archLogo.rotation.y += .02;
 			archLogo.rotation.z += .01;
 			stereo.rotation.z += .01;
+			stereo.rotation.y += .02;
 			
 
 			for (var i = 0; i < volume_array.length; i++) { 
@@ -215,6 +216,7 @@ var count = freq = 0;
 					console.log( "change");
 					this.scene.background = randomColor();
 					this.background = false;
+					stereo.scale.set(.105,.105,.105);
 					// wait 10 seconds to set background to true
 					// setTimeout(function() {
 			
@@ -222,11 +224,12 @@ var count = freq = 0;
 					// }.bind(this), 1000);
 					setTimeout(function() {
 						this.background = true;
+						stereo.scale.set(.1,.1,.1);
 						
 					}.bind(this), 1000);
 				}
 				else if ( vol > 180 ) { 
-					this.orbit.rotation.y += .0003 * norm;
+					this.orbit.rotation.y += .00003 * norm;
 				}
 					
 				this.orbit.rotation.y += .00001 * norm;
