@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+	<link href="https://fonts.googleapis.com/css?family=Titillium+Web&display=swap" rel="stylesheet">
 	<style> 
 		#audio{ 
 			display: none;
@@ -25,59 +26,125 @@
 			background-size:100% 100%;
 
 		}
+
+		.loading-screen{ 
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background-color: black;
+			position:relative;
+			background-image: url("./assets/CMMND_spinning.gif");
+			background-position: center;
+			background-size: 600px 300px;
+			background-repeat: no-repeat;
+			width: 100vw;
+			height: 100vh;
+			text-align: center;
+		}
 		
+		/* .play-screen { 
+			position: fixed;
+			display:none;
+			background-color: black;
+			width: 100vw;
+			height: 100vh;
+		} */
+
+		.button.play {
+			margin: auto;
+			margin-top: 61%;
+			margin-bottom: 39%;
+			border:none;
+			background-color:black;
+			width: auto;
+		}
+		
+		p { 
+			color: white;
+			font-family: 'Titillium Web', sans-serif;
+			font-size: 18px;
+			animation: blinker 3s linear infinite;
+		}
+		@keyframes blinker{
+			50% {
+				opacity: 0;
+			}
+		}
+
+		button:focus {outline:0;}
+
+		.controls { 
+			position: fixed;
+			display: none;
+		}
 		body { margin: 0; }
 
 		canvas { 
-			
-			background: #8200c9; /* Old browsers */
 			background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
-			background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* Chrome10-25,Safari5.1-6 */
-			background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-			
+			background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); 
+			background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); 
 		 }
+
+
 	</style> 
 	<head>
 		<meta charset=utf-8>
 		<title>CMMND EP X Creative Labs</title>
-		<!-- <div class="mediaPlayer"> </div> -->
 	</head>
 	<body> 
+		<div class="loading-screen">
+				<audio autoplay> 
+					<source src="./assets/audio/loading_audio.mp3">
+				</audio>
+		</div>
+		<div class="controls"> 
+			<button id="prev">prev</button>
+			<button id="next">next</button>
+		</div>
+	
+	
+
 		
 	</body>
         <!-- Load libs -->
 		<script src="./lib/three.min.js"></script>
+		<script src="./lib/tween.min.js"></script>
 		<script src="./lib/OrbitControls.js"></script>
 		<script src="./lib/OBJLoader.js"></script>
 		<script src="./lib/MTLLoader.js"></script>
-		
-		
+		<script src="./lib/EffectComposer.js"></script>
+		<script src="./lib/RenderPass.js"></script>
+		<script src="./lib/ShaderPass.js"></script>
+		<script src="./lib/CopyShader.js"></script>
+		<script src="./lib/BadTVShader.js"></script>
+		<script src="./lib/threex.proceduralcity.js"></script>
 
 		<!-- Scenes -->
 	
-		<script id="beachscene" src="./src/scenes/beach.js"></script> 
-		<script src="./src/objects.js"> </script>
-		<!-- <script src="./src/scenes/space.js"></script>  -->
-		<!-- <script src="./src/scenes/cmmnd.js"></script> 
+		<script src="./src/scenes/cmmnd.js"></script> 
+		<script src="./src/scenes/beach.js"></script> 
+		<script src="./src/scenes/space.js"></script> 
+	
 		<script src="./src/scenes/intersection.js"></script> 
 		<script src="./src/scenes/sunset.js"></script> 
+		<script src="./src/scenes/twinpeaks.js"></script>  
 		
-		<script src="./src/scenes/twinpeaks.js"></script>  -->
-		
+		<script src="./src/objects.js"> </script>
 		
 		
 		<script>
 			/* TODO: 
 				- add scripts dynamically
 				- sunset scene
-				- scene merging 
+				- scene merging*** (works)
+					- fix positioning bug
 				- post processing effect
 				- play audio in succession (done)
+				- loading manager (wait for car to load before beginning scene)
+					- on load to play audio
 			*/ 
 
 			const context = window.AudioContext || window.webkitAudioContext;
-
-			var clock = new THREE.Clock();
 
 			/* 
 			audioController object 
@@ -86,18 +153,21 @@
 				controls order of scenes in playloop()
 			*/ 
 			class AudioController { 
-			//web audio api stuff
 				constructor() { 
-
+					/* web audio stuff */
 					this.context = new context;
 					this.analyser = this.context.createAnalyser();
-					this.analyser.smoothingTimeConstant = .8;
+					this.analyser.smoothingTimeConstant = .90;
 					this.bufferlen = this.analyser.frequencyBinCount;
 					this.pitch_array = new Uint8Array(this.bufferlen);
 					this.volume_array = new Uint8Array(this.bufferlen);
 
+					/* animation stuff */
+					this.animationID;
+
+					/* audio and scene render */
 					this.songs = { 
-						INTRO: new Audio("./assets/cmmnd_live/1.wav"),
+						INTRO: new Audio("./assets/cmmnd_live/4.wav"),
 						THEWAY: new Audio("./assets/cmmnd_live/2.wav"),
 						TENTOES: new Audio("./assets/cmmnd_live/3.wav"),
 						BAGFLIP: new Audio("./assets/cmmnd_live/4.wav"),
@@ -105,19 +175,32 @@
 						INDAROCKET: new Audio("./assets/cmmnd_live/6.wav"),
 					}
 
-					// scene name to audio mapping
+					/* scene name to audio mapping */
 					this.scenes = { 
 						// test
-						INTRO: "BEACH", 
-						THEWAY: "SPACE"
-						// INTRO: "CMMND", 
+						INTRO: "CMMND", 
+						THEWAY: "BEACH",
+						TENTOES: "SPACE",
+						BAGFLIP: "TWINPEAKS",
+						SUICIDE: "INTERSECTION",
 						// THEWAY: "SUNSET",
 						// TENTOES: "BEACH",
 						// BAGFLIP: "INTERSECTION",
 						// SUICIDE: "TWINPEAKS",
 						// INDAROCKET: "SPACE",
 					}
-				
+
+					this.sceneObjects = { 
+						"CMMND": new CMMNDScene,
+						"BEACH": new BeachScene,
+						"SPACE": new SpaceScene,
+						"TWINPEAKS": new TwinPeaksScene,
+						"INTERSECTION": new IntersectionScene
+					}
+
+					// if scene is initiated
+					this.isInitialized = [0,0,0,0,0]; 
+
 					this.titles = Object.keys(this.songs);
 			
 					// new array of audio sources
@@ -127,13 +210,13 @@
 						this.sources.push(this.context.createMediaElementSource(this.songs[title]));
 					});
 
-					// the current scene being rendered 
-					this.currentScene; 		
+					// the current scene object being rendered 
+					this.currentScene; 	
+					this.scene;	
 					this.currentSong;
 					this.index = 0;
 
 				}
-
 		
 				// returns the audio for the next song
 				getAudio () { 
@@ -141,16 +224,45 @@
 					return this.songs[title];
 				};
 
+				// gets scene to render based off the current scene
+				getScene () { 
+					return this.sceneObjects[this.currentScene];
+				}
 				
+				// web audio freq data
 				getFreqData() { 
 					this.analyser.getByteFrequencyData(this.pitch_array);
 					return this.pitch_array;
 				}
 
-				
+				// web audio vol data
 				getVolumeData() {
 					this.analyser.getByteTimeDomainData(this.volume_array);
 					return this.volume_array;
+				}
+
+				// play next song
+				playNext(){ 
+
+					// pause the current song
+					this.getAudio().pause();
+					this.getAudio().currentTime = 0;
+					this.currentSong.removeEventListener("ended", this.songEnded);
+					// increment song
+					this.index++;
+					this.playLoop();
+
+				}
+
+				// play prev song
+				playPrev(){ 
+
+					this.getAudio().pause();
+					this.getAudio().currentTime = 0;
+					this.currentSong.removeEventListener("ended", this.songEnded);
+					this.index--; 
+					this.playLoop();
+				
 				}
 
 				// setup webaudio to play next song
@@ -158,24 +270,48 @@
 				// callback increments index
 				// last callback restarts the index
 				// play first song
+
 				playLoop() { 
 
+					function songEnded(){
+
+						console.log("ended");
+						// // play the next song
+						console.log("play next");
+						this.index++;
+						this.playLoop(); 
+						if (this.index === 6) 
+						{
+							this.index = 0;
+							this.playLoop();
+							console.log('song loop restarted');
+						} // restart audio
+
+					}
 					// play first song
 					const i = this.index;
 					this.currentSong = this.songs[this.titles[i]];
-					this.currentSong.addEventListener("ended", function(){
+					this.currentScene = this.scenes[this.titles[i]];
+					this.scene = this.sceneObjects[this.currentScene];
+					console.log(this.scene, "current scene obj");
 
-							// play the next song
-							console.log("play next")
-							this.index++;
-							this.playLoop(this.index); 
-							if (this.index === 6) 
-							{
-								console.log('song loop ended') 
-								return; 
-							} // restart audio
+					console.log(this.isInitialized[i]);
+					if (!this.isInitialized[i]) {
+						console.log("init scene")
+						this.scene.initScene();
+						this.isInitialized[i] = 1;
+					}
+					else { 
+						this.scene.setObjects();
+					}
 						
-						}.bind(this));
+					controls = new THREE.OrbitControls(this.scene.camera);
+					controls.zoomSpeed = .5;
+					// controls.minAzimuthAngle = - Math.PI/2;
+					// controls.maxAzimuthAngle = Math.PI/2;
+					controls.enablePan = true;
+
+					this.currentSong.addEventListener("ended", songEnded.bind(this) );
 
 					this.getAudio().play();
 					this.sources[i].connect(this.analyser);
@@ -185,62 +321,130 @@
 		
 			}
 
-			/* play loop on click */ 
-			const audio = new AudioController(); 
-			audio.playLoop();
-			
-			var scene = new THREE.Scene();
+			/* three.js initialization */
+			const clock = new THREE.Clock();
+			const manager = new THREE.LoadingManager();
 
-			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+			manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
+
+				console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+
+			};
+
+			manager.onLoad = function () {
+				setTimeout(function() { 
+
+					/* remove loading screen and audio */ 
+					let loading = document.querySelector('.loading-screen');
+					while (loading.firstChild) {
+    					loading.removeChild(loading.firstChild);
+					}
+				
+					let btn = document.createElement("BUTTON");
+
+					btn.classList += " play button";
+					btn.id = "play"
+					btn.innerHTML = '<p>click to play</p>'
+					loading.appendChild(btn);
+
+					function playVis() { 
+						// add prev buttons 
+						let playerControls = document.querySelector('.controls');
+						playerControls.style.display = "block";
+
+
+						console.log("play");
+						audio.context.resume();
+						audio.playLoop();
+						render(audio.scene);
+						document.removeEventListener("click", playVis);
+						loading.parentNode.removeChild(loading);
+					}
+
+					document.addEventListener("click", playVis);
+					// let play = document.querySelector('.play-screen');
+					// play.style.display = "block";
+
+				}, 2000)
+				
+				
+				// initialize audio when objects load
+				console.log( 'Loading complete!');
+				// display play button
+
+
+			}
+
+			manager.onError = function ( url ) {
+
+				console.log( 'There was an error loading ' + url );
+
+			};
+
+			const objLoader = new THREE.OBJLoader(manager);
+			const textureLoader = new THREE.TextureLoader(manager);
+			const mtlLoader = new THREE.MTLLoader(manager);
+			var controls;
+
+			var renderer = new THREE.WebGLRenderer({alpha: true});
+			renderer.setSize( window.innerWidth, window.innerHeight );
+
+			/* common objects */
+			var car = new THREE.Group();
+			var cliff, grass, stereo, archLogo;
+
+			const audio = new AudioController;
+			
+			/* buttons */ 
+			document.getElementById('next').addEventListener('click', function(){
+				audio.playNext();
+			});
+			document.getElementById('prev').addEventListener('click', function(){
+				audio.playPrev();
+			});
+
+	
+	
+			/* initialize common objects */ 
+			getCar();
+			getArchLogo(); // arch logo
+			getGrass();
+			getStereo();
 
 			/* initialize renderer */
-			var renderer = new THREE.WebGLRenderer({alpha: true});
 
-			renderer.setSize( window.innerWidth, window.innerHeight );
+			/* post processing effects use these on your scene */
+			// effect composer
+			// each scene has a separate render pass
+			// song ends, 2 seconds to load next scene, shows a bad signal graphic
+			// renderpass is used on ending of one scene and beginning of next
+			// instantiated in initscene? or constructor 
+			// settimeout to call function that disables the renderpass after some time
+			// each scene has own composer and renderpass that uses the badTVPass
 			
-			/* shadow map renderer */ 
-			renderer.shadowMap.enabled = true;
-			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-			renderer.shadowCameraNear = 3;
-			renderer.shadowCameraFar = camera.far;
-			renderer.shadowCameraFov = 50;
-
-			renderer.shadowMapBias = 0.0039;
-			renderer.shadowMapDarkness = 0.7;
-			renderer.shadowMapWidth = 1024;
-			renderer.shadowMapHeight = 1024;
-
 			document.body.appendChild( renderer.domElement );
 
 
 
-			var controls = new THREE.OrbitControls(camera);
-			
-			controls.zoomSpeed = .5;
-			controls.minAzimuthAngle = - Math.PI/2;
-			controls.maxAzimuthAngle = Math.PI/2;
 
-			controls.enablePan = true;
+			// initPlatform();
+			// BeachScene();
+			// initScene();
+			// render();
+			// updated scene
+			// use audio.getScene to get the scene class to render 
+			// pass the scene object we need in to render through a callback function that calls render
+			// sceneScene.scene, sceneScene.animate (call these two functions)
+			// save render id somewhere to cancel it 
+			function render(scene){ 
 
-			// initalize first scene
-			function render(){ 
+				audio.animationID = requestAnimationFrame(() => (render(audio.scene)));
+				scene.animate();
+				renderer.render( scene.scene, scene.camera );
 
-				// switch to decide which scene to render
-				requestAnimationFrame(render);
-
-			
-				animate();
-
-
-				renderer.render( scene, camera );
-
-			}
+			} 
 
 
-			initPlatform();
-			BeachScene();
-			render();
-		
 		</script>
 	</body>
 </html>

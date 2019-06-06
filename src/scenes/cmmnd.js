@@ -1,37 +1,6 @@
 // intro scene, car spinning on platform
 // spotlight
 // command logo spinning on top
-/* 
-    make scene change colors
-    get gif to work 
-*/  
-
-var platform, logo;
-var carPart;
-var car = new THREE.Group();
-
-// call each time a new scene is rendered
-function setCar(obj) { 
-
-    obj.position.z = 0;  
-    obj.position.y = 4.6;
-    obj.rotateY(Math.PI);
-
-    carPart = obj;
-    carPart.castShadow = true;
-    carPart.receiveShadow = true;
-    car.add(carPart);
-    platform.add( car );
-
-    //  // headlights 
-    //  var headlight = new THREE.PointLight( 0xff0000, .2, 5)
-    //  headlight.position.set(3, 2, 8);
-    //  var sphereSize = 1;
-    //  var pointLightHelper = new THREE.PointLightHelper( headlight, sphereSize );
-    //  car.add( pointLightHelper );
-    //  car.add( headlight );
-
-}
 
 function getPlatform() { 
 
@@ -60,68 +29,18 @@ function getPlatform() {
 
     }
 
-    platform = new THREE.Mesh(stepGeo, stepMaterial);
+    let platform = new THREE.Mesh(stepGeo, stepMaterial);
     platform.position.y = -5;
     platform.castShadow = true;
     platform.receiveShadow = true;
-
-    console.log(platform.children)
     
-    //remove cliff
-    scene.remove( cliff );
-    scene.add( platform );
+    return platform;
 
-    getLogo();
-            
-}
-
-
-function getLogo() { 
-
-    objLoader.setPath( './assets/' );
-
-    objLoader.load(
-        'archCmmndLogo.obj',
-
-        function ( obj ) {
-        
-            obj.traverse( function ( child ) {
-                     if ( child instanceof THREE.Mesh ) {
-                          child.material = new THREE.MeshStandardMaterial({
-                              color: 0xd3d3d3, 
-                          })
-                         
-                         }
-                     } );
-                    
-            obj.scale.set( .1, .1, .1 ) 
-            obj.position.y = 12;
-            obj.position.x = -5;
-            
-            logo = obj;
-            logo.castShadow = true;
-            logo.receiveShadow = true;
-            
-            scene.add(logo);
-
-        },
-        
-        function ( xhr ) {
-
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-        },
-        
-        function ( error ) {
-
-            console.log( 'An error happened' );
-
-        }
-    );
-    
 }
 
 function getMirrors() { 
+
+    let mirrors = [];
     let step = 9 / Math.PI*2 ;
 
     let geometry = new THREE.BoxGeometry( 8, 15, .5 );
@@ -138,90 +57,126 @@ function getMirrors() {
         let material = new THREE.MeshPhysicalMaterial({ 
             reflectivity: 1
         })
-
         
-        let mirror = new THREE.Mesh(geometry, material)
+        mirrors.push( new THREE.Mesh(geometry, material) );
+        mirrors[i].position.set(50*Math.sin(step*i),0, 50*Math.cos(step*i))
+        mirrors[i].lookAt(0,0,0);
 
-        mirror.position.set(50*Math.sin(step*i),0, 50*Math.cos(step*i))
-        mirror.lookAt(0,0,0);
-        scene.add( mirror );
-
-        // let color = new THREE.Color( 1, 0, 0 );
-        // let spotlight = new THREE.DirectionalLight( "rgb(100%, 0%, 0%)", 1 );
-
-        // spotlight.position.y = 2;
-        // spotlight.castShadow = true;
-        // scene.add(spotlight);
     }
 
+    return mirrors;
 
 }
-// initalize scene objects and scene attributes (background color, camera position, etc.)
-function initScene() { 
 
-    scene.background = new THREE.Color(0x000000);
-    getPlatform();
 
-    getMirrors()
-    // ambient light
-    scene.add(new THREE.AmbientLight( 0xffffff, .2));
+/* cmmnd scene definition */
+class CMMNDScene { 
+	constructor() { 
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+        this.platform = getPlatform(); //car platform 
+        this.mirrors = getMirrors(); //array of mirrors to draw
+        // this.logo = getArchLogo();
 
-    // directional light blue
-    var logoLight = new THREE.PointLight( 0x0000ff, .5 );
-    logoLight.castShadow = true;
-    logoLight.position.z = 0;
-    scene.add(logoLight)
+        // postprocessing of scene
+        this.composer = new THREE.EffectComposer( renderer );
+        this.renderPass = new THREE.RenderPass( this.scene, this.camera );
+        this.composer.addPass( this.renderPass );
+        this.badTVPass = new THREE.ShaderPass( THREE.BadTVShader );
+        this.composer.addPass( this.badTVPass );
+        this.badTVPass.renderToScreen = true;
+
+        console.log(this.composer)
+        console.log(this.badTVPass.renderToScreen)
+
+    }
+
+    setCar() { 
+        console.log("set car")
+        car.position.set(0, 4.6, 0)
+        
+        car.rotateY(Math.PI);
+
+        car.castShadow = true;
+        car.receiveShadow = true;
+        // set position of passed in car object from common objects
+    }
     
-    // underlight red
-    var underlight = new THREE.PointLight( 0xff0000, .8, 100 );
-    underlight.position.set( 0, -2, 0 );
-    platform.add(underlight);
-    
+    setLogo() { 
+        archLogo.position.set(-5,17,0);
+    }	
 
-    // spotlights red
-    var spotlight = new THREE.DirectionalLight( 0xc30000, .8 );
+    setObjects() { 
+        this.setCar();
+        this.setLogo();
+    }
 
-    spotlight.position.y = 2;
-    spotlight.castShadow = true;
-    scene.add(spotlight);
+	initScene() { 
+        /* shadow map renderer */ 
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowCameraNear = 3;
+        renderer.shadowCameraFar = this.camera.far;
+        renderer.shadowCameraFov = 50;
 
-    // spotlight 
+        renderer.shadowMapBias = 0.0039;
+        renderer.shadowMapDarkness = 0.7;
+        renderer.shadowMapWidth = 1024;
+        renderer.shadowMapHeight = 1024;
 
-    var redlight = new THREE.DirectionalLight( 0x0000ff, .5);
-    redlight.castShadow = true;
-    redlight.position.y = 10;
-    redlight.position.z = 10;
-    platform.add(redlight);
+        this.scene.background =  new THREE.Color( 0x000000 );
+        // move camera
+        this.camera.position.z = 25;
+        this.camera.position.y = 3;
+        
+        for (let mirror of this.mirrors) { 
+            this.scene.add(mirror);
+        }
 
-    // var light = new THREE.DirectionalLight( 0xffffff, .5 );
-    // light.position.y = -10;
-    // redlight.position.z = 10;
-    // platform.add(light);
+        this.setObjects();
 
-    // camera
-    camera.position.z = 25;
-    camera.position.y = 3;
-
-}
-
-
-
-// update scene dynamically according to music
-// also calls update functions of common objects
-function update() { 
-
-}
+        this.scene.add(this.platform);
+        this.platform.add(car);
+        this.platform.add(archLogo);
 
 
-// animate scene based on time
-// callse update
-function animate() { 
-    update();
+        // lights 
+        var redlight = new THREE.DirectionalLight( 0x0000ff, .5);
+        redlight.castShadow = true;
+        redlight.position.y = 10;
+        redlight.position.z = 10;
+        this.platform.add(redlight);
 
-    var date = new Date;
+        var spotlight = new THREE.DirectionalLight( 0xc30000, .8 );
+        spotlight.position.y = 2;
+        spotlight.castShadow = true;
+        this.scene.add(spotlight);
 
-    scene.rotation.y += .005;
-    logo.position.y += .01*Math.sin( date.getSeconds()); 
-    // logo.rotation.y += .01;
+        var underlight = new THREE.PointLight( 0xff0000, .8, 100 );
+        underlight.position.set( 0, -2, 0 );
+        this.platform.add(underlight);
+
+         // directional light blue
+        var logoLight = new THREE.PointLight( 0x0000ff, .5 );
+        logoLight.castShadow = true;
+        logoLight.position.z = 0;
+        this.scene.add(logoLight);
+
+        // ambient light
+        this.scene.add(new THREE.AmbientLight( 0xffffff, .2));   
+	}
+
+	update() {
+        var date = new Date;
+        // update objects within the scene
+        this.scene.rotation.y += .005;
+        archLogo.position.y += .01*Math.sin( date.getSeconds());  // change to clock
+	}
+
+	animate() {
+
+        this.update();
+
+    }
 
 }
