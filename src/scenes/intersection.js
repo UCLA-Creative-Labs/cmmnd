@@ -197,11 +197,114 @@ function getDonuts() {
     return donuts
 }
 
-loadBuildings('./assets/models/buildings/Residential Buildings 002.obj', -5, -15, -17, Math.PI/4, 2)
-loadBuildings('./assets/models/buildings/Residential Buildings 003.obj', 35, -15, -58, Math.PI/4, 2.5)
-loadBuildings('./assets/models/buildings/Residential Buildings 001.obj', -65, -15, 45, Math.PI/4, 2)
-loadBuildings('./assets/models/buildings/Residential Buildings 004.obj', 65, -15, 50, Math.PI/4, 1.5)
-loadBuildings('./assets/models/buildings/Residential Buildings 005.obj', 0, -15, 115, Math.PI/4,1.5)
+// Reference: http://learningthreejs.com/blog/2013/08/02/how-to-do-a-procedural-city-in-100lines/
+function generateBuildingTexture() {
+    // build a small canvas 32x64 and paint it in white
+    var canvas  = document.createElement( 'canvas' );
+    canvas.width = 32;
+    canvas.height    = 64;
+    var context = canvas.getContext( '2d' );
+    // plain it in white
+    context.fillStyle    = '#ffffff';
+    context.fillRect( 0, 0, 32, 64 );
+    // draw the window rows - with a small noise to simulate light variations in each room
+    for( var y = 2; y < 64; y += 2 ){
+        for( var x = 0; x < 32; x += 2 ){
+            var value   = Math.floor( Math.random() * 64 );
+            context.fillStyle = 'rgb(' + [value, value, value].join( ',' )  + ')';
+            context.fillRect( x, y, 2, 1 );
+        }
+    }
+  
+    // build a bigger canvas and copy the small one in it
+    // This is a trick to upscale the texture without filtering
+    var canvas2 = document.createElement( 'canvas' );
+    canvas2.width    = 512;
+    canvas2.height   = 1024;
+    var context = canvas2.getContext( '2d' );
+    // disable smoothing
+    context.imageSmoothingEnabled        = false;
+    context.webkitImageSmoothingEnabled  = false;
+    context.mozImageSmoothingEnabled = false;
+    // then draw the image
+    context.drawImage( canvas, 0, 0, canvas2.width, canvas2.height );
+    // return the just built canvas2
+    return canvas2;
+}
+
+function getBuildings() {
+    console.log('creating buildings')
+    let buildings = []
+
+    // let building_geo = new THREE.CubeGeometry(30, 80, 30)
+    let building_geo1 = new THREE.CubeGeometry(30, 80, 30)
+    let building_geo2 = new THREE.CubeGeometry(45, 56, 45)
+    let building_geo3 = new THREE.CubeGeometry(1.2*30, 0.9*80, 30)
+    let building_geo4 = new THREE.CubeGeometry(2*30, 0.7*80, 30)
+    let building_geo5 = new THREE.CubeGeometry(30, 1.2*80, 30)
+    // building_geo.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0.5, 0));
+    // building_geo.faces.splice(3, 1);
+
+    // building_geo.faceVertexUvs[0][2][0].set(0, 0);
+    // building_geo.faceVertexUvs[0][2][1].set(0, 0);
+    // building_geo.faceVertexUvs[0][2][2].set(0, 0);
+    // building_geo.faceVertexUvs[0][2][3].set(0, 0);
+
+    // generate the texture
+    let texture = new THREE.Texture( generateBuildingTexture() );
+    texture.anisotropy = renderer.getMaxAnisotropy();
+    texture.needsUpdate    = true;
+
+    // build the mesh
+    let material  = new THREE.MeshLambertMaterial({
+        map: texture,
+        color: 0x7d7d7d,
+        vertexColors: THREE.VertexColors
+    });
+
+    let building1 = new THREE.Mesh(building_geo1, material)
+    building1.rotation.y = -Math.PI/4
+    building1.position.y = 25
+    building1.position.x = 5
+    building1.position.z = -10
+    buildings.push(building1)
+
+    let building2 = new THREE.Mesh(building_geo2, material)
+    building2.rotation.y = -3*Math.PI/4
+    building2.position.y = 13
+    building2.position.x = 40
+    building2.position.z = -55
+    buildings.push(building2)
+
+    let building3 = new THREE.Mesh(building_geo3, material)
+    building3.rotation.y = -Math.PI/4
+    building3.position.y = 20
+    building3.position.x = -62
+    building3.position.z = 53
+    buildings.push(building3)
+
+    let building4 = new THREE.Mesh(building_geo4, material)
+    building4.rotation.y = Math.PI/4
+    building4.position.y = 13
+    building4.position.x = 73
+    building4.position.z = 40
+    buildings.push(building4)
+
+    let building5 = new THREE.Mesh(building_geo5, material)
+    building5.rotation.y = -3*Math.PI/4
+    building5.position.y = 33
+    building5.position.x = 0
+    building5.position.z = 115
+    buildings.push(building5)
+
+    return buildings
+}
+
+// loadBuildings('./assets/models/buildings/Residential Buildings 002.obj', -5, -15, -17, Math.PI/4, 2)
+// loadBuildings('./assets/models/buildings/Residential Buildings 003.obj', 35, -15, -58, Math.PI/4, 2.5)
+// loadBuildings('./assets/models/buildings/Residential Buildings 001.obj', -65, -15, 45, Math.PI/4, 2)
+// loadBuildings('./assets/models/buildings/Residential Buildings 004.obj', 65, -15, 50, Math.PI/4, 1.5)
+// loadBuildings('./assets/models/buildings/Residential Buildings 005.obj', 0, -15, 115, Math.PI/4,1.5)
 
 loadMiscObjects('../../assets/models/gasStationNoSign.obj', -20, -15, 20, -Math.PI/4, 0.3)
 loadMiscObjects('../../assets/models/gasStationSign.obj', -100, -15, 15, Math.PI/4, 0.5)
@@ -215,12 +318,13 @@ class IntersectionScene {
         this.floor = getFloor()
         this.streets = getStreets()
         this.circle = getCircle()
+        this.buildings = getBuildings()
         this.donuts = getDonuts()
         this.donut_y_positions = []
         this.donut_amplitudes = []
-        this.default_scales = [2, 2.5, 2, 1.5, 1.5]
-        this.max_scales = [2/80, 2.5/80, 1.5/80, 1.5/80, 1.5/80]
-        this.buildings = []
+        this.default_y_scales = [1, 0.7, 0.9, 0.7, 1.2]
+        this.default_heights = [80, 56, 72, 56, 96]
+        this.max_scales = [1/80, 0.7/80, 0.9/80, 0.7/80, 1.2/80]
         this.smokeParticles = []
         this.delta = clock.getDelta()
         this.prevNorm = 1
@@ -267,9 +371,6 @@ class IntersectionScene {
         let ambientLight = new THREE.AmbientLight( 0xFFFFFF ); // soft white light
         this.scene.add(ambientLight);
     
-        // let ambientLight = new THREE.AmbientLight( 0xbc13fe ); // soft white light
-        // this.scene.add(ambientLight);
-    
         for (let i = 0; i < 200; i += 10) {
             let blue_light = new THREE.PointLight(0x0000FF, 1., 100);
             blue_light.position.set(10,i,i);
@@ -299,13 +400,12 @@ class IntersectionScene {
 
         // Add 3d models
         
-        for (let building of buildings) {
-            console.log('hi')
-            this.buildings.push(building)
-            this.scene.add(building)
+        for (let i = 0; i < this.buildings.length; i++) {
+            this.scene.add(this.buildings[i])
         }
         
         for (let i = 0; i < miscObjects.length; i++) {
+            console.log('adding misc objects to the scene')
             this.scene.add(miscObjects[i])
         }
     }
@@ -313,18 +413,9 @@ class IntersectionScene {
     // scale buildings, move car + move donuts according to audio
     update(pitch_array) {
         for (let i = 0; i < this.buildings.length; i++) {
-            let a = (pitch_array[1] * this.max_scales[i])/2 + 1
-            let b = (pitch_array[1] * this.max_scales[i])/2 + 1
-            let norm = (b + (a * Math.sin(this.delta - (Math.PI/2)))) * 1000 + 0.9
-
-            for (let j = 0; j <= 6; j++) {
-                norm = (norm + this.prevNorm)/2
-            }
-
-            norm += 0.01
-            this.prevNorm = norm
-            let default_xz = this.default_scales[i]
-            this.buildings[i].scale.set(default_xz, norm, default_xz)
+            let norm = pitch_array[1]/1000 * this.default_y_scales[i] + this.default_y_scales[i]
+            this.buildings[i].scale.set(1, norm, 1)
+            this.buildings[i].position.y = (this.default_heights[i]*norm)/2 - 15
         }
 
         for (let i = 0; i < this.donuts.length; i++) {
