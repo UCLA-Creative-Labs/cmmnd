@@ -93,22 +93,31 @@ class CMMNDScene {
 
     setCar() { 
         console.log("set car")
-        car.position.set(0, 4.6, 0)
-        
-        car.rotateY(Math.PI);
-
+        car.position.set(0, 0, 0);
+        car.rotation.set(0, 0, 0);
+        car.scale.set( 1, 1, 1 );
+        // car.rotateY(Math.PI);
+        car.updateMatrix(); // updates local matrix 
+        car.position.set(0, 4.6, 0);
         car.castShadow = true;
         car.receiveShadow = true;
+        this.platform.add(car);
         // set position of passed in car object from common objects
     }
     
     setLogo() { 
         archLogo.position.set(-5,17,0);
+        this.platform.add(archLogo);
+
     }	
 
     setObjects() { 
         this.setCar();
         this.setLogo();
+    }
+
+    setScene() { 
+			
     }
 
 	initScene() { 
@@ -133,11 +142,11 @@ class CMMNDScene {
             this.scene.add(mirror);
         }
 
-        this.setObjects();
+       
 
         this.scene.add(this.platform);
-        this.platform.add(car);
-        this.platform.add(archLogo);
+
+        this.setObjects();
 
 
         // lights 

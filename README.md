@@ -1,11 +1,24 @@
 # Creative Labs X CMMND Collaborative Project, UCLA Spring 2019
 # Music visualizer for the CMMND EP
 
+## TODO
+  - add loading bar 
+  - sunset scene
+  - gif -> video that loops
+    - https://www.google.com/search?q=convert+gif+to+video&oq=convert+gif+to+video&aqs=chrome.0.0l6.3464j0j9&sourceid=chrome&ie=UTF-8
+  - scene merging*** (works)
+    - fix positioning bug
+    - reset car inbetween scenes 
+  - post processing effect
+  - play audio in succession (done)
+  - loading manager (wait for car to load before beginning scene)
+    - on load to play audio
+
 ## Implementation
 Scene Handling 
 
-Each Scene will be a separate instance of THREE.Scene(), the transitions to these scenes will be
-handled by Tween and will covered by some transition postprocessing shader. 
+Each Scene will be a separate class instance, the transitions to these scenes are
+handled by the audiocontroller class and will be masked by some transition postprocessing shader. 
 
 Two ways
   1. Render a new scene for each scene

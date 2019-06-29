@@ -143,6 +143,9 @@ var count = freq = 0;
 
 		setLogo() { 
 			archLogo.position.set(0, 0, -30);
+			archLogo.updateMatrix();
+
+			this.orbit.add(archLogo)
 		}
 
 		setStereo() { 
@@ -160,15 +163,19 @@ var count = freq = 0;
 			this.setLogo();
 			this.setStereo();
 		}
+
+		setScene() { 
+			this.scene.background = new THREE.Color( 0x000000 );
+		}
 		
 		initScene() { 
 
-			this.scene.background = new THREE.Color( 0x000000 );
+			
 			this.camera.position.z = 20;
 			
 			this.setObjects();
 			this.scene.add(car);
-			this.orbit.add(archLogo);
+			// this.orbit.add(archLogo);
 			this.orbit.add(stereo);
 
 			car.position.set(0,0,0);

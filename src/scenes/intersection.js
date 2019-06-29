@@ -240,9 +240,13 @@ class IntersectionScene {
     setObjects() {
         this.setCar()
     }
+    
+    setScene() { 
+        renderer.setClearColor(0x120A8F, 1.);
+    }
 
     initScene() {
-        renderer.setClearColor(0x120A8F, 1.);
+        this.setScene()
         this.camera.position.z = 100
         THREE.ImageUtils.crossOrigin = ''; //Need this to pull in crossdomain images from AWS
 

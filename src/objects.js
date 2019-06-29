@@ -6,7 +6,7 @@ function getCar() {
 
     var idx = 0;
 
-    mtlLoader.setPath( '/cmmnd/assets/models/car_model/' );
+    mtlLoader.setPath( './assets/models/car_model/' );
 
     objFiles.forEach( (objFile) => { 
 
@@ -17,7 +17,7 @@ function getCar() {
                 materials.preload();
                     // load a car
                 objLoader.setMaterials( materials );	
-                objLoader.setPath( '/cmmnd/assets/models/car_model/' );
+                objLoader.setPath( './assets/models/car_model/' );
                 objLoader.load( objFile + '.obj',
 
                     function ( obj ) {
@@ -177,15 +177,18 @@ function getCliff() {
     planeGeometry.translate(0,0,-2);
     geometry.merge(planeGeometry);
     jitter(geometry,0.2);
+
     let material = new THREE.MeshPhongMaterial( { 
         color: 0xEDC9AF,
         flatShading: true
     } );
+
     cliff = new THREE.Mesh( geometry, material );
     cliff.rotation.x = Math.PI/2;
     cliff.position.y = -10
     cliff.position.z = 60;
     cliff.receiveShadow = true;
+    
     return cliff;
     
 }

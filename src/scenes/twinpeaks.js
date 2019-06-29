@@ -36,42 +36,33 @@ class TwinPeaksScene {
       1000
     );
     this.camera.position.z = 85;
+    this.cliff = cliff;
   }
 
-  setCar(obj) {
+  setCar() {
     // set position of passed in car object from common objects
-    obj.position.z = 60;
-    obj.position.y = -5;
-    obj.rotateY((7 * Math.PI) / 6);
+    car.position.set(0,0,0)
+    car.rotation.set(0,0,0)
+    car.scale.set( 1, 1, 1 );
+    car.updateMatrix(); // updates local matrix 
+    car.position.set( 0, 0, -5 );
+    car.rotation.set( -Math.PI/2, 7*Math.PI/6, 0 );
+    cliff.add(car); // re-add car to this scene
+  }
 
-    // obj.children[4].children[0].material = new THREE.MeshStandardMaterial({
-    //   //   emissive: 0xb20a02,
-    //   emissive: 0x810803,
-    //   color: 0xf4487a,
-    //   roughness: 0.5,
-    //   metalness: 1
-    // });
-
-    // obj.children[1].children[0].material = new THREE.MeshStandardMaterial({
-    //   //   emissive: 0xb20a02,
-    //   emissive: 0xaaaaaa,
-    //   color: 0xffffff,
-    //   roughness: 0.5,
-    //   metalness: 1
-    // });
-
-    console.log(obj);
-
-    return obj;
+  setObjects() { 
+    this.setCar()
+  }
+  setScene() { 
+			
   }
 
   initScene() {
-    this.scene.add(this.setCar(car));
     // this.scene.add(getPlatform());
     this.scene.add(cliff);
-    this.car = car;
-    this.cliff = cliff;
 
+
+    this.setCar()
     const sunLight = new THREE.DirectionalLight(0xe1edf0, 0.2);
     sunLight.castShadow = true;
     sunLight.position.set(10, 10, 0);
@@ -182,7 +173,7 @@ class TwinPeaksScene {
       this.clouds[i].update();
     }
 
-    this.car.rotation.y += 0.001;
+    // this.car.rotation.y += 0.001;
     this.cliff.rotation.z -= 0.001;
   }
 

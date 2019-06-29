@@ -33,7 +33,7 @@
 			justify-content: center;
 			background-color: black;
 			position:relative;
-			background-image: url("./assets/CMMND_spinning.gif");
+			/* background-image: url("./assets/CMMND_spinning.gif"); */
 			background-position: center;
 			background-size: 600px 300px;
 			background-repeat: no-repeat;
@@ -51,9 +51,11 @@
 		} */
 
 		.button.play {
+			position: absolute;
 			margin: auto;
-			margin-top: 61%;
-			margin-bottom: 39%;
+			bottom: 200px;
+			/* margin-top: 61%;
+			margin-bottom: 39%; */
 			border:none;
 			background-color:black;
 			width: auto;
@@ -101,8 +103,27 @@
 			display: none;
 			margin: 10px;
 			margin-top: 12px;
-			opacity: .7;
+			opacity: .6;
+			background-color: #27332F;
+			border-radius: 20%;
+
 			/* background-color: rgba(0,0,0,.5); */
+		}
+
+		/* selector button */
+		.scene-button{ 
+			border-radius: 10%; 
+			box-shadow: 5px 5px 5px;
+		}
+
+		/* text */
+		.scene-title { 
+			background-color: #34282C;
+			color: #B20000; 
+		}
+
+		#spinning-video {
+			width: 425px;
 		}
 
 		body { margin: 0; }
@@ -121,12 +142,16 @@
 		<title>CMMND EP X Creative Labs</title>
 	</head>
 	<body> 
-		<div class="loading-screen">
-				<audio autoplay> 
+		<div class="loading-screen"> 
+				<audio id="loading-audio" autoplay loop> 
 					<source src="./assets/audio/loading_audio.mp3">
 				</audio>
+				<video id="spinning-video" autoplay loop>
+						<source src="./assets/CMMND spinning.mov">
+				</video>
 		</div>
 		<div class="controls"> 
+			<!-- each button corresponds to a scene, switch between scenes (only initscene once) -->
 			<button class="arrow-left" id="prev"></button>
 			<button class="arrow-right" id="next"></button>
 		</div>
@@ -138,6 +163,7 @@
         <!-- Load libs -->
 		<script src="./lib/three.min.js"></script>
 		<script src="./lib/tween.min.js"></script>
+		<script src="./lib/BufferGeometryUtils.js"></script>
 		<script src="./lib/OrbitControls.js"></script>
 		<script src="./lib/OBJLoader.js"></script>
 		<script src="./lib/MTLLoader.js"></script>
@@ -148,30 +174,18 @@
 		<script src="./lib/BadTVShader.js"></script>
 		<script src="./lib/threex.proceduralcity.js"></script>
 
-		<!-- Scenes -->
-	
+		<!-- Scenes and objects -->
 		<script src="./src/scenes/cmmnd.js"></script> 
 		<script src="./src/scenes/beach.js"></script> 
 		<script src="./src/scenes/space.js"></script> 
-	
 		<script src="./src/scenes/intersection.js"></script> 
-		<script src="./src/scenes/sunset.js"></script> 
+		<script src="./src/scenes/sky.js"></script> 
 		<script src="./src/scenes/twinpeaks.js"></script>  
 		
 		<script src="./src/objects.js"> </script>
 		
 		
 		<script>
-			/* TODO: 
-				- add scripts dynamically
-				- sunset scene
-				- scene merging*** (works)
-					- fix positioning bug
-				- post processing effect
-				- play audio in succession (done)
-				- loading manager (wait for car to load before beginning scene)
-					- on load to play audio
-			*/ 
 
 			const context = window.AudioContext || window.webkitAudioContext;
 
@@ -196,7 +210,7 @@
 
 					/* audio and scene render */
 					this.songs = { 
-						INTRO: new Audio("./assets/cmmnd_live/4.wav"),
+						INTRO: new Audio("./assets/cmmnd_live/1.wav"),
 						THEWAY: new Audio("./assets/cmmnd_live/2.wav"),
 						TENTOES: new Audio("./assets/cmmnd_live/3.wav"),
 						BAGFLIP: new Audio("./assets/cmmnd_live/4.wav"),
@@ -207,16 +221,14 @@
 					/* scene name to audio mapping */
 					this.scenes = { 
 						// test
-						INTRO: "CMMND", 
-						THEWAY: "BEACH",
-						TENTOES: "SPACE",
-						BAGFLIP: "TWINPEAKS",
-						SUICIDE: "INTERSECTION",
-						// THEWAY: "SUNSET",
-						// TENTOES: "BEACH",
-						// BAGFLIP: "INTERSECTION",
-						// SUICIDE: "TWINPEAKS",
-						// INDAROCKET: "SPACE",
+						INTRO: "CMMND",
+						THEWAY: "SKY", 
+						TENTOES: "BEACH",
+						INDAROCKET: "SPACE",
+						SUICIDE: "TWINPEAKS",
+						BAGFLIP: "INTERSECTION",
+					
+					
 					}
 
 					this.sceneObjects = { 
@@ -224,7 +236,8 @@
 						"BEACH": new BeachScene,
 						"SPACE": new SpaceScene,
 						"TWINPEAKS": new TwinPeaksScene,
-						"INTERSECTION": new IntersectionScene
+						"INTERSECTION": new IntersectionScene, 
+						"SKY": new SkyScene
 					}
 
 					// if scene is initiated
@@ -277,20 +290,27 @@
 					this.getAudio().pause();
 					this.getAudio().currentTime = 0;
 					this.currentSong.removeEventListener("ended", this.songEnded);
-					// increment song
 					this.index++;
-					this.playLoop();
-
+					if (this.index === 6) 
+					{
+						this.index = 0;
+						this.playLoop();
+						console.log('song loop restarted');
+					} // restart audio on last song
+					else this.playLoop();
 				}
 
 				// play prev song
 				playPrev(){ 
 
 					this.getAudio().pause();
-					this.getAudio().currentTime = 0;
 					this.currentSong.removeEventListener("ended", this.songEnded);
 					this.index--; 
-					this.playLoop();
+					if (this.index === -1) { 
+						this.index = 5;
+						this.playLoop();
+					}
+					else this.playLoop();
 				
 				}
 
@@ -308,30 +328,32 @@
 						// // play the next song
 						console.log("play next");
 						this.index++;
-						this.playLoop(); 
 						if (this.index === 6) 
 						{
 							this.index = 0;
 							this.playLoop();
 							console.log('song loop restarted');
-						} // restart audio
-
+						} // restart audio on last song
+						else this.playLoop(); 
+						
 					}
 					// play first song
 					const i = this.index;
 					this.currentSong = this.songs[this.titles[i]];
 					this.currentScene = this.scenes[this.titles[i]];
 					this.scene = this.sceneObjects[this.currentScene];
-					console.log(this.scene, "current scene obj");
 
 					console.log(this.isInitialized[i]);
 					if (!this.isInitialized[i]) {
-						console.log("init scene")
+						console.log("init scene");
 						this.scene.initScene();
 						this.isInitialized[i] = 1;
 					}
 					else { 
+						console.log("resetting scene...");
 						this.scene.setObjects();
+						this.scene.setScene();
+						console.log("reset scene");
 					}
 						
 					controls = new THREE.OrbitControls(this.scene.camera);
@@ -342,6 +364,8 @@
 
 					this.currentSong.addEventListener("ended", songEnded.bind(this) );
 
+					// this.getAudio().currentTime = 0;
+					console.log("playing", this.currentSong)
 					this.getAudio().play();
 					this.sources[i].connect(this.analyser);
 					this.analyser.connect(this.context.destination);
@@ -363,12 +387,10 @@
 			manager.onLoad = function () {
 				setTimeout(function() { 
 
-					/* remove loading screen and audio */ 
+					/* add click to play */
 					let loading = document.querySelector('.loading-screen');
-					while (loading.firstChild) {
-    					loading.removeChild(loading.firstChild);
-					}
-					
+    				loading.removeChild(document.querySelector('#loading-audio'));
+			
 					let btn = document.createElement("BUTTON");
 
 					btn.classList += " play button";
@@ -397,7 +419,7 @@
 					// let play = document.querySelector('.play-screen');
 					// play.style.display = "block";
 
-				}, 2000)
+				}, 1)
 				
 				
 				// initialize audio when objects load
@@ -471,7 +493,7 @@
 			// save render id somewhere to cancel it 
 			function render(scene){ 
 
-				audio.animationID = requestAnimationFrame(() => (render(audio.scene)));
+				requestAnimationFrame(() => (render(audio.scene)));
 				scene.animate();
 				renderer.render( scene.scene, scene.camera );
 

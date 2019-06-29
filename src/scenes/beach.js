@@ -1,3 +1,5 @@
+
+
 // the way scene
 
 /* to do: effects and ideas 
@@ -12,7 +14,7 @@
 */ 
 
 /* scene objects */ 
-var clouds, sun, particle, particles, polygon;
+var sun, particle, particles, polygon;
 var waveParticles;
 
 /* scene timer */ 
@@ -30,7 +32,6 @@ const MAXSIZE = 0.2;
 const WAVESIZE = 2;
 let WAVE_Y = -35;
 var count = 0; // time
-
 
 
 // set position of car object
@@ -72,15 +73,72 @@ function getWaveParticles(){
         }
 
     }
-    console.log(waveParticles);
     return waveParticles;
 
+}
+
+// creating cloud morph targets for each sphere 
+// morph to 0
+// morph to cube?  (seems difficult)
+// windmill morph
+function getCloudMorph(mesh){ 
+    let geometry = mesh.geometry;
+    let morphAttributes = geometry.morphAttributes;
+    let positions = geometry.attributes.position.array;
+
+    // !!!! must be of bufferAttribute type 
+    // https://stackoverflow.com/questions/28843938/three-js-how-to-create-new-morphing-geometry-if-i-have-all-necessary-buffers
+    // underlying data buffers 
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
+
+    // typed array of morph targets
+    // new array from positions
+    let targetPos = [];
+    positions.forEach(()=> {
+        targetPos.push(mesh.position.x)
+        targetPos.push(mesh.position.y)
+        targetPos.push(mesh.position.z)
+    })
+
+    let morphTargets = new Float32Array(targetPos); // create morphtargets typed array from array
+
+    // array of morphAttributes storing morph positions
+    morphAttributes.position = []; 
+
+    // push new buffer attribute from typed array of morph targets and number of components per vertex
+    morphAttributes.position.push(new THREE.BufferAttribute(morphTargets, 3));
+    mesh.updateMorphTargets();
+
+    console.log(mesh.morphTargetInfluences, "influences")
+    mesh.morphTargetInfluences[0] = 0.;
+}
+
+function getCloud(side, rand1, rand2, rand3) { 
+    let cloudGeometries = [];
+    //generate random cloud  
+    let cloudGeo = new THREE.SphereBufferGeometry( 3, 4, 4);
+    cloudGeo.translate(-side*2,rand1*3,0);
+    cloudGeo.rotateX(rand1); 
+    let cloudGeo2 = new THREE.SphereBufferGeometry( 2, 5, 5);
+    cloudGeo2.translate(0,rand2,0);
+    cloudGeo2.rotateY(rand2); 
+    let cloudGeo3 = new THREE.SphereBufferGeometry( 1, 5, 5);
+    cloudGeo3.translate(side*2,rand3*3,0);
+    cloudGeo2.rotateZ(rand3); 
+   // console.log(cloudGeo.index, "index")
+    cloudGeometries.push(cloudGeo, cloudGeo2, cloudGeo3)
+
+    // merge array of geometries
+    THREE.BufferGeometryUtils.mergeBufferGeometries(cloudGeometries, false);
+
+    // return cloudGeo2;
+    return cloudGeo;
 }
 
 function getClouds() { 
 
     //clouds (procedural)
-    clouds = [];
+    let clouds = [];
 
     for (let i = 0; i < CLOUD_NUM; i++){
 
@@ -90,46 +148,35 @@ function getClouds() {
         let rand3 = Math.random();
         //angle (position)
         let angle = i * (Math.PI) / 12;
-
+    
         if( i%2 ) { 
             side = -1
         }
-        
-        //generate random clouds   
-        let cloudGeo = new THREE.BoxGeometry( 3, 3, 3);
-        cloudGeo.translate(-side*2,rand1*3,0);
-        cloudGeo.rotateX(rand1); 
-        let cloudGeo2 = new THREE.BoxGeometry( 2, 2, 2);
-        cloudGeo2.translate(0,rand2,0);
-        cloudGeo2.rotateY(rand2); 
-        let cloudGeo3 = new THREE.BoxGeometry( 1, 1, 1);
-        cloudGeo3.translate(side*2,rand3*3,0);
-        cloudGeo2.rotateZ(rand3); 
+
+        let cloudGeo = getCloud(side, rand1, rand2, rand3);
 
         let cloudMaterial = new THREE.MeshPhongMaterial({ 
             color: 0xD9E9FF,
             flatShading: true,
-            opacity: .5
-        });
-
-        //cloudMaterial.fog = true;
-        //merge 
-        cloudGeo.merge(cloudGeo2);
-        cloudGeo.merge(cloudGeo3);
-        cloudGeo.mergeVertices();
-
+            opacity: .5 ,
+            morphTargets: true
+        });    
+    
         clouds[i] = new THREE.Mesh(cloudGeo, cloudMaterial);
         clouds[i].scale.set(20,15,20)
         clouds[i].position.set(500*Math.cos(angle+rand1), rand2*20 + 50 ,-500*Math.sin(angle+rand3))
+
+        //generate cloud morph targets
+        getCloudMorph(clouds[i]);
     }
 
     return clouds;
 }
 
-function getSun() { 
+function getSun(r = 50) { 
 
     //sun
-    var sunGeometry = new THREE.SphereGeometry( 50, 32, 32 );;
+    var sunGeometry = new THREE.SphereGeometry( r, 32, 32 );;
     var sunMaterial = new THREE.ShaderMaterial({
         uniforms: {
         color1: {
@@ -164,7 +211,7 @@ function getSun() {
     sun.position.z = -500;
     sun.position.y = 300;
 
-   var geom = new THREE.OctahedronGeometry(80);
+   var geom = new THREE.OctahedronGeometry(r + 30);
 
     var mesh = new THREE.Mesh( geom, new THREE.MeshBasicMaterial({ 
         color: 0xffffff,
@@ -197,8 +244,8 @@ function getParticles() {
     particle = new THREE.Vector3();
 
     (particle.x = Math.random() * 500 - 250),
-      (particle.y = Math.random() * 500 - 250),
-      (particle.z = Math.random() * 500 - 250),
+    (particle.y = Math.random() * 500 - 250),
+    (particle.z = Math.random() * 500 - 250),
       // add it to the geometry
       particles.vertices.push(particle);
   }
@@ -224,9 +271,11 @@ class BeachScene {
         this.sun = getSun();
         this.waveParticles = getWaveParticles();
         this.clouds = getClouds();
+        this.grass2 = grass.clone();
         this.particleSystem = getParticles();
         this.platform = getCliff();
-
+        this.morph_amt = 0; // start with no influence
+        this.morph_interval = 1000; //milliseconds
         // unique texture, objs etc. will load 
         this.polygon = getPolygonLogo();
     }
@@ -237,58 +286,92 @@ class BeachScene {
     }
 
     setCar() { 
-        car.position.z = 60;  
-        car.position.y = -5;
-        car.rotateY(1*Math.PI/6 );
+        car.position.set(0, -5, 60);
+        car.rotation.set(0, 7*Math.PI/6, 0);
+        car.scale.set( 1, 1, 1 );
+        // car.rotateY(Math.PI);
+        car.updateMatrix(); // updates local matrix 
+        this.scene.add(car);
+        // car.rotateY(1*Math.PI/6 );
     }
 
     setGrass() { 
-        grass.rotateX(-Math.PI/2)
+        grass.rotation.set(-Math.PI/2, 0, 0);
         grass.position.set(-3, 5, -2);
-    }
-
-    initScene() { 
-        // set other params  
-        renderer.setClearColor(0xffffff, 0);
-        this.scene.background = null;
-        renderer.alpha = true;
-
-        this.setObjects();
-        
-        
-        this.camera.position.z = 80;
-        // add car after place is set
-        this.scene.add(car);
-        this.scene.add(this.platform)
-        this.scene.add(this.sun);
+        grass.updateMatrix();
         cliff.add(grass);
-        let grass2 = grass.clone();
-        grass2.scale.set(.005,.005,.005);
+        this.grass2.scale.set(.005,.005,.005);
         //grass2.rotateX(Math.PI/2);
         grass2.rotateY(3*Math.PI/5);
         grass2.position.set(-3.5, 6, -2);
         cliff.add(grass2);
+    }
 
-        // let geometry = new THREE.Triangle(new THREE.Vector3(0,0,0), new THREE.Vector3(0,50,0), new THREE.Vector3(0,0,50))
-        // let material = new THREE.LineBasicMaterial({ 
-        //     color: 0xffffff,
-        //     linewidth: 3
-        // });
-    
-        // this.scene.add(new THREE.Mesh(geometry, material));
+    // call at interval
+    morph() { 
+        var _this = this;
+
+        // create tween each frame drawn
+        // for each cloud in array of clouds
+
+        // changes morphtargetinfluences 
+        // current influence -> target influence
+        // morph between  0 -> 1, on update change the value of morph target influence 
+
+        var current = {amt: this.morph_amt};
+        var target = {amt: this.morph_amt == 0 ? 1 : 0}; //opposite of morph_amt
+        var tween = new TWEEN.Tween(current).to(target, this.morph_interval - 10); // divide by morph_speed (according to music)
+        // tween.easing(TWEEN.Easing.Elastic.Out);
+
+        tween.onUpdate(function(){ 
+            //morphinfluence of each cloud
+            for ( let c of _this.clouds ) { 
+                c.morphTargetInfluences[0] = current.amt;
+                _this.morph_amt = current.amt;
+                //console.log(c.morphTargetInfluences[0], _this.morph_amt, "dictionary")
+            }
+            
+        })
+
+        tween.start();
+
+    }
+
+    setScene() {
+        renderer.setClearColor(0xffffff, 0);
+        this.scene.background = null;
+        renderer.alpha = true;
+    }
+
+    initScene() { 
+        this.setScene()
+        // set other params  
+        // renderer.setClearColor(0xffffff, 0);
+        // this.scene.background = null;
+        // renderer.alpha = true;
+
+        this.setObjects();
+        
+        // morph 
+        setInterval( ()=> { this.morph() }, this.morph_interval )
+
+        this.camera.position.z = 80;
+        // add car after place is set
+        this.scene.add(this.platform)
+        this.scene.add(this.sun);
+
 
         this.scene.add(this.particleSystem);
         this.scene.add(this.polygon);
         
-        for( let r of this.waveParticles ) { 
-            for( let p of r ) { 
+        for( let r of this.waveParticles ) 
+            for( let p of r )
                 this.scene.add( p );
-            }
-        }
+        
     
-        for( let c of this.clouds ) { 
+        for( let c of this.clouds ) 
             this.scene.add( c );
-        }
+        
 
 
         // add lights
@@ -304,7 +387,8 @@ class BeachScene {
 
     }
 
-    update(pitch_array) { 
+    update(pitch_array) {
+
         this.sun.rotation.x += .005;
 
         var prevSpeed = 0 ; 
@@ -336,10 +420,13 @@ class BeachScene {
 
     }
 
+    // animate each scene
     animate() {
 
         const pitch_array = audio.getFreqData();
         this.update(pitch_array);
+
+        TWEEN.update();
      
     }
 }
