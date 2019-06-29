@@ -6,7 +6,7 @@ function getCar() {
 
     var idx = 0;
 
-    mtlLoader.setPath( './assets/models/car_model/' );
+    mtlLoader.setPath( '/cmmnd/assets/models/car_model/' );
 
     objFiles.forEach( (objFile) => { 
 
@@ -17,7 +17,7 @@ function getCar() {
                 materials.preload();
                     // load a car
                 objLoader.setMaterials( materials );	
-                objLoader.setPath( './assets/models/car_model/' );
+                objLoader.setPath( '/cmmnd/assets/models/car_model/' );
                 objLoader.load( objFile + '.obj',
 
                     function ( obj ) {
@@ -47,6 +47,43 @@ function getCar() {
 
 }
 
+function getStereo() { 
+    
+    objLoader.load(
+        './assets/models/radioObject.obj',
+
+        function ( obj ) {
+        
+            obj.traverse( function ( child ) {
+                     if ( child instanceof THREE.Mesh ) {
+                          child.material = new THREE.MeshStandardMaterial({
+                              color: 0xd3d3d3, 
+                              metalness: .5
+                          });
+                         
+                         }
+                     } );
+                    
+            obj.scale.set( .1, .1, .1 );
+
+            stereo = obj;
+            
+
+        },
+        
+        function ( xhr ) {
+
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+        },
+        
+        function ( error ) {
+
+            console.log( 'An error happened' );
+
+        }
+    );
+}
 
 function getGrass() { 
 

@@ -1,3 +1,5 @@
+
+
 // yt scene
 let buildings = []
 let miscObjects = []
@@ -344,6 +346,7 @@ class IntersectionScene {
     }
 
     initScene() {
+        renderer.setClearColor(0x120A8F, 1.);
         this.camera.position.z = 100
         THREE.ImageUtils.crossOrigin = ''; //Need this to pull in crossdomain images from AWS
 

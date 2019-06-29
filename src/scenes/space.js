@@ -1,4 +1,5 @@
 // inda rocket scene
+// make speed of orbit depend on vol
 var count = freq = 0;
 
 	function getStars(radius = 500, material = "YELLOW", amt = 10000) {
@@ -101,6 +102,24 @@ var count = freq = 0;
 
 	}
 
+	/* random colors */ 
+	const colorArray = [ 0x283345, 0x333236, 0x173147, 0x191970, 0x36454F, 
+		  0x512888, 0x880085, 0x301934, 0x99FF99, 0xB34D4D, 0x80B300, 
+		  0x809900 ];
+
+	const threeColors = [];
+
+
+	colorArray.forEach((color)=> { 
+		threeColors.push(new THREE.Color(color));
+	});
+
+
+	function randomColor() { 
+		let i = Math.floor(Math.random() * 10);
+		return threeColors[i];
+	}
+
 
 	/* space scene definition */
 	class SpaceScene { 
@@ -116,11 +135,18 @@ var count = freq = 0;
 			this.sun = getSun2();
 			this.moon = getMoon();
 			this.orbit = new THREE.Group();
+
+			this.background = true;
+			this.color = new THREE.Color( 0x000 )
 			/* scene setup */
 		}
 
 		setLogo() { 
-			archLogo.position.set(0, 0, 50);
+			archLogo.position.set(0, 0, -30);
+		}
+
+		setStereo() { 
+			stereo.position.set(-30, 0, 0);
 		}
 
 		setCar() { 
@@ -132,6 +158,7 @@ var count = freq = 0;
 		setObjects() { 
 			this.setCar();
 			this.setLogo();
+			this.setStereo();
 		}
 		
 		initScene() { 
@@ -141,7 +168,8 @@ var count = freq = 0;
 			
 			this.setObjects();
 			this.scene.add(car);
-			this.scene.add(archLogo)
+			this.orbit.add(archLogo);
+			this.orbit.add(stereo);
 
 			car.position.set(0,0,0);
 
@@ -165,20 +193,49 @@ var count = freq = 0;
 
 			this.scene.add(this.orbit);
 			
-			this.scene.add(archLogo); 
-			
 		}
 
-		update(pitch_array) {
+		update(pitch_array,volume_array) {
 			// update objects within the scene
 			let bufferlen = pitch_array.length;
-			car.rotation.y += .002;
+			car.rotation.y += .003;
 			car.rotation.x += .005;
-			
-			this.orbit.rotation.y += .005;
-		
 			archLogo.rotation.y += .02;
 			archLogo.rotation.z += .01;
+			stereo.rotation.z += .01;
+			stereo.rotation.y += .02;
+			
+
+			for (var i = 0; i < volume_array.length; i++) { 
+				let vol = volume_array[i];
+				let norm  = vol / 255. 
+				// console.log(norm);
+
+				// change background color 
+				if ( vol > 204 && this.background ) { 
+					console.log( "change");
+					this.scene.background = randomColor();
+					this.background = false;
+					stereo.scale.set(.105,.105,.105);
+					// wait 10 seconds to set background to true
+					// setTimeout(function() {
+			
+					// 	this.scene.background = this.color;
+					// }.bind(this), 1000);
+					setTimeout(function() {
+						this.background = true;
+						stereo.scale.set(.1,.1,.1);
+						
+					}.bind(this), 1000);
+				}
+				else if ( vol > 180 ) { 
+					this.orbit.rotation.y += .00003 * norm;
+				}
+					
+				this.orbit.rotation.y += .00001 * norm;
+			}
+
+			
 		
 			for (var i = 0; i < bufferlen; i++) {
 
@@ -210,7 +267,9 @@ var count = freq = 0;
 		animate() {
 
 			const pitch_array = audio.getFreqData();
-			this.update(pitch_array);
+			const volume_array = audio.getVolumeData();
+
+			this.update(pitch_array, volume_array);
 				//renamve
 		} 
 		
