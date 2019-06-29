@@ -166,7 +166,7 @@ class TwinPeaksScene {
   update(pitch_array) {
     // update objects within the scene
     for (var i = 0; i < this.pivots.length; i++) {
-      this.pivots[i].rotation.y += 0.001 * this.pivots[i].speed;
+      this.pivots[i].rotation.y += 0.001 * this.pivots[i].speed + (pitch_array[1] * 0.00001)
     }
 
     for (var i = 0; i < this.clouds.length; i++) {
@@ -175,6 +175,11 @@ class TwinPeaksScene {
 
     // this.car.rotation.y += 0.001;
     this.cliff.rotation.z -= 0.001;
+
+    let norm = pitch_array[1]/1000 + 1
+    this.city.scale.set(1, norm, 1)
+    this.city.position.y = (60*norm)/2 - 28
+
   }
 
   animate() {
