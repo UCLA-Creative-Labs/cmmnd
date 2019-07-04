@@ -321,7 +321,7 @@ class BeachScene {
         var current = {amt: this.morph_amt};
         var target = {amt: this.morph_amt == 0 ? 1 : 0}; //opposite of morph_amt
         var tween = new TWEEN.Tween(current).to(target, this.morph_interval - 10); // divide by morph_speed (according to music)
-        // tween.easing(TWEEN.Easing.Elastic.Out);
+        tween.easing(TWEEN.Easing.Elastic.Out);
 
         tween.onUpdate(function(){ 
             //morphinfluence of each cloud
@@ -330,7 +330,7 @@ class BeachScene {
                 _this.morph_amt = current.amt;
                 //console.log(c.morphTargetInfluences[0], _this.morph_amt, "dictionary")
             }
-            
+             
         })
 
         tween.start();
