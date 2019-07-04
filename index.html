@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
 	<link href="https://fonts.googleapis.com/css?family=Titillium+Web&display=swap" rel="stylesheet">
@@ -122,6 +124,7 @@
 			color: #B20000; 
 		}
 
+
 		#spinning-video {
 			width: 425px;
 		}
@@ -146,6 +149,7 @@
 				<audio id="loading-audio" autoplay loop> 
 					<source src="./assets/audio/loading_audio.mp3">
 				</audio>
+
 				<video id="spinning-video" autoplay loop>
 						<source src="./assets/CMMND spinning.mov">
 				</video>
@@ -227,8 +231,7 @@
 						INDAROCKET: "SPACE",
 						SUICIDE: "TWINPEAKS",
 						BAGFLIP: "INTERSECTION",
-					
-					
+
 					}
 
 					this.sceneObjects = { 
@@ -361,7 +364,6 @@
 					// controls.minAzimuthAngle = - Math.PI/2;
 					// controls.maxAzimuthAngle = Math.PI/2;
 					controls.enablePan = true;
-
 					this.currentSong.addEventListener("ended", songEnded.bind(this) );
 
 					// this.getAudio().currentTime = 0;
@@ -378,6 +380,19 @@
 			const clock = new THREE.Clock();
 			const manager = new THREE.LoadingManager();
 
+			// https://stackoverflow.com/questions/20220629/how-to-build-loading-bar-with-pure-javascript
+			function animate(elem,style,unit,from,to,time) {
+				if( !elem) return;
+				var start = new Date().getTime(),
+					timer = setInterval(function() {
+						var step = Math.min(1,(new Date().getTime()-start)/time);
+						elem.style[style] = (from+step*(to-from))+unit;
+						if( step == 1) clearInterval(timer);
+					},25);
+				elem.style[style] = from+unit;
+			}
+
+
 			manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
 
 				console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
@@ -387,9 +402,10 @@
 			manager.onLoad = function () {
 				setTimeout(function() { 
 
-					/* add click to play */
+					/* add click to play  remove loading bar.audio */
 					let loading = document.querySelector('.loading-screen');
-    				loading.removeChild(document.querySelector('#loading-audio'));
+					loading.removeChild(document.querySelector('#loading-audio'));
+					
 			
 					let btn = document.createElement("BUTTON");
 
@@ -446,7 +462,7 @@
 
 			/* common objects */
 			var car = new THREE.Group();
-			var cliff, grass, stereo, archLogo;
+			var cliff, grass, stereo, archLogo, tower;
 
 			const audio = new AudioController;
 			
@@ -465,6 +481,7 @@
 			getArchLogo(); // arch logo
 			getGrass();
 			getStereo();
+			getTower();
 
 			/* initialize renderer */
 

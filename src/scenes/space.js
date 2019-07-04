@@ -102,6 +102,34 @@ var count = freq = 0;
 
 	}
 
+	function getRingPlanet() { 
+		var geometry = new THREE.RingBufferGeometry(45, 35, 32);
+		var material = new THREE.MeshNormalMaterial({ 
+			opacity: .9, 
+			color: 0xffd700,
+			side: THREE.DoubleSide
+		})
+		var mesh = new THREE.Mesh(geometry, material); 
+		mesh.rotation.set(Math.PI/6, 0, Math.PI/5);
+
+		var planetgeometry = new THREE.SphereBufferGeometry( 30, 32, 32 );
+		var planetmaterial = new THREE.MeshBasicMaterial({ 
+			color: 0x3e54e8
+		})
+
+		var planetmesh = new THREE.Mesh(planetgeometry, planetmaterial)
+		var planet = new THREE.Group();
+
+		planet.add(mesh);
+		planet.add(planetmesh);
+
+		planet.position.set(-50,0,-300);
+		planet.rotation.set(Math.PI/2,0, 0)
+
+		return planet;
+
+	}
+
 	/* random colors */ 
 	const colorArray = [ 0x283345, 0x333236, 0x173147, 0x191970, 0x36454F, 
 		  0x512888, 0x880085, 0x301934, 0x99FF99, 0xB34D4D, 0x80B300, 
@@ -135,6 +163,7 @@ var count = freq = 0;
 			this.sun = getSun2();
 			this.moon = getMoon();
 			this.orbit = new THREE.Group();
+			this.planet1 = getRingPlanet();
 
 			this.background = true;
 			this.color = new THREE.Color( 0x000 )
@@ -142,14 +171,14 @@ var count = freq = 0;
 		}
 
 		setLogo() { 
-			archLogo.position.set(0, 0, -30);
+			archLogo.position.set(0, 0, -60);
 			archLogo.updateMatrix();
 
 			this.orbit.add(archLogo)
 		}
 
 		setStereo() { 
-			stereo.position.set(-30, 0, 0);
+			stereo.position.set(-50, 0, 0);
 		}
 
 		setCar() { 
@@ -165,18 +194,19 @@ var count = freq = 0;
 		}
 
 		setScene() { 
-			this.scene.background = new THREE.Color( 0x000000 );
+
 		}
 		
 		initScene() { 
 
-			
+			this.scene.background = new THREE.Color( 0x000000 );
 			this.camera.position.z = 20;
 			
 			this.setObjects();
 			this.scene.add(car);
 			// this.orbit.add(archLogo);
 			this.orbit.add(stereo);
+			this.orbit.add(this.planet1)
 
 			car.position.set(0,0,0);
 
@@ -195,7 +225,6 @@ var count = freq = 0;
 			this.orbit.add(this.stars3);
 			this.orbit.add(this.stars4);
 			this.orbit.add(this.sun);
-
 			this.orbit.add(this.moon);
 
 			this.scene.add(this.orbit);

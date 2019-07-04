@@ -9,7 +9,7 @@ var loader = new THREE.OBJLoader();
 let delta = 0;
 
 function loadMiscObjects(path, pos_x, pos_y, pos_z, rot_y, scale) {
-    console.log('loading building models')
+    // console.log('loading building models')
     loader.load(
         path,
         function(object) {
@@ -166,13 +166,15 @@ function getStreets() {
 }
 
 function getDonuts() {
-    console.log('getting donuts')
-    let donut_geo = new THREE.TorusGeometry(1, 0.7, 16, 100)
-    let donut_material
+
     let donuts = []
     
     // generate various sizes of donuts
     for (let i = 0; i <= 200; i++) {
+        console.log('getting donuts')
+        let radius = Math.random() * 2 + .5; 
+        let donut_geo = new THREE.TorusGeometry(radius, .7*radius, 16, 100)
+        let donut_material
         // donut_geo = new THREE.TorusGeometry(1.5, 1, 16, 100)
 
         if (i % 2 == 0) {
@@ -244,13 +246,6 @@ function getBuildings() {
     let building_geo3 = new THREE.CubeGeometry(1.2*30, 0.9*80, 30)
     let building_geo4 = new THREE.CubeGeometry(2*30, 0.7*80, 30)
     let building_geo5 = new THREE.CubeGeometry(30, 1.2*80, 30)
-    // building_geo.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0.5, 0));
-    // building_geo.faces.splice(3, 1);
-
-    // building_geo.faceVertexUvs[0][2][0].set(0, 0);
-    // building_geo.faceVertexUvs[0][2][1].set(0, 0);
-    // building_geo.faceVertexUvs[0][2][2].set(0, 0);
-    // building_geo.faceVertexUvs[0][2][3].set(0, 0);
 
     // generate the texture
     let texture = new THREE.Texture( generateBuildingTexture() );
@@ -333,11 +328,14 @@ class IntersectionScene {
     }
 
     setCar() { 
-        car.position.y = 2;
-        car.position.x = -10;
-        car.rotateY(3*Math.PI/2);
+        // car.position.y = 2;
+        // car.position.x = 0;
+        car.position.set(0,2,10);
+        car.rotation.set(0,3*Math.PI/2,0)
+        car.scale.set(1,1,1)
+        car.updateMatrix();
       
-        console.log(car)
+        //console.log(car)
         this.circle.add(car);
     }
 
@@ -352,7 +350,8 @@ class IntersectionScene {
     initScene() {
         this.setScene()
         this.camera.position.z = 100
-        THREE.ImageUtils.crossOrigin = ''; //Need this to pull in crossdomain images from AWS
+        THREE.ImageUtils.crossOrigin = ''; 
+        //Need this to pull in crossdomain images from AWS
 
         // Add platform objects
         this.scene.add(this.circle)

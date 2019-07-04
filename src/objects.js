@@ -1,5 +1,3 @@
-
-
 /* load each file */
 function getCar() { 
     const objFiles = ["carBody","backLeftWheel", "backRightWheel", "frontLeftWheel", "frontRightWheel", "carHood"];
@@ -57,8 +55,10 @@ function getStereo() {
             obj.traverse( function ( child ) {
                      if ( child instanceof THREE.Mesh ) {
                           child.material = new THREE.MeshStandardMaterial({
-                              color: 0xd3d3d3, 
-                              metalness: .5
+                              color: 0x555555, 
+                              metalness: .2,
+                              emissive: 0x000000,
+                              emissiveIntensity: .2
                           });
                          
                          }
@@ -218,4 +218,44 @@ function getLogoTexture(obj, rpt) {
         });	
         });
 
+}
+
+function getTower() { 
+
+    objLoader.load(
+        './assets/models/sutroTower.obj',
+
+        function ( obj ) {
+        
+            obj.traverse( function ( child ) {
+                     if ( child instanceof THREE.Mesh ) {
+                          child.material = new THREE.MeshStandardMaterial({
+                              color: 0xC80815, 
+                          })
+                         
+                         }
+                     } );
+                    
+            obj.scale.set( .3, .3, .3 ); 
+        
+            tower = obj;
+            tower.castShadow = true;
+            tower.receiveShadow = true;
+
+
+        },
+        
+        function ( xhr ) {
+
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+        },
+        
+        function ( error ) {
+
+            console.log( 'An error happened' );
+
+        }
+    );
+    
 }

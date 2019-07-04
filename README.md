@@ -3,6 +3,7 @@
 
 ## TODO
   - add loading bar 
+  - initscene on loading
   - sunset scene
   - gif -> video that loops
     - https://www.google.com/search?q=convert+gif+to+video&oq=convert+gif+to+video&aqs=chrome.0.0l6.3464j0j9&sourceid=chrome&ie=UTF-8

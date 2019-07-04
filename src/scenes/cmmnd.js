@@ -68,7 +68,6 @@ function getMirrors() {
 
 }
 
-
 /* cmmnd scene definition */
 class CMMNDScene { 
 	constructor() { 
@@ -78,23 +77,21 @@ class CMMNDScene {
         this.mirrors = getMirrors(); //array of mirrors to draw
         // this.logo = getArchLogo();
 
-        // postprocessing of scene
+        // postprocessing of scene (not working??)
         this.composer = new THREE.EffectComposer( renderer );
         this.renderPass = new THREE.RenderPass( this.scene, this.camera );
-        this.composer.addPass( this.renderPass );
         this.badTVPass = new THREE.ShaderPass( THREE.BadTVShader );
-        this.composer.addPass( this.badTVPass );
         this.badTVPass.renderToScreen = true;
-
-        console.log(this.composer)
-        console.log(this.badTVPass.renderToScreen)
-
+        this.composer.addPass( this.renderPass );
+        this.composer.addPass( this.badTVPass );
+    
+        this.shaderTime = 0;
     }
 
     setCar() { 
-        console.log("set car")
+        
         car.position.set(0, 0, 0);
-        car.rotation.set(0, 0, 0);
+        car.rotation.set(0, Math.PI, 0);
         car.scale.set( 1, 1, 1 );
         // car.rotateY(Math.PI);
         car.updateMatrix(); // updates local matrix 
@@ -107,6 +104,7 @@ class CMMNDScene {
     
     setLogo() { 
         archLogo.position.set(-5,17,0);
+        archLogo.updateMatrix();
         this.platform.add(archLogo);
 
     }	
@@ -121,6 +119,8 @@ class CMMNDScene {
     }
 
 	initScene() { 
+        renderer.autoClear = false;
+
         /* shadow map renderer */ 
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -184,7 +184,10 @@ class CMMNDScene {
 
 	animate() {
 
+        this.shaderTime += 0.1;
+        this.badTVPass.uniforms[ 'time' ].value =  this.shaderTime;
         this.update();
+        this.composer.render( 0.1);
 
     }
 

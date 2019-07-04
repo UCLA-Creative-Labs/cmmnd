@@ -1,4 +1,7 @@
 // 80s shit scene
+// to do : 
+// add twinkling stars
+// add glitching moon
 var PixelShader = {
   uniforms: {
     tDiffuse: { value: null },
@@ -37,6 +40,9 @@ class TwinPeaksScene {
     );
     this.camera.position.z = 85;
     this.cliff = cliff;
+    this.fogColor = new THREE.Color(0x19022d);
+
+
   }
 
   setCar() {
@@ -48,21 +54,30 @@ class TwinPeaksScene {
     car.position.set( 0, 0, -5 );
     car.rotation.set( -Math.PI/2, 7*Math.PI/6, 0 );
     cliff.add(car); // re-add car to this scene
+    
+  }
+
+  setTower() { 
+    tower.position.set(50,-35,-10)
   }
 
   setObjects() { 
     this.setCar()
+    this.setTower()
   }
+  
   setScene() { 
+    this.scene.background = this.fogColor;
 			
   }
 
   initScene() {
     // this.scene.add(getPlatform());
     this.scene.add(cliff);
+    this.setScene()
 
+    this.setObjects()
 
-    this.setCar()
     const sunLight = new THREE.DirectionalLight(0xe1edf0, 0.2);
     sunLight.castShadow = true;
     sunLight.position.set(10, 10, 0);
@@ -81,8 +96,7 @@ class TwinPeaksScene {
     this.scene.add(hemisphereLight);
     this.scene.add(shadowLight);
 
-    const fogColor = new THREE.Color(0x19022d);
-    this.scene.background = fogColor;
+    this.scene.add(tower);
     // this.scene.fog = new THREE.FogExp2(fogColor, 0.01);
 
     const globe = new THREE.Mesh(
@@ -166,7 +180,7 @@ class TwinPeaksScene {
   update(pitch_array) {
     // update objects within the scene
     for (var i = 0; i < this.pivots.length; i++) {
-      this.pivots[i].rotation.y += 0.001 * this.pivots[i].speed + (pitch_array[1] * 0.00001)
+      this.pivots[i].rotation.y += 0.001 * this.pivots[i].speed;
     }
 
     for (var i = 0; i < this.clouds.length; i++) {
@@ -175,11 +189,6 @@ class TwinPeaksScene {
 
     // this.car.rotation.y += 0.001;
     this.cliff.rotation.z -= 0.001;
-
-    let norm = pitch_array[1]/1000 + 1
-    this.city.scale.set(1, norm, 1)
-    this.city.position.y = (60*norm)/2 - 28
-
   }
 
   animate() {

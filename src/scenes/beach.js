@@ -109,7 +109,7 @@ function getCloudMorph(mesh){
     morphAttributes.position.push(new THREE.BufferAttribute(morphTargets, 3));
     mesh.updateMorphTargets();
 
-    console.log(mesh.morphTargetInfluences, "influences")
+    // initialize morph target influences
     mesh.morphTargetInfluences[0] = 0.;
 }
 
@@ -131,7 +131,7 @@ function getCloud(side, rand1, rand2, rand3) {
     // merge array of geometries
     THREE.BufferGeometryUtils.mergeBufferGeometries(cloudGeometries, false);
 
-    // return cloudGeo2;
+    // return cloudGeo2 (merged cloud geometry);
     return cloudGeo;
 }
 
@@ -211,15 +211,15 @@ function getSun(r = 50) {
     sun.position.z = -500;
     sun.position.y = 300;
 
-   var geom = new THREE.OctahedronGeometry(r + 30);
+//    var geom = new THREE.OctahedronGeometry(r + 30);
 
-    var mesh = new THREE.Mesh( geom, new THREE.MeshBasicMaterial({ 
-        color: 0xffffff,
-        wireframe: true
-    }));
+    // var mesh = new THREE.Mesh( geom, new THREE.MeshBasicMaterial({ 
+    //     color: 0xffffff,
+    //     wireframe: true
+    // }));
 
     // mesh.position.set(0, -60, 0)
-    sun.add(mesh);
+    // sun.add(mesh);
 
     return sun;
 
@@ -271,7 +271,6 @@ class BeachScene {
         this.sun = getSun();
         this.waveParticles = getWaveParticles();
         this.clouds = getClouds();
-        this.grass2 = grass.clone();
         this.particleSystem = getParticles();
         this.platform = getCliff();
         this.morph_amt = 0; // start with no influence
@@ -286,6 +285,7 @@ class BeachScene {
     }
 
     setCar() { 
+        this.scene.add(this.platform);
         car.position.set(0, -5, 60);
         car.rotation.set(0, 7*Math.PI/6, 0);
         car.scale.set( 1, 1, 1 );
@@ -302,15 +302,15 @@ class BeachScene {
         cliff.add(grass);
         this.grass2.scale.set(.005,.005,.005);
         //grass2.rotateX(Math.PI/2);
-        grass2.rotateY(3*Math.PI/5);
-        grass2.position.set(-3.5, 6, -2);
-        cliff.add(grass2);
+        this.grass2.rotateY(3*Math.PI/5);
+        this.grass2.position.set(-3.5, 6, -2);
+        this.grass2.updateMatrix();
+        cliff.add(this.grass2);
     }
 
     // call at interval
     morph() { 
         var _this = this;
-
         // create tween each frame drawn
         // for each cloud in array of clouds
 
@@ -345,11 +345,8 @@ class BeachScene {
 
     initScene() { 
         this.setScene()
-        // set other params  
-        // renderer.setClearColor(0xffffff, 0);
-        // this.scene.background = null;
-        // renderer.alpha = true;
 
+        this.grass2 = grass.clone();
         this.setObjects();
         
         // morph 
@@ -357,7 +354,6 @@ class BeachScene {
 
         this.camera.position.z = 80;
         // add car after place is set
-        this.scene.add(this.platform)
         this.scene.add(this.sun);
 
 
@@ -394,6 +390,8 @@ class BeachScene {
         var prevSpeed = 0 ; 
         var speed = 0;
         let indx = 0
+
+        // fix this (a big slow down)
         for (let x = 0; x < AMOUNT; x++) {
             for (let y = 0; y < AMOUNT; y++) {
                 let particle = this.waveParticles[x][y];
