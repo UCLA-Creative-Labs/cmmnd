@@ -187,7 +187,7 @@ function getDonuts() {
 
         donut.position.x = (Math.random() * 300 - 140)
         donut.position.y = (Math.random() * 30 + 80)
-        donut.position.z = (Math.random() * 200 - 90)
+        donut.position.z = (Math.random() * 200 - 110)
         
         if (i % 2 == 0) {
             donut.rotation.x = Math.PI/3
@@ -296,12 +296,6 @@ function getBuildings() {
 
     return buildings
 }
-
-// loadBuildings('./assets/models/buildings/Residential Buildings 002.obj', -5, -15, -17, Math.PI/4, 2)
-// loadBuildings('./assets/models/buildings/Residential Buildings 003.obj', 35, -15, -58, Math.PI/4, 2.5)
-// loadBuildings('./assets/models/buildings/Residential Buildings 001.obj', -65, -15, 45, Math.PI/4, 2)
-// loadBuildings('./assets/models/buildings/Residential Buildings 004.obj', 65, -15, 50, Math.PI/4, 1.5)
-// loadBuildings('./assets/models/buildings/Residential Buildings 005.obj', 0, -15, 115, Math.PI/4,1.5)
 
 loadMiscObjects('../../assets/models/gasStationNoSign.obj', -20, -15, 20, -Math.PI/4, 0.3)
 loadMiscObjects('../../assets/models/gasStationSign.obj', -100, -15, 15, Math.PI/4, 0.5)
@@ -419,7 +413,8 @@ class IntersectionScene {
     // scale buildings, move car + move donuts according to audio
     update(pitch_array) {
         for (let i = 0; i < this.buildings.length; i++) {
-            let norm = pitch_array[1]/1000 * this.default_y_scales[i] + this.default_y_scales[i]
+            let norm = -pitch_array[1]/300 * this.default_y_scales[i] + this.default_y_scales[i]
+            console.log(norm)
             this.buildings[i].scale.set(1, norm, 1)
             this.buildings[i].position.y = (this.default_heights[i]*norm)/2 - 15
         }
@@ -459,9 +454,6 @@ class IntersectionScene {
                     this.donuts[i].material.color.set(0x3eb0f7)
                 }
             }
-
-            // let a = this.donut_amplitudes[i] + 1000
-            // this.donuts[i].position.y = (a * Math.sin(this.delta / 1000)) + this.donut_y_positions[i]
         }
         
         if (pitch_array[1]/3500 < 0.04) {

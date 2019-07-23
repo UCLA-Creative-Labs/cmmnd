@@ -253,7 +253,7 @@ class SkyScene {
 	update(pitch_array, volume_array) {
         
         this.planet.rotation.x -= .002;
-        this.clouds.rotation.x -= .002;
+        // this.clouds.rotation.x -= .002;
         car.rotation.z = .05*Math.sin(this.throttle) + Math.PI
         car.rotation.x = .05*Math.sin(this.throttle) + Math.PI
         this.throttle += .01;
