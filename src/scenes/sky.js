@@ -157,7 +157,7 @@ class SkyScene {
         this.fog = new THREE.Fog(this.backgroundColor, 1, 1000);
         this.clouds = getCloudSphere(this); // rotate around x axis of world
         this.planet = getPlanet();
-        // this.cloudsArray = [];
+
         this.sun = getSun(85);
         this.particleSystem = getParticles();
         this.sky = getSkyBox();
@@ -170,15 +170,14 @@ class SkyScene {
         var current = {amt: this.morph_amt};
         var target = {amt: this.morph_amt == 0 ? 1 : 0}; //opposite of morph_amt
         var tween = new TWEEN.Tween(current).to(target, this.morph_interval - 10); // divide by morph_speed (according to music)
-        // tween.easing(TWEEN.Easing.Elastic.Out);
+        tween.easing(TWEEN.Easing.Elastic.Out);
 
         tween.onUpdate(function(){ 
             //morphinfluence of each cloud
-            console.log("update morph")
             for ( let c of _this.morphClouds ) { 
                 c.morphTargetInfluences[0] = current.amt;
                 _this.morph_amt = current.amt;
-                console.log(c.morphTargetInfluences[0], _this.morph_amt, "dictionary")
+                console.log(c.morphTargetInfluences[0], _this.morph_amt, "dictionary") // morphing to zero
             }
             
         })

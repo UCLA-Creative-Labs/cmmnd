@@ -81,10 +81,9 @@ class CMMNDScene {
         this.composer = new THREE.EffectComposer( renderer );
         this.renderPass = new THREE.RenderPass( this.scene, this.camera );
         this.badTVPass = new THREE.ShaderPass( THREE.BadTVShader );
-        this.badTVPass.renderToScreen = true;
         this.composer.addPass( this.renderPass );
+        this.badTVPass.renderToScreen = true;
         this.composer.addPass( this.badTVPass );
-    
         this.shaderTime = 0;
     }
 
@@ -187,7 +186,7 @@ class CMMNDScene {
         this.shaderTime += 0.1;
         this.badTVPass.uniforms[ 'time' ].value =  this.shaderTime;
         this.update();
-        this.composer.render( 0.1);
+        // this.composer.render( 0.1);
 
     }
 
