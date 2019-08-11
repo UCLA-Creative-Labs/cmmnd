@@ -1,5 +1,3 @@
-
-
 // yt scene
 let buildings = []
 let miscObjects = []
@@ -7,6 +5,37 @@ let miscObjects = []
 var loader = new THREE.OBJLoader();
 // var mtlLoader = new THREE.MTLLoader();
 let delta = 0;
+
+function getCssValuePrefix()
+{
+    var rtrnVal = '';//default to standard syntax
+    var prefixes = ['-o-', '-ms-', '-moz-', '-webkit-'];
+
+    // Create a temporary DOM object for testing
+    var dom = document.createElement('div');
+
+    for (var i = 0; i < prefixes.length; i++)
+    {
+        // Attempt to set the style
+        dom.style.background = prefixes[i] + 'linear-gradient(#000000, #ffffff)';
+
+        // Detect if the style was successfully set
+        if (dom.style.background)
+        {
+            rtrnVal = prefixes[i];
+        }
+    }
+
+    dom = null;
+    delete dom;
+
+    return rtrnVal;
+}
+
+let orientation = '90deg';
+let colorOne = '#1a2a6c';
+let colorTwo = '#8b0046';
+let colorThree = '#fdbb2d';
 
 function loadMiscObjects(path, pos_x, pos_y, pos_z, rot_y, scale) {
     // console.log('loading building models')
@@ -297,6 +326,7 @@ function getBuildings() {
     return buildings
 }
 
+
 loadMiscObjects('../../assets/models/gasStationNoSign.obj', -20, -15, 20, -Math.PI/4, 0.3)
 loadMiscObjects('../../assets/models/gasStationSign.obj', -100, -15, 15, Math.PI/4, 0.5)
 loadMiscObjects('../../assets/models/stoplight.obj', 30, 8, 52, -Math.PI/4, 0.2)
@@ -315,10 +345,8 @@ class IntersectionScene {
         this.donut_amplitudes = []
         this.default_y_scales = [1, 0.7, 0.9, 0.7, 1.2]
         this.default_heights = [80, 56, 72, 56, 96]
-        this.max_scales = [1/80, 0.7/80, 0.9/80, 0.7/80, 1.2/80]
         this.smokeParticles = []
         this.delta = clock.getDelta()
-        this.prevNorm = 1
     }
 
     setCar() { 
@@ -339,6 +367,9 @@ class IntersectionScene {
     
     setScene() { 
         renderer.setClearColor(0x120A8F, 1.);
+        // // Setting the gradient with the proper prefix
+        document.getElementsByTagName('canvas')[0].style.backgroundImage = getCssValuePrefix() + 'linear-gradient('
+        + orientation + ', ' + colorThree + ', ' + colorTwo + ', ' + colorOne + ')';
     }
 
     initScene() {
@@ -414,7 +445,6 @@ class IntersectionScene {
     update(pitch_array) {
         for (let i = 0; i < this.buildings.length; i++) {
             let norm = -pitch_array[1]/300 * this.default_y_scales[i] + this.default_y_scales[i]
-            console.log(norm)
             this.buildings[i].scale.set(1, norm, 1)
             this.buildings[i].position.y = (this.default_heights[i]*norm)/2 - 15
         }
