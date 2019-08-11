@@ -2,18 +2,9 @@
 # Music visualizer for the CMMND EP
 
 ## TODO
-  - add loading bar 
-  - initscene on loading
-  - sunset scene
-  - gif -> video that loops
-    - https://www.google.com/search?q=convert+gif+to+video&oq=convert+gif+to+video&aqs=chrome.0.0l6.3464j0j9&sourceid=chrome&ie=UTF-8
+  - sunset scene morph
   - scene merging*** (works)
     - fix positioning bug
-    - reset car inbetween scenes 
-  - post processing effect
-  - play audio in succession (done)
-  - loading manager (wait for car to load before beginning scene)
-    - on load to play audio
 
 ## Implementation
 Scene Handling 
