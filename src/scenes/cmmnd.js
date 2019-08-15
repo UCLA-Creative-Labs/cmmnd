@@ -73,28 +73,47 @@ class CMMNDScene {
 	constructor() { 
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+        this.controls = new THREE.OrbitControls(this.camera);
+        this.controls.zoomSpeed = .5;
+        this.controls.enablePan = true;
+
         this.platform = getPlatform(); //car platform 
         this.mirrors = getMirrors(); //array of mirrors to draw
         // this.logo = getArchLogo();
 
-        // postprocessing of scene (not working??)
+        // postprocessing of scene 
         this.composer = new THREE.EffectComposer( renderer );
-        this.renderPass = new THREE.RenderPass( this.scene, this.camera );
+        this.renderPass = new THREE.RenderPass( this.scene, this.camera ); // new render 
         this.badTVPass = new THREE.ShaderPass( THREE.BadTVShader );
         this.composer.addPass( this.renderPass );
         this.badTVPass.renderToScreen = true;
         this.composer.addPass( this.badTVPass );
+        this.RGBShiftPass = new THREE.ShaderPass( THREE.RGBShiftShader );
+        this.RGBShiftPass.renderToScreen = true;
+        this.composer.addPass( this.RGBShiftPass );
         this.shaderTime = 0;
+
+        this.time = 0;
+        this.postprocessing = true;
+
+        this.badTVParams = {
+            mute:true,
+            show: true,
+            distortion: .8,
+            distortion2: .8,
+            speed: .1
+        };
     }
 
     setCar() { 
         
-        car.position.set(0, 0, 0);
+        car.position.set(0, 4.6, 0);
         car.rotation.set(0, Math.PI, 0);
         car.scale.set( 1, 1, 1 );
         // car.rotateY(Math.PI);
         car.updateMatrix(); // updates local matrix 
-        car.position.set(0, 4.6, 0);
+  
         car.castShadow = true;
         car.receiveShadow = true;
         this.platform.add(car);
@@ -140,11 +159,9 @@ class CMMNDScene {
         for (let mirror of this.mirrors) { 
             this.scene.add(mirror);
         }
-
        
 
         this.scene.add(this.platform);
-
         this.setObjects();
 
 
@@ -171,22 +188,27 @@ class CMMNDScene {
         this.scene.add(logoLight);
 
         // ambient light
-        this.scene.add(new THREE.AmbientLight( 0xffffff, .2));   
+        this.scene.add(new THREE.AmbientLight( 0xffffff, .2)); 
+        
+        // postprocessing params
+        let badTVParams = this.badTVParams;
+
+        this.badTVPass.uniforms[ 'distortion' ].value = badTVParams.distortion;
+        this.badTVPass.uniforms[ 'distortion2' ].value = badTVParams.distortion2;
+        this.badTVPass.uniforms[ 'speed' ].value = badTVParams.speed;
+        this.badTVPass.uniforms[ 'rollSpeed' ].value = badTVParams.rollSpeed;
 	}
 
 	update() {
-        var date = new Date;
-        // update objects within the scene
         this.scene.rotation.y += .005;
-        archLogo.position.y += .01*Math.sin( date.getSeconds());  // change to clock
+        archLogo.position.y += .01*Math.sin( clock.getDelta());  // change to clock
 	}
 
 	animate() {
-
+        
         this.shaderTime += 0.1;
         this.badTVPass.uniforms[ 'time' ].value =  this.shaderTime;
         this.update();
-        // this.composer.render( 0.1);
 
     }
 

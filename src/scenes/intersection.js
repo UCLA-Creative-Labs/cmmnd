@@ -312,6 +312,11 @@ class IntersectionScene {
     constructor() { 
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+        this.controls = new THREE.OrbitControls(this.camera);
+        this.controls.zoomSpeed = .5;
+        this.controls.enablePan = true;
+        
         this.floor = getFloor()
         this.streets = getStreets()
         this.circle = getCircle()
@@ -325,6 +330,22 @@ class IntersectionScene {
         this.smokeParticles = []
         this.delta = clock.getDelta()
         this.prevNorm = 1
+
+        this.composer = new THREE.EffectComposer( renderer );
+        this.renderPass = new THREE.RenderPass( this.scene, this.camera ); // new render 
+        this.FilmPass = new THREE.FilmPass(  
+            0.35,   // noise intensity
+            0.1,  // scanline intensity
+            648,    // scanline count
+            false,  // grayscale 
+        );
+        this.RGBShiftPass = new THREE.ShaderPass( THREE.RGBShiftShader )
+        this.composer.addPass( this.renderPass );
+        this.FilmPass.renderToScreen = true;
+        this.RGBShiftPass.renderToScreen = true;
+        this.composer.addPass( this.RGBShiftPass )
+        this.composer.addPass( this.FilmPass );
+        this.postprocessing = true;
     }
 
     setCar() { 
@@ -405,7 +426,6 @@ class IntersectionScene {
         }
 
         // Add 3d models
-        
         for (let i = 0; i < this.buildings.length; i++) {
             this.scene.add(this.buildings[i])
         }

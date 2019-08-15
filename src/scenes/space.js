@@ -1,5 +1,8 @@
 // inda rocket scene
 // make speed of orbit depend on vol
+// diff speed of orbit for comets 
+// add satellite
+// add rocket 
 var count = freq = 0;
 
 	function getStars(radius = 500, material = "YELLOW", amt = 10000) {
@@ -9,7 +12,7 @@ var count = freq = 0;
 			case "YELLOW":
 			materialOptions = {
 				size: 1.0, 
-				transparency: false , 
+				transparency: false, 
 				opacity: 0.7,
 				color: 0xeaf20c //yellow
 			};
@@ -71,20 +74,6 @@ var count = freq = 0;
 		});
 		sun = new THREE.Mesh(geometry, material);
 		sun.position.set(0,0, 250);
-
-
-		// add sprite within the sun
-		let spriteMaterial = new THREE.SpriteMaterial(
-			{
-				map: new THREE.ImageUtils.loadTexture("./assets/images/glow.png")
-				, useScreenCoordinates: false
-				, color: 0xffffee
-				, transparent: false
-				, blending: THREE.AdditiveBlending
-			});
-		let sprite = new THREE.Sprite(spriteMaterial);
-		sprite.scale.set(150, 150, 1.0);
-		sun.add(sprite); // This centers the glow at the sun.
 
 		return sun;
 
@@ -155,6 +144,10 @@ var count = freq = 0;
 			this.scene = new THREE.Scene();
 			this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
+			this.controls = new THREE.OrbitControls(this.camera);
+			this.controls.zoomSpeed = .5;
+			this.controls.enablePan = true;
+
 			this.stars1 = getStars(500);
 			this.stars2 = getStars(520, "RED", 10000);
 			this.stars3 = getStars(490, "ORANGE", 5000);
@@ -163,11 +156,28 @@ var count = freq = 0;
 			this.sun = getSun2();
 			this.moon = getMoon();
 			this.orbit = new THREE.Group();
+			this.rocketOrbit = new THREE.Group();
 			this.planet1 = getRingPlanet();
 
 			this.background = true;
 			this.color = new THREE.Color( 0x000 )
 			/* scene setup */
+
+			this.composer = new THREE.EffectComposer( renderer );
+			this.renderPass = new THREE.RenderPass( this.scene, this.camera ); // new render 
+			this.FilmPass = new THREE.FilmPass(  
+				0.35,   // noise intensity
+				0.1,  // scanline intensity
+				648,    // scanline count
+				false,  // grayscale 
+			);
+			this.RGBShiftPass = new THREE.ShaderPass( THREE.RGBShiftShader )
+			this.composer.addPass( this.renderPass );
+			this.FilmPass.renderToScreen = true;
+			this.RGBShiftPass.renderToScreen = true;
+			this.composer.addPass( this.RGBShiftPass )
+			this.composer.addPass( this.FilmPass );
+			this.postprocessing = true;
 		}
 
 		setLogo() { 
@@ -182,7 +192,6 @@ var count = freq = 0;
 		}
 
 		setCar() { 
-			car.rotation.y = Math.PI/2;
 			// set position of passed in car object
 		}
 
@@ -202,13 +211,25 @@ var count = freq = 0;
 			this.scene.background = new THREE.Color( 0x000000 );
 			this.camera.position.z = 20;
 			
+			// models
+			this.rocket = models.rocket.clone();
+			this.rocket.scale.set(.2,.2,.2);
+			this.rocket.position.set(-100,10,-80);
+			this.satellite = models.satellite.clone();
+			this.satellite.scale.set(5,5,5);
+			this.satellite.position.set(-100,0,80);
+			this.car = car.clone();
+			this.car.position.set(0,0,0)
+			this.car.rotation.y = Math.PI/2;
+			this.scene.add(this.car);
 			this.setObjects();
-			this.scene.add(car);
+
+
+			this.rocketOrbit.add(this.rocket)
+			this.orbit.add(this.satellite)
 			// this.orbit.add(archLogo);
 			this.orbit.add(stereo);
 			this.orbit.add(this.planet1)
-
-			car.position.set(0,0,0);
 
 			// initialize scene objects using common object or helper functions
 			// add objects to this.scene
@@ -228,14 +249,19 @@ var count = freq = 0;
 			this.orbit.add(this.moon);
 
 			this.scene.add(this.orbit);
+			this.scene.add(this.rocketOrbit);
 			
 		}
 
 		update(pitch_array,volume_array) {
 			// update objects within the scene
 			let bufferlen = pitch_array.length;
-			car.rotation.y += .003;
-			car.rotation.x += .005;
+			this.car.rotation.y += .003;
+			this.car.rotation.x += .005;
+			this.rocketOrbit.rotation.x += .003;
+			this.rocketOrbit.rotation.z -= .005;
+
+
 			archLogo.rotation.y += .02;
 			archLogo.rotation.z += .01;
 			stereo.rotation.z += .01;
@@ -249,25 +275,22 @@ var count = freq = 0;
 
 				// change background color 
 				if ( vol > 204 && this.background ) { 
-					console.log( "change");
+
 					this.scene.background = randomColor();
 					this.background = false;
 					stereo.scale.set(.105,.105,.105);
-					// wait 10 seconds to set background to true
-					// setTimeout(function() {
 			
-					// 	this.scene.background = this.color;
-					// }.bind(this), 1000);
 					setTimeout(function() {
 						this.background = true;
 						stereo.scale.set(.1,.1,.1);
 						
 					}.bind(this), 1000);
 				}
+
 				else if ( vol > 180 ) { 
 					this.orbit.rotation.y += .00003 * norm;
 				}
-					
+
 				this.orbit.rotation.y += .00001 * norm;
 			}
 
@@ -279,8 +302,7 @@ var count = freq = 0;
 				
 				// freq += p/128;
 				count += .000001 * p;
-				// cmmndCar.rotation.z += p/2560000.;
-		
+	
 				let norm = 1.5 + Math.sin(count);
 				if( pitch_array[i] > 120  ) { 
 					this.stars1.scale.set(norm, norm, norm);
@@ -304,7 +326,6 @@ var count = freq = 0;
 
 			const pitch_array = audio.getFreqData();
 			const volume_array = audio.getVolumeData();
-
 			this.update(pitch_array, volume_array);
 				//renamve
 		} 

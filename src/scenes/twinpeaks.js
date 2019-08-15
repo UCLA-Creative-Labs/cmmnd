@@ -2,36 +2,38 @@
 // to do : 
 // add twinkling stars
 // add glitching moon
+
+
+// tDiffuse is texture from prev shader
 var PixelShader = {
   uniforms: {
-    tDiffuse: { value: null },
-    resolution: { value: null },
-    pixelSize: { value: 1 }
+      "tDiffuse": { value: null },
+      "resolution": { value: null },
+      "pixelSize": { value: 1. },
   },
   vertexShader: [
-    "varying highp vec2 vUv;",
-    "void main() {",
-    "vUv = uv;",
-    "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
-    "}"
-  ].join("\n"),
+      "varying highp vec2 vUv;",
+      "void main() {",
+      "vUv = uv;",
+      "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+      "}"
+  ].join( "\n" ),
   fragmentShader: [
-    "uniform sampler2D tDiffuse;",
-    "uniform float pixelSize;",
-    "uniform vec2 resolution;",
-    "varying highp vec2 vUv;",
-    "void main(){",
-    "vec2 dxy = pixelSize / resolution;",
-    "vec2 coord = dxy * floor( vUv / dxy );",
-    "gl_FragColor = texture2D(tDiffuse, coord);",
-    "}"
-  ].join("\n")
+      "uniform sampler2D tDiffuse;",
+      "uniform float pixelSize;",
+      "uniform vec2 resolution;",
+      "varying highp vec2 vUv;",
+      "void main(){",
+      "vec2 dxy = pixelSize / resolution;",
+      "vec2 coord = dxy * floor( vUv / dxy );",
+      "gl_FragColor = texture2D(tDiffuse, coord);",
+      "}"
+  ].join( "\n" )
 };
 
 class TwinPeaksScene {
   constructor() {
     this.scene = new THREE.Scene();
-    this.postprocessing = false;
     this.camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -39,8 +41,30 @@ class TwinPeaksScene {
       1000
     );
     this.camera.position.z = 85;
+
+    this.controls = new THREE.OrbitControls(this.camera);
+    this.controls.zoomSpeed = .5;
+    this.controls.enablePan = true;
+
     this.cliff = cliff;
     this.fogColor = new THREE.Color(0x19022d);
+
+    // postprocessing effects
+    this.composer = new THREE.EffectComposer( renderer );
+    this.renderPass = new THREE.RenderPass( this.scene, this.camera ); // new render 
+    this.FilmPass = new THREE.FilmPass(  
+        0.35,   // noise intensity
+        0.1,  // scanline intensity
+        648,    // scanline count
+        false,  // grayscale 
+    );
+    this.RGBShiftPass = new THREE.ShaderPass( THREE.RGBShiftShader );
+    this.RGBShiftPass.renderToScreen = true;
+    this.composer.addPass( this.renderPass );
+    this.FilmPass.renderToScreen = true;
+    this.composer.addPass( this.RGBShiftPass );
+    this.composer.addPass( this.FilmPass );
+    this.postprocessing = true;
 
 
   }
@@ -68,7 +92,7 @@ class TwinPeaksScene {
   
   setScene() { 
     this.scene.background = this.fogColor;
-			
+    this.controls.update()
   }
 
   initScene() {
@@ -107,18 +131,6 @@ class TwinPeaksScene {
     );
     globe.position.set(0, -525, -50);
     this.scene.add(globe);
-
-    // this.composer = new THREE.EffectComposer(renderer);
-    // this.composer.addPass(new THREE.RenderPass(this.scene, camera));
-    // const pixelPass = new THREE.ShaderPass(PixelShader);
-    // pixelPass.uniforms.resolution.value = new THREE.Vector2(
-    //   window.innerWidth,
-    //   window.innerHeight
-    // );
-    // pixelPass.uniforms.resolution.value.multiplyScalar(window.devicePixelRatio);
-    // pixelPass.renderToScreen = true;
-    // this.composer.addPass(pixelPass);
-    // this.postprocessing = true;
 
     // Add city
     const city = new THREEx.ProceduralCity();
@@ -194,7 +206,6 @@ class TwinPeaksScene {
   animate() {
     const pitch_array = audio.getFreqData();
     this.update(pitch_array);
-    // calls update
   }
 }
 

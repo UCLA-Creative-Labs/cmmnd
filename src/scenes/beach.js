@@ -17,10 +17,6 @@
 var sun, particle, particles, polygon;
 var waveParticles;
 
-/* scene timer */ 
-var start = Date.now();
-var end, timeDiff;
-
 /* scene constants */ 
 const CLOUD_NUM = 25;
 
@@ -93,8 +89,12 @@ function getCloudMorph(mesh){
 
     // typed array of morph targets
     // new array from positions
+    // depending on number of positions, blades = pos/3 (3 points per blade)
+    // 
     let targetPos = [];
     positions.forEach(()=> {
+        var newPos; 
+        var spin; 
         targetPos.push(mesh.position.x)
         targetPos.push(mesh.position.y)
         targetPos.push(mesh.position.z)
@@ -265,9 +265,14 @@ function getParticles() {
 
 class BeachScene { 
     constructor() { 
-
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+        this.controls = new THREE.OrbitControls(this.camera);
+        this.controls.zoomSpeed = .5;
+        this.controls.enablePan = true;
+
+        this.orbit = new THREE.Group();
         this.sun = getSun();
         this.waveParticles = getWaveParticles();
         this.clouds = getClouds();
@@ -277,6 +282,25 @@ class BeachScene {
         this.morph_interval = 1000; //milliseconds
         // unique texture, objs etc. will load 
         this.polygon = getPolygonLogo();
+
+        // postprocessing effects
+        this.composer = new THREE.EffectComposer( renderer );
+        this.renderPass = new THREE.RenderPass( this.scene, this.camera ); // new render 
+        this.FilmPass = new THREE.FilmPass(  
+            0.35,   // noise intensity
+            0.1,  // scanline intensity
+            648,    // scanline count
+            false,  // grayscale 
+        );
+        this.RGBShiftPass = new THREE.ShaderPass( THREE.RGBShiftShader )
+        this.composer.addPass( this.renderPass );
+        this.FilmPass.renderToScreen = true;
+        this.RGBShiftPass.renderToScreen = true;
+        this.composer.addPass( this.RGBShiftPass )
+        this.composer.addPass( this.FilmPass );
+        this.postprocessing = true;
+
+    
     }
 
     setObjects() { 
@@ -289,10 +313,8 @@ class BeachScene {
         car.position.set(0, -5, 60);
         car.rotation.set(0, 7*Math.PI/6, 0);
         car.scale.set( 1, 1, 1 );
-        // car.rotateY(Math.PI);
         car.updateMatrix(); // updates local matrix 
         this.scene.add(car);
-        // car.rotateY(1*Math.PI/6 );
     }
 
     setGrass() { 
@@ -320,7 +342,8 @@ class BeachScene {
 
         var current = {amt: this.morph_amt};
         var target = {amt: this.morph_amt == 0 ? 1 : 0}; //opposite of morph_amt
-        var tween = new TWEEN.Tween(current).to(target, this.morph_interval - 10); // divide by morph_speed (according to music)
+        var tween = new TWEEN.Tween(current).to(target, this.morph_interval - 10); 
+        // divide by some morph_speed (according to music)
         tween.easing(TWEEN.Easing.Elastic.Out);
 
         tween.onUpdate(function(){ 
@@ -344,8 +367,16 @@ class BeachScene {
     }
 
     initScene() { 
-        this.setScene()
+        // initialize and declare loaded models
+        this.plane = models["plane"].clone()
+        this.plane.scale.set(.05,.05,.05)
+        this.plane.position.set(150, 0, 0)
+        this.plane.rotation.set(0, Math.PI, 0)
+        this.throttle = 0
 
+
+        // set scene variables
+        this.setScene()
         this.grass2 = grass.clone();
         this.setObjects();
         
@@ -359,6 +390,8 @@ class BeachScene {
 
         this.scene.add(this.particleSystem);
         this.scene.add(this.polygon);
+        this.orbit.add(this.plane)
+        this.scene.add(this.orbit)
         
         for( let r of this.waveParticles ) 
             for( let p of r )
@@ -367,8 +400,6 @@ class BeachScene {
     
         for( let c of this.clouds ) 
             this.scene.add( c );
-        
-
 
         // add lights
         const sunLight = new THREE.DirectionalLight(0xffc922, 1);
@@ -384,8 +415,14 @@ class BeachScene {
     }
 
     update(pitch_array) {
+        // nothing here is being set 
+        this.throttle += .05;
+        this.plane.rotation.set( .1*Math.sin(this.throttle) + Math.PI, 0, .1*Math.sin(this.throttle) + Math.PI) 
+        this.plane.position.y = 10*Math.sin(this.throttle)
 
-        this.sun.rotation.x += .005;
+        this.orbit.rotation.y -= .004;
+        // this.sun.rotation.x += .005;
+        
 
         var prevSpeed = 0 ; 
         var speed = 0;
@@ -398,8 +435,8 @@ class BeachScene {
                 //add frequency data to each particle
                 //average with prev freq data
                 speed = (.1*pitch_array[indx] + prevSpeed)/2.;
-                particle.position.y = (Math.sin((x + count) * 0.3) * (WAVESIZE + speed)) + (Math.sin((y + count) * 0.5) * WAVESIZE) + WAVE_Y;
-                let scale = (Math.sin((x + count) * 0.3) + 1) * MAXSIZE + (Math.sin((y + count) * 0.5) + 1) * MAXSIZE;
+                particle.position.y = (Math.sin((x + count) * 3) * (WAVESIZE + speed)) + (Math.sin((y + count) * 5) * WAVESIZE) + WAVE_Y;
+                let scale = (Math.sin((x + count) * 3) + 1) * MAXSIZE + (Math.sin((y + count) * 5) + 1) * MAXSIZE;
                 particle.scale.x = particle.scale.y = scale;
                 prevSpeed = speed;
                 if( indx < pitch_array.length )

@@ -4,15 +4,16 @@
 <html>
 	<link href="https://fonts.googleapis.com/css?family=Titillium+Web&display=swap" rel="stylesheet">
 	<style> 
-		#audio{ 
-			display: none;
+
+		/* remove controls for logo loading screen */
+		video::-webkit-media-controls, 
+		video::-moz-media-controls, 
+		video::-o-media-controls, 
+		video::-ms-media-controls { 
+			display: none !important; 
 		}
 
-		.play-button{ 
-			position:absolute;
-			opacity: 0;
-			z-index: 100;
-		}
+		button:focus {outline:0;}
 
 		.mediaPlayer{ 
 			width: 50%;
@@ -35,7 +36,6 @@
 			justify-content: center;
 			background-color: black;
 			position:relative;
-			/* background-image: url("./assets/CMMND_spinning.gif"); */
 			background-position: center;
 			background-size: 600px 300px;
 			background-repeat: no-repeat;
@@ -43,16 +43,29 @@
 			height: 100vh;
 			text-align: center;
 		}
-		
-		/* .play-screen { 
-			position: fixed;
-			display:none;
-			background-color: black;
-			width: 100vw;
-			height: 100vh;
-		} */
 
-		.button.play {
+		.controls { 
+			position: fixed;
+			display: none;
+			margin: auto;
+			bottom: 100px;
+			width: 75%;
+			left: 50%;
+			margin-left: -37.5%;
+		}
+		
+		.control-button:focus { animation: blinker 1s linear infinite; }
+		.control-button { 
+			display: inline-block;
+			border-radius: 50%;
+			height: 20px;
+			width: 20px;
+			color: white;
+			opacity: .8;
+			margin: 10px;
+		}
+
+		.play-button {
 			position: absolute;
 			margin: auto;
 			bottom: 200px;
@@ -62,29 +75,6 @@
 			background-color:black;
 			width: auto;
 		}
-
-		.arrow-right {
-			border:none;
-			margin-left: 2px;
-			width: 0; 
-			height: 0; 
-			border-top: 8px solid transparent;
-			border-bottom: 8px solid transparent;
-			background-color: transparent !important;
-			border-left: 8px solid white;
-		}
-
-		.arrow-left {
-			border:none;
-			margin-right: 2px;
-			width: 0; 
-			height: 0; 
-			border-top:  8px solid transparent;
-			border-bottom: 8px solid transparent; 
-			border-right: 8px solid white; 
-			background-color: transparent !important;
-		}
-
 		
 		p { 
 			color: white;
@@ -96,26 +86,6 @@
 			50% {
 				opacity: 0;
 			}
-		}
-
-		button:focus {outline:0;}
-
-		.controls { 
-			position: fixed;
-			display: none;
-			margin: 10px;
-			margin-top: 12px;
-			opacity: .6;
-			background-color: #27332F;
-			border-radius: 20%;
-
-			/* background-color: rgba(0,0,0,.5); */
-		}
-
-		/* selector button */
-		.scene-button{ 
-			border-radius: 10%; 
-			box-shadow: 5px 5px 5px;
 		}
 
 		/* text */
@@ -143,6 +113,12 @@
 	<head>
 		<meta charset=utf-8>
 		<title>CMMND EP X Creative Labs</title>
+
+		<meta name="description" content="Music Visualizer for CMMND EP">
+		<meta name="keywords" content="HTML,CSS,JavaScript,Threejs,music,visualizer,hip-hop,rap">
+		<meta name="author" content="Amanda Han, Angela Zhang, Katie Cai, Rohan Kumar, Tobey Lee">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 	</head>
 	<body> 
 		<div class="loading-screen"> 
@@ -153,17 +129,22 @@
 				<video id="spinning-video" autoplay loop>
 						<source src="./assets/CMMND spinning.mov">
 				</video>
-		</div>
-		<div class="controls"> 
+			</div>
+		<section class="controls"> 
 			<!-- each button corresponds to a scene, switch between scenes (only initscene once) -->
-			<button class="arrow-left" id="prev"></button>
-			<button class="arrow-right" id="next"></button>
-		</div>
+			<button class="control-button" data-index="0"></button>
+			<button class="control-button" data-index="1"></button> 
+			<button class="control-button" data-index="2"></button>
+			<button class="control-button" data-index="3"></button>
+			<button class="control-button" data-index="4"></button>
+			<button class="control-button" data-index="5"></button>
+		</section>
 	
 	
 
 		
 	</body>
+
         <!-- Load libs -->
 		<script src="./lib/three.min.js"></script>
 		<script src="./lib/tween.min.js"></script>
@@ -176,6 +157,8 @@
 		<script src="./lib/ShaderPass.js"></script>
 		<script src="./lib/CopyShader.js"></script>
 		<script src="./lib/BadTVShader.js"></script>
+		<script src="./lib/FilmPass.js"></script>
+		<script src="./lib/RGBShiftShader.js"></script>
 		<script src="./lib/threex.proceduralcity.js"></script>
 
 		<!-- Scenes and objects -->
@@ -185,12 +168,18 @@
 		<script src="./src/scenes/intersection.js"></script> 
 		<script src="./src/scenes/sky.js"></script> 
 		<script src="./src/scenes/twinpeaks.js"></script>  
-		
+		<!-- 3D Modeled Objects -->
 		<script src="./src/objects.js"> </script>
 		
-		
 		<script>
-
+			
+			/* TO DO
+			- postprocessing for all scenes
+			- 
+			- delta time change to clock.delta
+			- clone common objects in each scene
+			- base class for scenes? (handling postprocessing, object cloning, etc.)
+			*/ 
 			const context = window.AudioContext || window.webkitAudioContext;
 
 			/* 
@@ -224,9 +213,9 @@
 
 					/* scene name to audio mapping */
 					this.scenes = { 
-						// test
+		
 						INTRO: "CMMND",
-					THEWAY: "SKY", 
+						THEWAY: "SKY", 
 						TENTOES: "BEACH",
 						INDAROCKET: "SPACE",
 						SUICIDE: "TWINPEAKS",
@@ -242,9 +231,6 @@
 						"INTERSECTION": new IntersectionScene, 
 						"SKY": new SkyScene
 					}
-
-					// if scene is initiated
-					this.isInitialized = [0,0,0,0,0]; 
 
 					this.titles = Object.keys(this.songs);
 			
@@ -263,6 +249,13 @@
 
 				}
 		
+				initializeScenes() { 
+					// initialize all scenes once objects are done
+					for(let scene of Object.values(this.sceneObjects)) { 
+						scene.initScene()
+					}
+				}
+
 				// returns the audio for the next song
 				getAudio () { 
 					const title = this.titles[this.index];
@@ -286,35 +279,22 @@
 					return this.volume_array;
 				}
 
-				// play next song
-				playNext(){ 
+		
 
-					// pause the current song
+				// play song by index
+				playIndex(idx){ 
 					this.getAudio().pause();
-					this.getAudio().currentTime = 0;
-					this.currentSong.removeEventListener("ended", this.songEnded);
-					this.index++;
-					if (this.index === 6) 
-					{
-						this.index = 0;
-						this.playLoop();
-						console.log('song loop restarted');
-					} // restart audio on last song
-					else this.playLoop();
-				}
-
-				// play prev song
-				playPrev(){ 
-
-					this.getAudio().pause();
-					this.currentSong.removeEventListener("ended", this.songEnded);
-					this.index--; 
-					if (this.index === -1) { 
-						this.index = 5;
-						this.playLoop();
+					this.currentSong.removeEventListener("song ended ", this.songEnded);
+		
+					if (idx > -1 && idx < 6) { 
+						this.index = idx
+						this.playLoop()
 					}
-					else this.playLoop();
-				
+					else {
+						console.log("error playing song, index not found. Resetting...")
+						this.index = 0
+						this.playLoop()
+					};
 				}
 
 				// setup webaudio to play next song
@@ -322,14 +302,13 @@
 				// callback increments index
 				// last callback restarts the index
 				// play first song
-
 				playLoop() { 
 
 					function songEnded(){
 
-						console.log("ended");
+						console.log("song ended ");
 						// // play the next song
-						console.log("play next");
+						console.log("play next song");
 						this.index++;
 						if (this.index === 6) 
 						{
@@ -345,29 +324,16 @@
 					this.currentSong = this.songs[this.titles[i]];
 					this.currentScene = this.scenes[this.titles[i]];
 					this.scene = this.sceneObjects[this.currentScene];
-
-					console.log(this.isInitialized[i]);
-					if (!this.isInitialized[i]) {
-						console.log("init scene");
-						this.scene.initScene();
-						this.isInitialized[i] = 1;
-					}
-					else { 
-						console.log("resetting scene...");
-						this.scene.setObjects();
-						this.scene.setScene();
-						console.log("reset scene");
-					}
+					
+					console.log("setting scene...");
+					this.scene.setObjects();
+					this.scene.setScene();
+					console.log("scene set");
 						
-					controls = new THREE.OrbitControls(this.scene.camera);
-					controls.zoomSpeed = .5;
-					// controls.minAzimuthAngle = - Math.PI/2;
-					// controls.maxAzimuthAngle = Math.PI/2;
-					controls.enablePan = true;
 					this.currentSong.addEventListener("ended", songEnded.bind(this) );
 
 					// this.getAudio().currentTime = 0;
-					console.log("playing", this.currentSong)
+					console.log("playing", this.titles[i])
 					this.getAudio().play();
 					this.sources[i].connect(this.analyser);
 					this.analyser.connect(this.context.destination);
@@ -380,18 +346,6 @@
 			const clock = new THREE.Clock();
 			const manager = new THREE.LoadingManager();
 
-			// https://stackoverflow.com/questions/20220629/how-to-build-loading-bar-with-pure-javascript
-			function animate(elem,style,unit,from,to,time) {
-				if( !elem) return;
-				var start = new Date().getTime(),
-					timer = setInterval(function() {
-						var step = Math.min(1,(new Date().getTime()-start)/time);
-						elem.style[style] = (from+step*(to-from))+unit;
-						if( step == 1) clearInterval(timer);
-					},25);
-				elem.style[style] = from+unit;
-			}
-
 
 			manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
 
@@ -399,17 +353,22 @@
 
 			};
 
+			// finish loading
 			manager.onLoad = function () {
+
+				// initialize scenes 
+				audio.initializeScenes()
+
 				setTimeout(function() { 
 
-					/* add click to play  remove loading bar.audio */
+					// add click to play  
 					let loading = document.querySelector('.loading-screen');
 					loading.removeChild(document.querySelector('#loading-audio'));
 					
 			
 					let btn = document.createElement("BUTTON");
 
-					btn.classList += " play button";
+					btn.classList += " play-button";
 					btn.id = "play"
 					btn.innerHTML = '<p>click to play</p>'
 					loading.appendChild(btn);
@@ -432,8 +391,6 @@
 					}
 
 					document.addEventListener("click", playVis);
-					// let play = document.querySelector('.play-screen');
-					// play.style.display = "block";
 
 				}, 1)
 				
@@ -451,9 +408,9 @@
 
 			};
 
-			const objLoader = new THREE.OBJLoader(manager);
-			const textureLoader = new THREE.TextureLoader(manager);
-			const mtlLoader = new THREE.MTLLoader(manager);
+			var objLoader = new THREE.OBJLoader(manager);
+			var textureLoader = new THREE.TextureLoader(manager);
+			var mtlLoader = new THREE.MTLLoader(manager);
 			var controls;
 
 			var renderer = new THREE.WebGLRenderer({alpha: true});
@@ -464,24 +421,43 @@
 			var car = new THREE.Group();
 			var cliff, grass, stereo, archLogo, tower;
 
+			// models class
+			function Models() { 
+				this.plane; 
+				this.rocket; 
+				this.satellite;
+			}
+
+			// instantiate objects  
+			const models = new Models();
+
 			const audio = new AudioController;
 			
 			/* buttons */ 
-			document.getElementById('next').addEventListener('click', function(){
-				audio.playNext();
+			var buttons = document.querySelectorAll('.control-button')
+			buttons.forEach((button)=>{ 
+				let index = button.getAttribute('data-index')
+				button.addEventListener('click', function(){
+					audio.playIndex(index)
 			});
-			document.getElementById('prev').addEventListener('click', function(){
-				audio.playPrev();
-			});
+			})
 
 	
-	
-			/* initialize common objects */ 
+			/* initialize common objects
+				load models
+				move these to objects.js 
+			*/ 
+
+			loadObj("rocket", "./assets/models/rocket/rocket.obj", "./assets/models/rocket/rocket.mtl")
+			loadObj("plane", "./assets/models/plane/plane.obj", "./assets/models/plane/plane.mtl")
+			loadObj("satellite", "./assets/models/satellite/satellite.obj", "./assets/models/satellite/satellite.mtl")
+
 			getCar();
 			getArchLogo(); // arch logo
 			getGrass();
 			getStereo();
 			getTower();
+
 
 			/* initialize renderer */
 
@@ -496,12 +472,6 @@
 			
 			document.body.appendChild( renderer.domElement );
 
-
-
-
-			// initPlatform();
-			// BeachScene();
-			// initScene();
 			// render();
 			// updated scene
 			// use audio.getScene to get the scene class to render 
@@ -512,7 +482,13 @@
 
 				requestAnimationFrame(() => (render(audio.scene)));
 				scene.animate();
-				renderer.render( scene.scene, scene.camera );
+
+				if( scene.postprocessing ) {
+					scene.composer.render( clock.getDelta )
+				}
+				
+				else renderer.render( scene.scene, scene.camera );
+			
 
 			} 
 

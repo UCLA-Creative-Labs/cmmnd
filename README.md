@@ -15,6 +15,11 @@
   - loading manager (wait for car to load before beginning scene)
     - on load to play audio
 
+  - optimization 
+  https://stackoverflow.com/questions/47807069/three-js-loading-big-obj-file-about-300-mb-will-crash-the-browser-and-take-m/47847417#47847417
+  - textures/models are too big? 
+
+  
 ## Implementation
 Scene Handling 
 
