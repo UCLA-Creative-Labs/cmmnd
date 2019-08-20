@@ -199,7 +199,7 @@ function getDonuts() {
     let donuts = []
     
     // generate various sizes of donuts
-    for (let i = 0; i <= 200; i++) {
+    for (let i = 0; i <= 75; i++) {
         console.log('getting donuts')
         let radius = Math.random() * 2 + .5; 
         let donut_geo = new THREE.TorusGeometry(radius, .7*radius, 16, 100)
@@ -215,7 +215,7 @@ function getDonuts() {
         let donut = new THREE.Mesh(donut_geo, donut_material);
 
         donut.position.x = (Math.random() * 300 - 140)
-        donut.position.y = (Math.random() * 30 + 80)
+        donut.position.y = (Math.random() * 30 + 40)
         donut.position.z = (Math.random() * 200 - 110)
         
         if (i % 2 == 0) {
@@ -346,6 +346,7 @@ class IntersectionScene {
         this.circle = getCircle()
         this.buildings = getBuildings()
         this.donuts = getDonuts()
+        this.car = models.car.clone()
         this.donut_y_positions = []
         this.donut_amplitudes = []
         this.default_y_scales = [1, 0.7, 0.9, 0.7, 1.2]
@@ -362,11 +363,11 @@ class IntersectionScene {
             648,    // scanline count
             false,  // grayscale 
         );
-        this.RGBShiftPass = new THREE.ShaderPass( THREE.RGBShiftShader )
+        this.RGBShiftPass = new THREE.ShaderPass( THREE.RGBShiftShader );
         this.composer.addPass( this.renderPass );
         this.FilmPass.renderToScreen = true;
         this.RGBShiftPass.renderToScreen = true;
-        this.composer.addPass( this.RGBShiftPass )
+        this.composer.addPass( this.RGBShiftPass );
         this.composer.addPass( this.FilmPass );
         this.postprocessing = true;
     }
@@ -374,13 +375,13 @@ class IntersectionScene {
     setCar() { 
         // car.position.y = 2;
         // car.position.x = 0;
-        car.position.set(0,2,10);
-        car.rotation.set(0,3*Math.PI/2,0)
-        car.scale.set(1,1,1)
-        car.updateMatrix();
+        this.car.position.set(0,2,10);
+        this.car.rotation.set(0,3*Math.PI/2,0)
+        this.car.scale.set(1,1,1)
+        this.car.updateMatrix();
       
         //console.log(car)
-        this.circle.add(car);
+        this.circle.add(this.car);
     }
 
     setObjects() {
@@ -388,7 +389,7 @@ class IntersectionScene {
     }
     
     setScene() { 
-        renderer.setClearColor(0x120A8F, 1.);
+        renderer.setClearColor(0x120A8F, .1);
         // // Setting the gradient with the proper prefix
         document.getElementsByTagName('canvas')[0].style.backgroundImage = getCssValuePrefix() + 'linear-gradient('
         + orientation + ', ' + colorThree + ', ' + colorTwo + ', ' + colorOne + ')';
@@ -407,6 +408,7 @@ class IntersectionScene {
         for (let street of this.streets) {
             this.scene.add(street)
         }
+
         this.setObjects()
 
         console.log(this.donuts.length)

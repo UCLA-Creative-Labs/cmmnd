@@ -46,7 +46,8 @@ class TwinPeaksScene {
     this.controls.zoomSpeed = .5;
     this.controls.enablePan = true;
 
-    this.cliff = cliff;
+    this.cliff = models.cliff.clone();
+    this.tower = models.tower.clone();
     this.fogColor = new THREE.Color(0x19022d);
 
     // postprocessing effects
@@ -71,18 +72,18 @@ class TwinPeaksScene {
 
   setCar() {
     // set position of passed in car object from common objects
-    car.position.set(0,0,0)
-    car.rotation.set(0,0,0)
-    car.scale.set( 1, 1, 1 );
-    car.updateMatrix(); // updates local matrix 
-    car.position.set( 0, 0, -5 );
-    car.rotation.set( -Math.PI/2, 7*Math.PI/6, 0 );
-    cliff.add(car); // re-add car to this scene
+    this.car.position.set(0,0,0)
+    this.car.rotation.set(0,0,0)
+    this.car.scale.set( 1, 1, 1 );
+    this.car.updateMatrix(); // updates local matrix 
+    this.car.position.set( 0, 0, -5 );
+    this.car.rotation.set( -Math.PI/2, 7*Math.PI/6, 0 );
+    this.cliff.add(this.car); // re-add car to this scene
     
   }
 
   setTower() { 
-    tower.position.set(50,-35,-10)
+    this.tower.position.set(50,-35,-10)
   }
 
   setObjects() { 
@@ -97,9 +98,10 @@ class TwinPeaksScene {
 
   initScene() {
     // this.scene.add(getPlatform());
-    this.scene.add(cliff);
+    this.scene.add(this.cliff);
     this.setScene()
 
+    this.car = models.car.clone()
     this.setObjects()
 
     const sunLight = new THREE.DirectionalLight(0xe1edf0, 0.2);
@@ -120,7 +122,7 @@ class TwinPeaksScene {
     this.scene.add(hemisphereLight);
     this.scene.add(shadowLight);
 
-    this.scene.add(tower);
+    this.scene.add(this.tower);
     // this.scene.fog = new THREE.FogExp2(fogColor, 0.01);
 
     const globe = new THREE.Mesh(

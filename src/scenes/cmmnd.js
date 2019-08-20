@@ -2,7 +2,7 @@
 // spotlight
 // command logo spinning on top
 
-function getPlatform() { 
+function getPlatform(_this) { 
 
     var stepGeo = new THREE.Geometry();
     var stepMaterial = new THREE.MeshStandardMaterial( {color:0xC0C0C0 });
@@ -29,12 +29,12 @@ function getPlatform() {
 
     }
 
-    let platform = new THREE.Mesh(stepGeo, stepMaterial);
-    platform.position.y = -5;
-    platform.castShadow = true;
-    platform.receiveShadow = true;
+    _this.platform = new THREE.Mesh(stepGeo, stepMaterial);
+    _this.platform.position.y = -5;
+    _this.platform.castShadow = true;
+    _this.platform.receiveShadow = true;
     
-    return platform;
+    
 
 }
 
@@ -42,7 +42,7 @@ function getMirrors() {
 
     let mirrors = [];
     let step = 9 / Math.PI*2 ;
-
+    
     let geometry = new THREE.BoxGeometry( 8, 15, .5 );
 
     let material = new THREE.MeshPhysicalMaterial({ 
@@ -78,7 +78,7 @@ class CMMNDScene {
         this.controls.zoomSpeed = .5;
         this.controls.enablePan = true;
 
-        this.platform = getPlatform(); //car platform 
+        this.platform = models.platform.clone(); //car platform 
         this.mirrors = getMirrors(); //array of mirrors to draw
         // this.logo = getArchLogo();
 
@@ -107,23 +107,21 @@ class CMMNDScene {
     }
 
     setCar() { 
-        
-        car.position.set(0, 4.6, 0);
-        car.rotation.set(0, Math.PI, 0);
-        car.scale.set( 1, 1, 1 );
-        // car.rotateY(Math.PI);
-        car.updateMatrix(); // updates local matrix 
+        this.car.position.set(0, 4.6, 0);
+        this.car.rotation.set(0, Math.PI, 0);
+        this.car.scale.set( 1, 1, 1 );
   
-        car.castShadow = true;
-        car.receiveShadow = true;
-        this.platform.add(car);
+  
+        this.car.castShadow = true;
+        this.car.receiveShadow = true;
+        this.platform.add(this.car);
         // set position of passed in car object from common objects
     }
     
     setLogo() { 
-        archLogo.position.set(-5,17,0);
-        archLogo.updateMatrix();
-        this.platform.add(archLogo);
+        this.archLogo.position.set(-5,17,0);
+        this.archLogo.updateMatrix();
+        this.platform.add(this.archLogo);
 
     }	
 
@@ -162,6 +160,9 @@ class CMMNDScene {
        
 
         this.scene.add(this.platform);
+        this.car = models.car.clone(); 
+        this.archLogo = models.archLogo.clone();
+        this.archLogo.scale.set(.1,.1,.1);
         this.setObjects();
 
 
@@ -172,8 +173,9 @@ class CMMNDScene {
         redlight.position.z = 10;
         this.platform.add(redlight);
 
-        var spotlight = new THREE.DirectionalLight( 0xc30000, .8 );
-        spotlight.position.y = 2;
+        var spotlight = new THREE.SpotLight( 0xc30000 );
+        spotlight.position.y = 12;
+        spotlight.penumbra = .6;
         spotlight.castShadow = true;
         this.scene.add(spotlight);
 
@@ -201,7 +203,7 @@ class CMMNDScene {
 
 	update() {
         this.scene.rotation.y += .005;
-        archLogo.position.y += .01*Math.sin( clock.getDelta());  // change to clock
+        this.archLogo.position.y += .01*Math.sin( clock.getDelta());  // change to clock
 	}
 
 	animate() {

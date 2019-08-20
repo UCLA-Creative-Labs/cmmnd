@@ -326,7 +326,7 @@
 					this.scene = this.sceneObjects[this.currentScene];
 					
 					console.log("setting scene...");
-					this.scene.setObjects();
+					// this.scene.setObjects();
 					this.scene.setScene();
 					console.log("scene set");
 						
@@ -355,9 +355,11 @@
 
 			// finish loading
 			manager.onLoad = function () {
-
+				console.log("finished loading models");
+				
+				audio = new AudioController;
 				// initialize scenes 
-				audio.initializeScenes()
+				audio.initializeScenes();
 
 				setTimeout(function() { 
 
@@ -374,6 +376,7 @@
 					loading.appendChild(btn);
 
 					function playVis() { 
+		
 						// add prev buttons 
 						let playerControls = document.querySelector('.controls');
 						playerControls.style.display = "block";
@@ -417,22 +420,48 @@
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			renderer.domElement.id = 'vis-canvas';
 
-			/* common objects */
-			var car = new THREE.Group();
-			var cliff, grass, stereo, archLogo, tower;
+			
 
-			// models class
+			// models class handles loading 
 			function Models() { 
+				
+				this.car = new THREE.Group() 
+				this.cliff;
+				this.grass;
+				this.stereo;
+				this.archLogo; 
+				this.tower
 				this.plane; 
 				this.rocket; 
 				this.satellite;
+				this.platform;
+
+				this.logoTexture;
+				
+				var _this = this;
+
+				this.init = () => {
+					// add cmmnd log
+					console.log("loading models and textures ...");
+					loadObj( _this, "rocket", "./assets/models/rocket/rocket.obj", "./assets/models/rocket/rocket.mtl");
+					loadObj( _this, "plane", "./assets/models/plane/plane.obj", "./assets/models/plane/plane.mtl");
+					loadObj( _this, "satellite", "./assets/models/satellite/satellite.obj", "./assets/models/satellite/satellite.mtl");
+					loadObj( _this, "stereo", "./assets/models/stereo.obj");
+					loadObj( _this, "archLogo", "./assets/models/archLogo.obj");
+					loadObj( _this, "grass", "./assets/models/obj_Dandelion/Dandelion.obj", "./assets/models/obj_Dandelion/Dandelion.mtl");
+					loadObj( _this, "tower", "./assets/models/sutroTower.obj");
+					getCliff(_this);
+					getCar(_this);
+					getPlatform(_this);
+					getTextures(_this, "logoTexture");
+				};
 			}
 
 			// instantiate objects  
 			const models = new Models();
-
-			const audio = new AudioController;
+			models.init();
 			
+			var audio;
 			/* buttons */ 
 			var buttons = document.querySelectorAll('.control-button')
 			buttons.forEach((button)=>{ 
@@ -443,21 +472,7 @@
 			})
 
 	
-			/* initialize common objects
-				load models
-				move these to objects.js 
-			*/ 
-
-			loadObj("rocket", "./assets/models/rocket/rocket.obj", "./assets/models/rocket/rocket.mtl")
-			loadObj("plane", "./assets/models/plane/plane.obj", "./assets/models/plane/plane.mtl")
-			loadObj("satellite", "./assets/models/satellite/satellite.obj", "./assets/models/satellite/satellite.mtl")
-
-			getCar();
-			getArchLogo(); // arch logo
-			getGrass();
-			getStereo();
-			getTower();
-
+			
 
 			/* initialize renderer */
 

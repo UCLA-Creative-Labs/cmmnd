@@ -4,10 +4,10 @@
 // make clouds morph 
 
 let cloud_size = 150;
-    let cloud_num = 25; 
-    let step_num = 60; 
-    let step_size = 2*Math.PI/step_num;
-    let offsetY = -1 * cloud_size;
+let cloud_num = 25; 
+let step_num = 45; 
+let step_size = 2*Math.PI/step_num;
+let offsetY = -1 * cloud_size;
 
 function getPlanet(){ 
     let geometry = new THREE.SphereGeometry(cloud_size - 10, 15, 15);
@@ -65,7 +65,7 @@ function getCloudSphere(_this){
             let cloud = new THREE.Mesh(cloudGeo, cloudMaterial);
 
             //set scale according to normal
-            cloud.scale.set(3,3,3)
+            // cloud.scale.set(2,1,1)
             cloud.position.set(radius*Math.cos(angle) + offsetX, height, radius*Math.sin(angle) + offsetZ)
             cloud.lookAt(new THREE.Vector3( 0, 0, 0 ));
 
@@ -74,11 +74,11 @@ function getCloudSphere(_this){
             cloud.position.y += offsetY;
 
             // lag
-            // if(i % 10 == 0) { 
-            //     getCloudMorph(cloud); // morph every 10th cloud, save reference in array 
-            //     _this.morphClouds.push(cloud);
+            if(i % 10 == 0) { 
+                getCloudMorph(cloud); // morph every 10th cloud, save a reference in array 
+                _this.morphClouds.push(cloud);
             
-            // }
+            }
 
             clouds.add(cloud)
 
@@ -161,6 +161,10 @@ class SkyScene {
         this.fog = new THREE.Fog(this.backgroundColor, 1, 1000);
         this.clouds = getCloudSphere(this); // rotate around x axis of world
         this.planet = getPlanet();
+        this.car = models.car.clone();
+        this.car.position.set(0,18,5);
+        this.throttle = 0
+        
 
         this.sun = getSun(85);
         this.particleSystem = getParticles();
@@ -207,19 +211,6 @@ class SkyScene {
         tween.start();
     }
 
-    setCar() { 
-        car.position.set(0,18,5);
-        car.scale.set(1,1,1);
-        car.rotation.set(0,0,0);
-        car.updateMatrix();
-        this.scene.add(car);
-    }
-
-    setObjects() { 
-        this.setCar();
-		// set position of passed in objects from common objects
-    }
-
     setScene() { 
         this.controls.update()
     }
@@ -228,9 +219,10 @@ class SkyScene {
 
         this.scene.background = this.backgroundColor;
         this.scene.fog = this.fog;
-        this.setObjects();
+ 
+        this.scene.add(this.car);
         this.scene.add(this.clouds);
-        this.scene.add(this.planet)
+        this.scene.add(this.planet);
         this.scene.add(this.sun);
         this.scene.add(this.sky);
         this.sun.position.set(0, 130, -400);
@@ -240,11 +232,11 @@ class SkyScene {
         setInterval( ()=> { this.morph() }, this.morph_interval )
 
         this.camera.position.set(-20,30,50);
-        this.camera.lookAt(car.position);
+        this.camera.lookAt(this.car.position);
         this.scene.add(new THREE.AmbientLight( 0xffffff, .5 ));
         
         var directionalLight = new THREE.DirectionalLight( 0xfa8070, 0.5 );
-        directionalLight.target = car;
+        directionalLight.target = this.car;
         this.sun.add(directionalLight);
         
 	}
@@ -253,8 +245,8 @@ class SkyScene {
         
         this.planet.rotation.x -= .002;
         // this.clouds.rotation.x -= .002;
-        car.rotation.z = .05*Math.sin(this.throttle) + Math.PI
-        car.rotation.x = .05*Math.sin(this.throttle) + Math.PI
+        this.car.rotation.z = .05*Math.sin(this.throttle) + Math.PI;
+        this.car.rotation.x = .05*Math.sin(this.throttle) + Math.PI;
         this.throttle += .01;
 		// update objects within the scene
 	}
@@ -265,7 +257,7 @@ class SkyScene {
 		this.update( pitch_array,volume_array );
         
         // interpolates values
-        // TWEEN.update();
+        TWEEN.update();
     }
 
 }

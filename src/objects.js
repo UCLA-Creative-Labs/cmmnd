@@ -7,7 +7,8 @@
 
 // accepts one obj and one mtl file
 // objFile, matFile is string of path
-function loadObj(objName, objFile, matFile = null) {
+function loadObj(_this, objName, objFile, matFile = null) {
+
     console.log("loading " + objName + "...")
     // if matfile exists, load
     if( matFile ) { 
@@ -27,9 +28,9 @@ function loadObj(objName, objFile, matFile = null) {
             objLoader.load( objFile,
 
                 function ( obj ) {
-                    models[objName] = obj;
-                    models[objName].castShadow = true;
-                    models[objName].receiveShadow = true;
+                    _this[objName] = obj;
+                    _this[objName].castShadow = true;
+                    _this[objName].receiveShadow = true;
 
                     console.log("loaded " + objName)
                 },
@@ -117,7 +118,7 @@ function loadObj(objName, objFile, matFile = null) {
 
 // }
 
-function getCar() { 
+function getCar(_this) { 
     const objFiles = ["carBody","backLeftWheel", "backRightWheel", "frontLeftWheel", "frontRightWheel", "carHood"];
 
     var idx = 0;
@@ -140,7 +141,7 @@ function getCar() {
 
                         idx++;
                         obj.rotation.y = Math.PI;
-                        car.add(obj);
+                        _this["car"].add(obj);
                         
                     },
                 
@@ -163,7 +164,7 @@ function getCar() {
 
 }
 
-function getStereo() { 
+function getStereo(_this) { 
     
     objLoader.load(
         './assets/models/radioObject.obj',
@@ -184,7 +185,7 @@ function getStereo() {
                     
             obj.scale.set( .1, .1, .1 );
 
-            stereo = obj;
+            _this.stereo = obj;
             
 
         },
@@ -203,7 +204,7 @@ function getStereo() {
     );
 }
 
-function getGrass() { 
+function getGrass(_this) { 
 
     objLoader.load(
         './assets/models/obj_Dandelion/Dandelion.obj',
@@ -221,7 +222,7 @@ function getGrass() {
                     
             obj.scale.set( .01, .01, .01 );
 
-            grass = obj;
+            _this.grass = obj;
             
 
         },
@@ -240,7 +241,7 @@ function getGrass() {
     );
 }
 
-function getArchLogo() { 
+function getArchLogo(_this) { 
 
     objLoader.load(
         './assets/archCmmndLogo.obj',
@@ -257,9 +258,9 @@ function getArchLogo() {
                      } );
                     
             obj.scale.set( .1, .1, .1 ) 
-            archLogo = obj;
-            archLogo.castShadow = true;
-            archLogo.receiveShadow = true;
+            _this.archLogo = obj;
+            _this.archLogo.castShadow = true;
+            _this.archLogo.receiveShadow = true;
 
 
         },
@@ -279,7 +280,7 @@ function getArchLogo() {
     
 }
 
-function getCliff() { 
+function getCliff(_this) { 
     
     const map = (val, smin, smax, emin, emax) => (emax-emin)*(val-smin)/(smax-smin) + emin
     //randomly displace the x,y,z coords by the `per` value
@@ -301,45 +302,37 @@ function getCliff() {
         flatShading: true
     } );
 
-    cliff = new THREE.Mesh( geometry, material );
-    cliff.rotation.x = Math.PI/2;
-    cliff.position.y = -10
-    cliff.position.z = 60;
-    cliff.receiveShadow = true;
-    
-    return cliff;
+    _this.cliff = new THREE.Mesh( geometry, material );
+    _this.cliff.rotation.x = Math.PI/2;
+    _this.cliff.position.y = -10
+    _this.cliff.position.z = 60;
+    _this.cliff.receiveShadow = true;
     
 }
 
-function getPolygonLogo() { 
 
-    var dynamicGeometry = new THREE.IcosahedronBufferGeometry(20, 0);
-    polygon = new THREE.Mesh(dynamicGeometry);
-    polygon.position.set(0,10,-80);
-    polygon.lights = true;
-    getLogoTexture(polygon, 3);
-    return polygon;
-
+function getTextures(texture, name) { 
+    getLogoTexture(texture);
 }
-
 /* cmmnd logo texture */ 
-function getLogoTexture(obj, rpt) { 
+function getLogoTexture(_this) { 
 
     textureLoader.load('../../assets/cmmnd_logo.png', function(cmmndTexture) { 
-        console.log('mat loaded');
         cmmndTexture.wrapS = cmmndTexture.wrapT = THREE.RepeatWrapping;
         cmmndTexture.offset.set( 0, 0 );
-        cmmndTexture.repeat.set( rpt, rpt );
-        obj.material = new THREE.MeshLambertMaterial({ 
-            map: cmmndTexture, 
-            color: 0xd0d5d2
-        });	
-        });
+        _this.logoTexture = cmmndTexture;
+        // edit these when using textures on objects 
+        // cmmndTexture.repeat.set( rpt, rpt );
+        // obj.material = new THREE.MeshLambertMaterial({ 
+        //     map: cmmndTexture, 
+        //     color: 0xd0d5d2
+        // });	
+    });
 
 }
 
 
-function getTower() { 
+function getTower(_this) { 
 
     objLoader.load(
         './assets/models/sutroTower.obj',
@@ -357,9 +350,9 @@ function getTower() {
                     
             obj.scale.set( .3, .3, .3 ); 
         
-            tower = obj;
-            tower.castShadow = true;
-            tower.receiveShadow = true;
+            _this.tower = obj;
+            _this.tower.castShadow = true;
+            _this.tower.receiveShadow = true;
 
 
         },

@@ -65,13 +65,6 @@ var count = freq = 0;
 		let sun;
 		let material;
 		let geometry = new THREE.SphereGeometry(20, 100, 100);
-		textureLoader.load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/337424/realsun.jpg',function(Texture){
-			console.log('mat loaded');
-				
-			sun.material = new THREE.MeshLambertMaterial( {
-				map: Texture
-				});
-		});
 		sun = new THREE.Mesh(geometry, material);
 		sun.position.set(0,0, 250);
 
@@ -85,9 +78,12 @@ var count = freq = 0;
 		var moonGeometry = new THREE.SphereGeometry(20, 100, 100);
 		moon = new THREE.Mesh(moonGeometry);
 		moon.position.set(250,50, -150);
-		getLogoTexture(moon, 7);
-
-		return moon
+		models.logoTexture.repeat.set( 7, 7 );
+        moon.material = new THREE.MeshLambertMaterial({ 
+            map: models.logoTexture, 
+            color: 0xd0d5d2
+		});
+		return moon;
 
 	}
 
@@ -137,7 +133,6 @@ var count = freq = 0;
 		return threeColors[i];
 	}
 
-
 	/* space scene definition */
 	class SpaceScene { 
 		constructor() { 
@@ -180,33 +175,15 @@ var count = freq = 0;
 			this.postprocessing = true;
 		}
 
-		setLogo() { 
-			archLogo.position.set(0, 0, -60);
-			archLogo.updateMatrix();
-
-			this.orbit.add(archLogo)
-		}
-
-		setStereo() { 
-			stereo.position.set(-50, 0, 0);
-		}
-
-		setCar() { 
-			// set position of passed in car object
-		}
-
-		// move the logo
-		setObjects() { 
-			this.setCar();
-			this.setLogo();
-			this.setStereo();
-		}
 
 		setScene() { 
 
 		}
 		
 		initScene() { 
+			document.addEventListener("click", ()=> { 
+				this.scene.background = randomColor();
+			})
 
 			this.scene.background = new THREE.Color( 0x000000 );
 			this.camera.position.z = 20;
@@ -217,19 +194,25 @@ var count = freq = 0;
 			this.rocket.position.set(-100,10,-80);
 			this.satellite = models.satellite.clone();
 			this.satellite.scale.set(5,5,5);
-			this.satellite.position.set(-100,0,80);
-			this.car = car.clone();
-			this.car.position.set(0,0,0)
+			this.satellite.rotation.set(50,0,0);
+			this.satellite.position.set(-100,50,80);
+			this.car = models.car.clone();
+			this.car.position.set(0,0,0);
 			this.car.rotation.y = Math.PI/2;
+			this.archLogo = models.archLogo.clone();
+			this.archLogo.scale.set(.3,.3,.3);
+			this.archLogo.position.set(0, 0, 60);
+			// this.stereo = models.stereo.clone();
+			// this.stereo.scale.set(.1,.1,.1);
+			// this.stereo.position.set(-60, -180, 150);
+			// this.setObjects();
+
+			this.rocketOrbit.add(this.rocket);
+			this.orbit.add(this.satellite);
 			this.scene.add(this.car);
-			this.setObjects();
-
-
-			this.rocketOrbit.add(this.rocket)
-			this.orbit.add(this.satellite)
-			// this.orbit.add(archLogo);
-			this.orbit.add(stereo);
-			this.orbit.add(this.planet1)
+			// this.orbit.add(this.stereo);
+			this.orbit.add(this.planet1);
+			this.orbit.add(this.archLogo);
 
 			// initialize scene objects using common object or helper functions
 			// add objects to this.scene
@@ -258,36 +241,22 @@ var count = freq = 0;
 			let bufferlen = pitch_array.length;
 			this.car.rotation.y += .003;
 			this.car.rotation.x += .005;
-			this.rocketOrbit.rotation.x += .003;
-			this.rocketOrbit.rotation.z -= .005;
+			this.rocketOrbit.rotation.x += .0059;
+			this.rocketOrbit.rotation.z -= .007;
 
 
-			archLogo.rotation.y += .02;
-			archLogo.rotation.z += .01;
-			stereo.rotation.z += .01;
-			stereo.rotation.y += .02;
+			this.archLogo.rotation.y += .02;
+			this.archLogo.rotation.z += .01;
+			this.stereo.rotation.z += .01;
+			this.stereo.rotation.y += .02;
 			
 
 			for (var i = 0; i < volume_array.length; i++) { 
 				let vol = volume_array[i];
 				let norm  = vol / 255. 
-				// console.log(norm);
+	
 
-				// change background color 
-				if ( vol > 204 && this.background ) { 
-
-					this.scene.background = randomColor();
-					this.background = false;
-					stereo.scale.set(.105,.105,.105);
-			
-					setTimeout(function() {
-						this.background = true;
-						stereo.scale.set(.1,.1,.1);
-						
-					}.bind(this), 1000);
-				}
-
-				else if ( vol > 180 ) { 
+				if ( vol > 180 ) { 
 					this.orbit.rotation.y += .00003 * norm;
 				}
 

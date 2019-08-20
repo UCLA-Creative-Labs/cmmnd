@@ -18,19 +18,28 @@ var sun, particle, particles, polygon;
 var waveParticles;
 
 /* scene constants */ 
-const CLOUD_NUM = 25;
+const CLOUD_NUM = 20;
 
 /* wave constants */ 
-const AMOUNT = 50; 
-const SEPARATION = 4;
+const AMOUNT = 20; 
+const SEPARATION = 8;
 
 const MAXSIZE = 0.2;
 const WAVESIZE = 2;
 let WAVE_Y = -35;
-var count = 0; // time
+var count = 0; //time
 
 
-// set position of car object
+// function getPolygonLogo(_this) { 
+
+//     var dynamicGeometry = new THREE.IcosahedronBufferGeometry(20, 0);
+//     polygon = new THREE.Mesh(dynamicGeometry);
+//     polygon.position.set(0,10,-80);
+//     polygon.lights = true;
+//     // getLogoTexture(polygon, 3);
+//     return polygon;
+
+// }
 
 /* inspired by https://github.com/chebyrash/Waves/blob/master/static/js/projector.js */
 function getWaveParticles(){ 
@@ -113,16 +122,17 @@ function getCloudMorph(mesh){
     mesh.morphTargetInfluences[0] = 0.;
 }
 
+// TODO fix this function, scale requires more overhead
 function getCloud(side, rand1, rand2, rand3) { 
     let cloudGeometries = [];
     //generate random cloud  
-    let cloudGeo = new THREE.SphereBufferGeometry( 3, 4, 4);
+    let cloudGeo = new THREE.SphereBufferGeometry( 10, 5, 4);
     cloudGeo.translate(-side*2,rand1*3,0);
     cloudGeo.rotateX(rand1); 
-    let cloudGeo2 = new THREE.SphereBufferGeometry( 2, 5, 5);
+    let cloudGeo2 = new THREE.SphereBufferGeometry( 8, 5, 5);
     cloudGeo2.translate(0,rand2,0);
     cloudGeo2.rotateY(rand2); 
-    let cloudGeo3 = new THREE.SphereBufferGeometry( 1, 5, 5);
+    let cloudGeo3 = new THREE.SphereBufferGeometry( 5, 5, 5);
     cloudGeo3.translate(side*2,rand3*3,0);
     cloudGeo2.rotateZ(rand3); 
    // console.log(cloudGeo.index, "index")
@@ -163,8 +173,7 @@ function getClouds() {
         });    
     
         clouds[i] = new THREE.Mesh(cloudGeo, cloudMaterial);
-        clouds[i].scale.set(20,15,20)
-        clouds[i].position.set(500*Math.cos(angle+rand1), rand2*20 + 50 ,-500*Math.sin(angle+rand3))
+        clouds[i].position.set(100*Math.cos(angle+rand1), rand2*20, 80*Math.sin(angle+rand3) + 40)
 
         //generate cloud morph targets
         getCloudMorph(clouds[i]);
@@ -229,7 +238,7 @@ function getParticles() {
 
   //particles
   // create the particle variables
-  var particleCount = 1800,
+  var particleCount = 300,
     particles = new THREE.Geometry(),
     pMaterial = new THREE.PointCloudMaterial({
         color: 0xFFFFC2,
@@ -256,8 +265,6 @@ function getParticles() {
     var particleSystem = new THREE.PointCloud(
         particles,
         pMaterial);
-
-
     return particleSystem;
     
 }
@@ -265,6 +272,7 @@ function getParticles() {
 
 class BeachScene { 
     constructor() { 
+
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
@@ -277,11 +285,11 @@ class BeachScene {
         this.waveParticles = getWaveParticles();
         this.clouds = getClouds();
         this.particleSystem = getParticles();
-        this.platform = getCliff();
+        this.cliff = models.cliff.clone();
         this.morph_amt = 0; // start with no influence
         this.morph_interval = 1000; //milliseconds
         // unique texture, objs etc. will load 
-        this.polygon = getPolygonLogo();
+        // this.polygon = getPolygonLogo();
 
         // postprocessing effects
         this.composer = new THREE.EffectComposer( renderer );
@@ -300,7 +308,6 @@ class BeachScene {
         this.composer.addPass( this.FilmPass );
         this.postprocessing = true;
 
-    
     }
 
     setObjects() { 
@@ -309,25 +316,26 @@ class BeachScene {
     }
 
     setCar() { 
-        this.scene.add(this.platform);
-        car.position.set(0, -5, 60);
-        car.rotation.set(0, 7*Math.PI/6, 0);
-        car.scale.set( 1, 1, 1 );
-        car.updateMatrix(); // updates local matrix 
-        this.scene.add(car);
+        this.scene.add(this.cliff);
+        this.car.position.set(0, -5, 60);
+        this.car.rotation.set(0, 7*Math.PI/6, 0);
+        this.car.scale.set( 1, 1, 1 );
+        this.car.updateMatrix(); // updates local matrix 
+        this.scene.add(this.car);
     }
 
     setGrass() { 
-        grass.rotation.set(-Math.PI/2, 0, 0);
-        grass.position.set(-3, 5, -2);
-        grass.updateMatrix();
-        cliff.add(grass);
+        this.grass.rotation.set(-Math.PI/2, 0, 0);
+        this.grass.position.set(-3, 5, -2);
+        this.grass.updateMatrix();
+        this.cliff.add(this.grass);
+        this.grass.scale.set(.009,.009,.009);
         this.grass2.scale.set(.005,.005,.005);
         //grass2.rotateX(Math.PI/2);
         this.grass2.rotateY(3*Math.PI/5);
         this.grass2.position.set(-3.5, 6, -2);
         this.grass2.updateMatrix();
-        cliff.add(this.grass2);
+        this.cliff.add(this.grass2);
     }
 
     // call at interval
@@ -368,16 +376,17 @@ class BeachScene {
 
     initScene() { 
         // initialize and declare loaded models
-        this.plane = models["plane"].clone()
+        this.plane = models.plane.clone()
         this.plane.scale.set(.05,.05,.05)
         this.plane.position.set(150, 0, 0)
         this.plane.rotation.set(0, Math.PI, 0)
         this.throttle = 0
 
-
+        this.car = models.car.clone()
         // set scene variables
-        this.setScene()
-        this.grass2 = grass.clone();
+        this.setScene();
+        this.grass = models.grass.clone();
+        this.grass2 = models.grass.clone();
         this.setObjects();
         
         // morph 
@@ -389,7 +398,7 @@ class BeachScene {
 
 
         this.scene.add(this.particleSystem);
-        this.scene.add(this.polygon);
+        // this.scene.add(this.polygon);
         this.orbit.add(this.plane)
         this.scene.add(this.orbit)
         
@@ -446,10 +455,10 @@ class BeachScene {
             }
           }
     
-        //update icosahedron
-        polygon.rotation.x += .01;
-        polygon.rotation.y += .01;
-        polygon.position.y += -Math.sin(count);
+        // //update icosahedron
+        // polygon.rotation.x += .01;
+        // polygon.rotation.y += .01;
+        // polygon.position.y += -Math.sin(count);
         
         count += .03;
 
