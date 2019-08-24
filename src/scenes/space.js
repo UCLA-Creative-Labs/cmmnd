@@ -194,28 +194,23 @@ var count = freq = 0;
 			this.rocket.position.set(-100,10,-80);
 			this.satellite = models.satellite.clone();
 			this.satellite.scale.set(5,5,5);
-			this.satellite.rotation.set(50,0,0);
-			this.satellite.position.set(-100,50,80);
+			this.satellite.rotation.set(40,0,0);
+			this.satellite.position.set(-100,50,0);
 			this.car = models.car.clone();
 			this.car.position.set(0,0,0);
 			this.car.rotation.y = Math.PI/2;
 			this.archLogo = models.archLogo.clone();
 			this.archLogo.scale.set(.3,.3,.3);
 			this.archLogo.position.set(0, 0, 60);
-			// this.stereo = models.stereo.clone();
-			// this.stereo.scale.set(.1,.1,.1);
-			// this.stereo.position.set(-60, -180, 150);
-			// this.setObjects();
 
 			this.rocketOrbit.add(this.rocket);
 			this.orbit.add(this.satellite);
 			this.scene.add(this.car);
-			// this.orbit.add(this.stereo);
+
 			this.orbit.add(this.planet1);
 			this.orbit.add(this.archLogo);
 
 			// initialize scene objects using common object or helper functions
-			// add objects to this.scene
 			let light = new THREE.PointLight(0xFFFBE3, .3);
 			light.position.set(100, 0, -60);
 			this.scene.add(light);
@@ -247,8 +242,6 @@ var count = freq = 0;
 
 			this.archLogo.rotation.y += .02;
 			this.archLogo.rotation.z += .01;
-			this.stereo.rotation.z += .01;
-			this.stereo.rotation.y += .02;
 			
 
 			for (var i = 0; i < volume_array.length; i++) { 
@@ -262,7 +255,6 @@ var count = freq = 0;
 
 				this.orbit.rotation.y += .00001 * norm;
 			}
-
 			
 		
 			for (var i = 0; i < bufferlen; i++) {
@@ -292,11 +284,9 @@ var count = freq = 0;
 		}
 
 		animate() {
-
 			const pitch_array = audio.getFreqData();
 			const volume_array = audio.getVolumeData();
 			this.update(pitch_array, volume_array);
-				//renamve
 		} 
 		
 
