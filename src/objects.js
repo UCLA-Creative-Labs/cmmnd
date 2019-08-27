@@ -87,14 +87,14 @@ function getCar(_this) {
     
     objFiles.forEach( (objFile) => { 
 
-        mtlLoader.load( './assets/models/car_model/' + objFile + '.mtl', 
+        mtlLoader.load( '/assets/models/car_model/' + objFile + '.mtl', 
             
             function ( materials ) {
 
                 materials.preload();
                 // load a car
                 objLoader.setMaterials( materials );	
-                objLoader.setPath( './assets/models/car_model/' );
+                objLoader.setPath( '/assets/models/car_model/' );
                 objLoader.load( objFile + '.obj',
 
                     function ( obj ) {
@@ -161,7 +161,7 @@ function getTextures(texture, name) {
 /* cmmnd logo texture */ 
 function getLogoTexture(_this) { 
 
-    textureLoader.load('../../assets/cmmnd_logo.png', function(cmmndTexture) { 
+    textureLoader.load('/../../assets/cmmnd_logo.png', function(cmmndTexture) { 
         cmmndTexture.wrapS = cmmndTexture.wrapT = THREE.RepeatWrapping;
         cmmndTexture.offset.set( 0, 0 );
         _this.logoTexture = cmmndTexture;
