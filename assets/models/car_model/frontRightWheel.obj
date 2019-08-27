@@ -1,6 +1,6 @@
 # This file uses centimeters as units for non-parametric coordinates.
 
-mtllib frontRIghtWheel.mtl
+mtllib frontRightWheel.mtl
 g default
 v -3.949747 -1.199830 6.100000
 v -3.949747 -1.199908 6.099401
