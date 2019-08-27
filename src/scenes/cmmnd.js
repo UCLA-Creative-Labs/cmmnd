@@ -8,8 +8,8 @@ function getPlatform(_this) {
     var stepMaterial = new THREE.MeshStandardMaterial( {color:0xC0C0C0 });
 
 
-    var normalMap = textureLoader.load( '../../assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_normal.jpg' );
-    var metallicMap = textureLoader.load('../../assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_metallic.jpg');
+    var normalMap = textureLoader.load( './assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_normal.jpg' );
+    var metallicMap = textureLoader.load('./assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_metallic.jpg');
     
 
     stepMaterial.normalMap = normalMap;
