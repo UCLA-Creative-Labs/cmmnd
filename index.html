@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html>
 	<link href="https://fonts.googleapis.com/css?family=Titillium+Web&display=swap" rel="stylesheet">
@@ -14,21 +13,6 @@
 		}
 
 		button:focus {outline:0;}
-
-		.mediaPlayer{ 
-			width: 50%;
-			height: 60%;
-			position: absolute;
-			top: 0;
-			bottom: 0;
-			left: 0;
-			right: 0;
-			margin: auto;
-			background-image: url("./assets/media_player.jpg");
-			background-repeat: no-repeat;
-			background-size:100% 100%;
-
-		}
 
 		.loading-screen{ 
 			display: flex;
@@ -47,11 +31,16 @@
 		.controls { 
 			position: fixed;
 			display: none;
-			margin: auto;
 			bottom: 100px;
-			width: 75%;
-			left: 50%;
-			margin-left: -37.5%;
+			left: 0;
+			right: 0; 
+			z-index: 100;
+		}
+
+		.controls-on { 
+			display: flex; 
+			justify-content: center;
+
 		}
 		
 		.control-button:focus { animation: blinker 1s linear infinite; }
@@ -61,7 +50,7 @@
 			height: 20px;
 			width: 20px;
 			color: white;
-			opacity: .8;
+			opacity: .5;
 			margin: 10px;
 		}
 
@@ -103,6 +92,8 @@
 
 		canvas { 
 			display: none; 
+			border-top: 80px solid black !important;
+			border-bottom: 80px solid black !important;
 			background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
 			background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%);
 			background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); 
@@ -213,14 +204,12 @@
 
 					/* scene name to audio mapping */
 					this.scenes = { 
-		
 						INTRO: "CMMND",
 						THEWAY: "SKY", 
 						TENTOES: "BEACH",
 						INDAROCKET: "SPACE",
 						SUICIDE: "TWINPEAKS",
 						BAGFLIP: "INTERSECTION",
-
 					}
 
 					this.sceneObjects = { 
@@ -287,13 +276,13 @@
 					this.currentSong.removeEventListener("song ended ", this.songEnded);
 		
 					if (idx > -1 && idx < 6) { 
-						this.index = idx
-						this.playLoop()
+						this.index = idx;
+						this.playLoop();
 					}
 					else {
 						console.log("error playing song, index not found. Resetting...")
-						this.index = 0
-						this.playLoop()
+						this.index = 0;
+						this.playLoop();
 					};
 				}
 
@@ -379,7 +368,7 @@
 		
 						// add prev buttons 
 						let playerControls = document.querySelector('.controls');
-						playerControls.style.display = "block";
+						playerControls.className += " controls-on";
 
 						console.log("play");
 						audio.context.resume();

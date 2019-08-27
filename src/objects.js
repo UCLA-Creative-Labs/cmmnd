@@ -3,10 +3,6 @@
 // add model base class
 // each "model" initializes and references itself 
 
-
-
-// accepts one obj and one mtl file
-// objFile, matFile is string of path
 function loadObj(_this, objName, objFile, matFile = null) {
 
     console.log("loading " + objName + "...")
@@ -81,42 +77,6 @@ function loadObj(_this, objName, objFile, matFile = null) {
 
     }
 }
-// offset on materials array
-// only use materials for offset array of objects 
-// default 0 
-// function loadModels(objName, objFiles, matFiles = null, offset = 0) { 
-
-//     // if array of objFiles parse through 
-//         // if there is an array of materials 
-//         // else there is one material
-//     if( Array.isArray(objFiles) ) { 
-//         if( Array.isArray(matFiles) ) { 
-
-//             objFiles.forEach((objFile,index) => { 
-//                 if( index >= offset )
-//                     loadObj(objName, objFile, matFiles[index+offset]) 
-//                 else 
-//                     loadObj(objName, objFile)
-//             })
-            
-//         }
-        
-//         // matFiles is one path or null 
-//         else { 
-//             objFiles.forEach((objFile) => { 
-//                 loadObj(objName, objFile, matFiles) 
-//             })
-          
-//         }
-//     }
-
-
-//     // one obj one mat file
-//     else { 
-//         loadObj(objName, objFiles, matFiles)
-//     }
-
-// }
 
 function getCar(_this) { 
     const objFiles = ["carBody","backLeftWheel", "backRightWheel", "frontLeftWheel", "frontRightWheel", "carHood"];
@@ -162,122 +122,6 @@ function getCar(_this) {
 
     });
 
-}
-
-function getStereo(_this) { 
-    
-    objLoader.load(
-        './assets/models/radioObject.obj',
-
-        function ( obj ) {
-        
-            obj.traverse( function ( child ) {
-                     if ( child instanceof THREE.Mesh ) {
-                          child.material = new THREE.MeshStandardMaterial({
-                              color: 0x555555, 
-                              metalness: .2,
-                              emissive: 0x000000,
-                              emissiveIntensity: .2
-                          });
-                         
-                         }
-                     } );
-                    
-            obj.scale.set( .1, .1, .1 );
-
-            _this.stereo = obj;
-            
-
-        },
-        
-        function ( xhr ) {
-
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-        },
-        
-        function ( error ) {
-
-            console.log( 'An error happened' );
-
-        }
-    );
-}
-
-function getGrass(_this) { 
-
-    objLoader.load(
-        './assets/models/obj_Dandelion/Dandelion.obj',
-
-        function ( obj ) {
-        
-            obj.traverse( function ( child ) {
-                     if ( child instanceof THREE.Mesh ) {
-                          child.material = new THREE.MeshStandardMaterial({
-                              color: 0xd3d3d3, 
-                          })
-                         
-                         }
-                     } );
-                    
-            obj.scale.set( .01, .01, .01 );
-
-            _this.grass = obj;
-            
-
-        },
-        
-        function ( xhr ) {
-
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-        },
-        
-        function ( error ) {
-
-            console.log( 'An error happened' );
-
-        }
-    );
-}
-
-function getArchLogo(_this) { 
-
-    objLoader.load(
-        './assets/archCmmndLogo.obj',
-
-        function ( obj ) {
-        
-            obj.traverse( function ( child ) {
-                     if ( child instanceof THREE.Mesh ) {
-                          child.material = new THREE.MeshStandardMaterial({
-                              color: 0xd3d3d3, 
-                          })
-                         
-                         }
-                     } );
-                    
-            obj.scale.set( .1, .1, .1 ) 
-            _this.archLogo = obj;
-            _this.archLogo.castShadow = true;
-            _this.archLogo.receiveShadow = true;
-
-
-        },
-        
-        function ( xhr ) {
-
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-        },
-        
-        function ( error ) {
-
-            console.log( 'An error happened' );
-
-        }
-    );
-    
 }
 
 function getCliff(_this) { 
@@ -329,45 +173,4 @@ function getLogoTexture(_this) {
         // });	
     });
 
-}
-
-
-function getTower(_this) { 
-
-    objLoader.load(
-        './assets/models/sutroTower.obj',
-
-        function ( obj ) {
-        
-            obj.traverse( function ( child ) {
-                     if ( child instanceof THREE.Mesh ) {
-                          child.material = new THREE.MeshStandardMaterial({
-                              color: 0xC80815, 
-                          })
-                         
-                         }
-                     } );
-                    
-            obj.scale.set( .3, .3, .3 ); 
-        
-            _this.tower = obj;
-            _this.tower.castShadow = true;
-            _this.tower.receiveShadow = true;
-
-
-        },
-        
-        function ( xhr ) {
-
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-        },
-        
-        function ( error ) {
-
-            console.log( 'An error happened' );
-
-        }
-    );
-    
 }

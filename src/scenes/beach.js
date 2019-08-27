@@ -370,8 +370,10 @@ class BeachScene {
 
     setScene() {
         renderer.setClearColor(0xffffff, 0);
-        this.scene.background = null;
-        renderer.alpha = true;
+        renderer.setClearColor(0x120A8F, .1);
+        // // Setting the gradient with the proper prefix
+        document.getElementsByTagName('canvas')[0].style.backgroundImage = getCssValuePrefix() + 'linear-gradient('
+        + orientation + ', ' + colorThree + ', ' + colorTwo + ', ' + colorOne + ')';
     }
 
     initScene() { 

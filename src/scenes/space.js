@@ -1,8 +1,4 @@
 // inda rocket scene
-// make speed of orbit depend on vol
-// diff speed of orbit for comets 
-// add satellite
-// add rocket 
 var count = freq = 0;
 
 	function getStars(radius = 500, material = "YELLOW", amt = 10000) {

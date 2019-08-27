@@ -1,35 +1,5 @@
-// 80s shit scene
-// to do : 
-// add twinkling stars
-// add glitching moon
 
 
-// tDiffuse is texture from prev shader
-var PixelShader = {
-  uniforms: {
-      "tDiffuse": { value: null },
-      "resolution": { value: null },
-      "pixelSize": { value: 1. },
-  },
-  vertexShader: [
-      "varying highp vec2 vUv;",
-      "void main() {",
-      "vUv = uv;",
-      "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
-      "}"
-  ].join( "\n" ),
-  fragmentShader: [
-      "uniform sampler2D tDiffuse;",
-      "uniform float pixelSize;",
-      "uniform vec2 resolution;",
-      "varying highp vec2 vUv;",
-      "void main(){",
-      "vec2 dxy = pixelSize / resolution;",
-      "vec2 coord = dxy * floor( vUv / dxy );",
-      "gl_FragColor = texture2D(tDiffuse, coord);",
-      "}"
-  ].join( "\n" )
-};
 
 class TwinPeaksScene {
   constructor() {
@@ -48,6 +18,22 @@ class TwinPeaksScene {
 
     this.cliff = models.cliff.clone();
     this.tower = models.tower.clone();
+    this.tower.traverse( function ( child ) {
+      if ( child instanceof THREE.Mesh ) {
+           child.material = new THREE.MeshStandardMaterial({
+               color: 0xDE1738, 
+           })
+          
+          }
+      } );
+    this.tower.scale.set(.2,.25,.2);
+    
+    // twinkling lights array 
+    this.lights = [];
+    this.lights_amt = 5;
+
+    this.colors = [ "#116677", "#44aaaa", "#7851A9", "ffff77", "#66023C" ];
+    
     this.fogColor = new THREE.Color(0x19022d);
 
     // postprocessing effects
@@ -70,6 +56,17 @@ class TwinPeaksScene {
 
   }
 
+  getLights() { 
+      for ( var i = 1; i <= this.lights_amt; i++ ) { 
+        var spotlight = new THREE.SpotLight( this.colors[i%(this.colors.length)], .5 * Math.random() ); 
+        spotlight.position.set( 800 * Math.random() - 400, 5 * Math.random(), 5 * Math.random() );
+        // spotlight.castShadow = true; 
+        this.lights.push(spotlight);
+        this.scene.add(spotlight);
+      }
+
+  }
+
   setCar() {
     // set position of passed in car object from common objects
     this.car.position.set(0,0,0)
@@ -83,7 +80,7 @@ class TwinPeaksScene {
   }
 
   setTower() { 
-    this.tower.position.set(50,-35,-10)
+    this.tower.position.set(50,-30,25)
   }
 
   setObjects() { 
@@ -99,10 +96,13 @@ class TwinPeaksScene {
   initScene() {
     // this.scene.add(getPlatform());
     this.scene.add(this.cliff);
-    this.setScene()
+    this.setScene(); 
 
-    this.car = models.car.clone()
-    this.setObjects()
+
+    this.car = models.car.clone();
+    this.setObjects();
+    
+    this.getLights();
 
     const sunLight = new THREE.DirectionalLight(0xe1edf0, 0.2);
     sunLight.castShadow = true;

@@ -15,41 +15,26 @@
 ## Finished scenes
   - cmmnd  
   - intersection 
-  - space (fix some positioning) 
+  - space
+  
 
 
 ## Implementation
 Scene Handling 
 
 Each Scene will be a separate class instance, the transitions to these scenes are
-handled by the audiocontroller class and will be masked by some transition postprocessing shader. 
+handled by the audiocontroller class which plays each track in order or according to user actions.
 
-Two ways
-  1. Render a new scene for each scene
-  2. Switch out the objecs for each scene
-
-Using timer to track time between scenes and initiate scene changes. Keep checking timer throughout 
-Timer will hold default scene progression (extend THREE.Clock ??)
-
-```
-var au = document.createElement('audio');
-au.addEventListener('loadedmetadata',function(){
-    au.setAttribute('data-time',au.duration);
-},false);
-
-```
 
 ## Web Audio API 
-There are only several things you need to worry about for the Web Audio API
+There are only several things you need to worry about when working with the Web Audio API
 
 The Analyser: this is what parses all the audio into audio data, it gives us two arrays
 
-  1. frequency_array: determines the pitch (high frequency) and bass (low frequency)
+  1. pitch_array: determines the pitch (high frequency) and bass (low frequency)
   2. volume_array: determines the volume (from the amplitude)
 
-We'll basically be using these two arrays to produce the dynamic, real time effects in the scene. Everytime animate() is called (each new frame), these two arrays will be filled with audio data from whatever source we specify, all that's left to us is to link the elements in the array to variables that we can then use to scale, rotate, etc. our shapes
-
-For now, I just have the cube rotating based on the 'pitch' (the frequency data) 
+We'll basically be using these to produce the dynamic, real time effects in the scene. Everytime animate() is called (each new frame), these two buffers will be filled with audio data from whatever source we specify, all that's left to us is to link the elements in the array to variables that we can then use to scale, rotate, etc. our shapes.
 
 Here's an example of drawing a sine wave from mdn
 
@@ -93,7 +78,7 @@ draw();
 
 ```
 
-Other semi-important things: 
+### Other semi-important things: 
 
 analyser.fftsize: basically determines the amount of data values you have to play around with 
 analyser.smoothingTimeConstant: double value from 0 to 1 that will smooth your set of values over time (smoother audiodata) (default is .8)
@@ -105,19 +90,21 @@ i think that's it but [here's](https://developer.mozilla.org/en-US/docs/Web/API/
 
 More complex [beat detection](http://joesul.li/van/beat-detection-using-web-audio/)
 
-## Orbitcontrols 
-Three.js has a built-in [orbit control system]( )
-
-## Car animation
-Three.js has a built in [animation system](https://threejs.org/docs/#manual/en/introduction/Animation-system)
-
-## Shader Effects
-- [VHS quality grain](https://www.youtube.com/watch?v=9eFVeErnUzg)
-- shape distortion with [fractal brownian motion](https://thebookofshaders.com/13/)
-- text distortion sine wave
-
 
 ## Scene integration
 When each song ends, a new song is played and a new scene is rendered. 
 Each scene is an object  with init and animate functions
 
+## To Be Continued
+Because this was our first three.js app, there were a lot of things we didn't fully implement due to time and performance. 
+With this in mind, these are some of the features + optimizations we learned about when working on the project, 
+researching three.js, and exploring the field of graphics that can be used to make the site faster and more dynamic. 
+These can be implemented in later versions or just kept for future reference.  
+
+- Instancing 
+- Low poly models
+- BufferGeometry > Geometry : less overhead 
+
+And a couple notes for organization and better practices going forward
+- using npm and webpack for bundling
+- 
