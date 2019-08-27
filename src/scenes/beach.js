@@ -371,9 +371,11 @@ class BeachScene {
     setScene() {
         renderer.setClearColor(0xffffff, 0);
         renderer.setClearColor(0x120A8F, .1);
+        var colorOne = '#E0B0FF'; 
+        var colorTwo = '#11e8bb'; 
         // // Setting the gradient with the proper prefix
         document.getElementsByTagName('canvas')[0].style.backgroundImage = getCssValuePrefix() + 'linear-gradient('
-        + orientation + ', ' + colorThree + ', ' + colorTwo + ', ' + colorOne + ')';
+        + orientation + ', ' + colorTwo + ', ' + colorOne + ')';
     }
 
     initScene() { 

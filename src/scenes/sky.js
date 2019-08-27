@@ -94,8 +94,6 @@ function getCloudSphere(_this){
     
 }
 
-
-
 function getSkyBox() { 
     let geometry = new THREE.SphereGeometry(500, 500, 500)
 

@@ -74,9 +74,9 @@ var count = freq = 0;
 		var moonGeometry = new THREE.SphereGeometry(20, 100, 100);
 		moon = new THREE.Mesh(moonGeometry);
 		moon.position.set(250,50, -150);
-		// models.logoTexture.repeat.set( 7, 7 );
+		models.logoTexture.repeat.set( 7, 7 );
         moon.material = new THREE.MeshLambertMaterial({ 
-            // map: models.logoTexture, 
+            map: models.logoTexture, 
             color: 0xd0d5d2
 		});
 		return moon;

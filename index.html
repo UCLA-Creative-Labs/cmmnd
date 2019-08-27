@@ -88,15 +88,26 @@
 			width: 425px;
 		}
 
-		body { margin: 0; }
+		body { 
+			margin: 0; 
+			background-color: black;
 
-		canvas { 
+		}
+
+		#container { 
+			height: 100vh;
+			align-content: center;
+			display: flex;
+		}
+
+		#vis-canvas { 
 			display: none; 
-			border-top: 80px solid black !important;
-			border-bottom: 80px solid black !important;
-			background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
-			background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%);
-			background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%); 
+			align-self: center;
+	
+			height: 80vh !important;
+			/* background: -moz-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%); /* FF3.6-15 */
+			/* background: -webkit-linear-gradient(top,  #E0B0FF 0%,  #11e8bb 100%);
+			background: linear-gradient(to bottom, #E0B0FF 0%,  #11e8bb 100%);   */
 		 }
 
 
@@ -130,11 +141,12 @@
 			<button class="control-button" data-index="4"></button>
 			<button class="control-button" data-index="5"></button>
 		</section>
-	
+		
+		<div id="container">
+		</div>
 	
 
 		
-	</body>
 
         <!-- Load libs -->
 		<script src="./lib/three.min.js"></script>
@@ -378,7 +390,7 @@
 						loading.parentNode.removeChild(loading);
 
 						let renderCanvas = document.getElementById('vis-canvas'); // get canvas 
-						renderCanvas.style.display = "block";
+						renderCanvas.style.display = "flex";
 
 					}
 
@@ -474,7 +486,7 @@
 			// settimeout to call function that disables the renderpass after some time
 			// each scene has own composer and renderpass that uses the badTVPass
 			
-			document.body.appendChild( renderer.domElement );
+			document.getElementById('container').appendChild( renderer.domElement );
 
 			// render();
 			// updated scene
