@@ -87,14 +87,14 @@ function getCar(_this) {
     
     objFiles.forEach( (objFile) => { 
 
-        mtlLoader.load( './assets/models/car_model/' + objFile + '.mtl', 
+        mtlLoader.load( './../assets/models/car_model/' + objFile + '.mtl', 
             
             function ( materials ) {
 
                 materials.preload();
                 // load a car
                 objLoader.setMaterials( materials );	
-                objLoader.setPath( '/assets/models/car_model/' );
+                objLoader.setPath( './../assets/models/car_model/' );
                 objLoader.load( objFile + '.obj',
 
                     function ( obj ) {
