@@ -10,7 +10,6 @@ function getPlatform(_this) {
 
     var normalMap = textureLoader.load( '../../assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_normal.jpg' );
     var metallicMap = textureLoader.load('../../assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_metallic.jpg');
-    var aoMap = textureLoader.load('../../assets/textures/Metal_Hammered_001_SD/Metal_Hammered_001_ambientOcclusion.jpg');
     
 
     stepMaterial.normalMap = normalMap;

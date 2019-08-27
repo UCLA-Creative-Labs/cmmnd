@@ -432,13 +432,13 @@
 				this.init = () => {
 					// add cmmnd log
 					console.log("loading models and textures ...");
-					loadObj( _this, "rocket", "./assets/models/rocket/rocket.obj", "./assets/models/rocket/rocket.mtl");
-					loadObj( _this, "plane", "./assets/models/plane/plane.obj", "./assets/models/plane/plane.mtl");
-					loadObj( _this, "satellite", "./assets/models/satellite/satellite.obj", "./assets/models/satellite/satellite.mtl");
-					loadObj( _this, "stereo", "./assets/models/stereo.obj");
-					loadObj( _this, "archLogo", "./assets/models/archLogo.obj");
-					loadObj( _this, "grass", "./assets/models/obj_Dandelion/Dandelion.obj", "./assets/models/obj_Dandelion/Dandelion.mtl");
-					loadObj( _this, "tower", "./assets/models/sutroTower.obj");
+					loadObj( _this, "rocket", "/assets/models/rocket/rocket.obj", "./assets/models/rocket/rocket.mtl");
+					loadObj( _this, "plane", "/assets/models/plane/plane.obj", "./assets/models/plane/plane.mtl");
+					loadObj( _this, "satellite", "/assets/models/satellite/satellite.obj", "./assets/models/satellite/satellite.mtl");
+					loadObj( _this, "stereo", "/assets/models/stereo.obj");
+					loadObj( _this, "archLogo", "/assets/models/archLogo.obj");
+					loadObj( _this, "grass", "/assets/models/obj_Dandelion/Dandelion.obj", "./assets/models/obj_Dandelion/Dandelion.mtl");
+					loadObj( _this, "tower", "/assets/models/sutroTower.obj");
 					getCliff(_this);
 					getCar(_this);
 					getPlatform(_this);
