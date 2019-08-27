@@ -327,10 +327,10 @@ function getBuildings() {
 }
 
 
-loadMiscObjects('/../../assets/models/gasStationNoSign.obj', -20, -15, 20, -Math.PI/4, 0.3)
-loadMiscObjects('/../../assets/models/gasStationSign.obj', -100, -15, 15, Math.PI/4, 0.5)
-loadMiscObjects('/../../assets/models/stoplight.obj', 30, 8, 52, -Math.PI/4, 0.2)
-loadMiscObjects('/../../assets/models/streetLightLakeMerritt.obj', 2, -1, 18, -Math.PI/4, 0.12)
+loadMiscObjects('./../../assets/models/gasStationNoSign.obj', -20, -15, 20, -Math.PI/4, 0.3)
+loadMiscObjects('./../../assets/models/gasStationSign.obj', -100, -15, 15, Math.PI/4, 0.5)
+loadMiscObjects('./../../assets/models/stoplight.obj', 30, 8, 52, -Math.PI/4, 0.2)
+loadMiscObjects('./../../assets/models/streetLightLakeMerritt.obj', 2, -1, 18, -Math.PI/4, 0.12)
 
 class IntersectionScene {
     constructor() { 
