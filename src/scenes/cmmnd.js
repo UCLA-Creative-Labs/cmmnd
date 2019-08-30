@@ -130,7 +130,8 @@ class CMMNDScene {
     }
 
     setScene() { 
-			
+            // move camera
+        this.camera.position.set(0, 3, 25);
     }
 
 	initScene() { 
@@ -149,9 +150,6 @@ class CMMNDScene {
         renderer.shadowMapHeight = 1024;
 
         this.scene.background =  new THREE.Color( 0x000000 );
-        // move camera
-        this.camera.position.z = 25;
-        this.camera.position.y = 3;
         
         for (let mirror of this.mirrors) { 
             this.scene.add(mirror);

@@ -90,7 +90,8 @@ class TwinPeaksScene {
   
   setScene() { 
     this.scene.background = this.fogColor;
-    this.controls.update()
+    this.camera.position.set(0,0,85);
+    this.controls.update();
   }
 
   initScene() {
@@ -188,7 +189,6 @@ class TwinPeaksScene {
       this.scene.add(cloud.mesh);
     }
 
-    this.camera.position.z = 85;
   }
 
   update(pitch_array) {

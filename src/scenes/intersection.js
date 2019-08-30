@@ -389,6 +389,8 @@ class IntersectionScene {
     }
     
     setScene() { 
+        this.camera.position.set(0,0,100);
+        this.camera.rotation.set(0,0,0);
         renderer.setClearColor(0x120A8F, .1);
         // // Setting the gradient with the proper prefix
         document.getElementsByTagName('canvas')[0].style.backgroundImage = getCssValuePrefix() + 'linear-gradient('
@@ -397,7 +399,6 @@ class IntersectionScene {
 
     initScene() {
         this.setScene()
-        this.camera.position.z = 100
         THREE.ImageUtils.crossOrigin = ''; 
         //Need this to pull in crossdomain images from AWS
 
@@ -411,7 +412,7 @@ class IntersectionScene {
 
         this.setObjects()
 
-        console.log(this.donuts.length)
+        //console.log(this.donuts.length)
         for (let donut of this.donuts) {
             console.log('adding donuts to the scene')
             this.scene.add(donut)
@@ -467,10 +468,11 @@ class IntersectionScene {
     // scale buildings, move car + move donuts according to audio
     update(pitch_array) {
         for (let i = 0; i < this.buildings.length; i++) {
-            let norm = -pitch_array[1]/300 * this.default_y_scales[i] + this.default_y_scales[i]
+            let norm = 1.2*(-pitch_array[1]/300. * this.default_y_scales[i] + this.default_y_scales[i])
             this.buildings[i].scale.set(1, norm, 1)
             this.buildings[i].position.y = (this.default_heights[i]*norm)/2 - 15
         }
+        
 
         for (let i = 0; i < this.donuts.length; i++) {
 

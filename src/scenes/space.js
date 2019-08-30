@@ -173,7 +173,7 @@ var count = freq = 0;
 
 
 		setScene() { 
-
+			this.camera.position.set(0,0,70);
 		}
 		
 		initScene() { 
@@ -182,7 +182,6 @@ var count = freq = 0;
 			})
 
 			this.scene.background = new THREE.Color( 0x000000 );
-			this.camera.position.z = 20;
 			
 			// models
 			this.rocket = models.rocket.clone();

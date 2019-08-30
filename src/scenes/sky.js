@@ -26,7 +26,6 @@ function getPlanet(){
 }
 
 function getCloudSphere(_this){ 
-    let clouds = new THREE.Group();
 
     // create rings of clouds using theta
     for (let j = 0; j < step_num; j++){
@@ -56,6 +55,7 @@ function getCloudSphere(_this){
             }
 
             let cloudGeo = getCloud(side, rand1, rand2, rand3); //
+            
 
             let cloudMaterial =  new THREE.MeshPhongMaterial({ 
                 color: 0xD9E9FF,
@@ -66,36 +66,26 @@ function getCloudSphere(_this){
 
             //set scale according to normal
             // cloud.scale.set(2,1,1)
-            cloud.position.set(radius*Math.cos(angle) + offsetX, height, radius*Math.sin(angle) + offsetZ)
+            cloud.position.set(radius*Math.cos(angle) + offsetX, height, radius*Math.sin(angle) + offsetZ);
             cloud.lookAt(new THREE.Vector3( 0, 0, 0 ));
 
             cloud.lights = true;
 
+            getCloudMorph(cloud);
             cloud.position.y += offsetY;
-
-            // lag
-            if(i % 10 == 0) { 
-                getCloudMorph(cloud); // morph every 10th cloud, save a reference in array 
-                _this.morphClouds.push(cloud);
-            
-            }
-
-            clouds.add(cloud)
+            _this.morphClouds.push(cloud);
 
             }
     }
-
-
-
-    return clouds;
+    // clouds.position.y = offsetY;
+    // return clouds;
 
     //create clouds 
-
     
 }
 
 function getSkyBox() { 
-    let geometry = new THREE.SphereGeometry(500, 500, 500)
+    let geometry = new THREE.SphereGeometry(400, 400, 400);
 
     // gradient 
     let material = new THREE.ShaderMaterial({
@@ -144,10 +134,8 @@ function getSkyBox() {
 class SkyScene { 
 
 	constructor() {
-        this.morph_amt = 0; // start with no influence
         this.morph_interval = 5000; //milliseconds
         this.morphClouds = []; 
-
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
@@ -157,7 +145,7 @@ class SkyScene {
         
         this.backgroundColor = new THREE.Color( 0xdbddf2 );
         this.fog = new THREE.Fog(this.backgroundColor, 1, 1000);
-        this.clouds = getCloudSphere(this); // rotate around x axis of world
+        getCloudSphere(this); // rotate around x axis of world
         this.planet = getPlanet();
         this.car = models.car.clone();
         this.car.position.set(0,18,5);
@@ -188,29 +176,32 @@ class SkyScene {
 	}
     
     morph() { 
-        var _this = this;
+    
+        for ( let c of this.morphClouds ) {
+            var tween = new TWEEN.Tween(c.morphTargetInfluences)
+            .to({
+                "0":1
+            }, this.morph_interval)
+            .delay(10)
+            .easing(TWEEN.Easing.Elastic.Out);
 
-        var current = {amt: this.morph_amt};
-        var target = {amt: this.morph_amt == 0 ? 1 : 0}; //opposite of morph_amt
-        var tween = new TWEEN.Tween(current).to(target, this.morph_interval - 10); // divide by morph_speed (according to music)
-        tween.easing(TWEEN.Easing.Elastic.Out);
-
-        tween.onUpdate(function(){ 
-
-            //morphinfluence of each cloud in the morphclouds array 
-            for ( let c of _this.morphClouds ) { 
-                c.morphTargetInfluences[0] = current.amt;
-                _this.morph_amt = current.amt;
-                //console.log(c.morphTargetInfluences[0], _this.morph_amt, "dictionary") // morphing to zero
-            }
-            
-        })
+            tween.yoyo(true).repeat(Infinity);
+            // console.log(c)
+            // tween.onUpdate(()=>{ 
+            //     console.log( c.morphTargetInfluences);
+            // })
+        }
 
         tween.start();
     }
 
     setScene() { 
-        this.controls.update()
+        this.controls.update();
+        
+        this.camera.position.set(-20,30,50);
+        this.camera.rotation.set(0,0,0);
+        this.camera.lookAt(this.car.position);
+        
     }
 	
 	initScene() { 
@@ -219,7 +210,9 @@ class SkyScene {
         this.scene.fog = this.fog;
  
         this.scene.add(this.car);
-        this.scene.add(this.clouds);
+        for (let c of this.morphClouds) { 
+            this.scene.add(c);
+        }
         this.scene.add(this.planet);
         this.scene.add(this.sun);
         this.scene.add(this.sky);
@@ -227,10 +220,7 @@ class SkyScene {
         this.scene.add(this.particleSystem);
 
         // morph 
-        setInterval( ()=> { this.morph() }, this.morph_interval )
-
-        this.camera.position.set(-20,30,50);
-        this.camera.lookAt(this.car.position);
+        this.morph();
         this.scene.add(new THREE.AmbientLight( 0xffffff, .5 ));
         
         var directionalLight = new THREE.DirectionalLight( 0xfa8070, 0.5 );
@@ -242,7 +232,7 @@ class SkyScene {
 	update(pitch_array, volume_array) {
         
         this.planet.rotation.x -= .002;
-        // this.clouds.rotation.x -= .002;
+        //this.clouds.rotation.x -= .001;
         this.car.rotation.z = .05*Math.sin(this.throttle) + Math.PI;
         this.car.rotation.x = .05*Math.sin(this.throttle) + Math.PI;
         this.throttle += .01;
@@ -252,10 +242,10 @@ class SkyScene {
 	animate() {
         const pitch_array = audio.getFreqData();
         const volume_array = audio.getVolumeData();
-		this.update( pitch_array,volume_array );
+        this.update( pitch_array,volume_array );
+        TWEEN.update();
         
         // interpolates values
-        TWEEN.update();
     }
 
 }

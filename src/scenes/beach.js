@@ -18,7 +18,7 @@ var sun, particle, particles, polygon;
 var waveParticles;
 
 /* scene constants */ 
-const CLOUD_NUM = 20;
+const CLOUD_NUM = 10;
 
 /* wave constants */ 
 const AMOUNT = 20; 
@@ -173,7 +173,7 @@ function getClouds() {
         });    
     
         clouds[i] = new THREE.Mesh(cloudGeo, cloudMaterial);
-        clouds[i].position.set(100*Math.cos(angle+rand1), rand2*20, 80*Math.sin(angle+rand3) + 40)
+        clouds[i].position.set(100*Math.cos(angle+rand1), rand2*20, -80*Math.sin(angle+rand3) )
 
         //generate cloud morph targets
         getCloudMorph(clouds[i]);
@@ -369,6 +369,8 @@ class BeachScene {
     }
 
     setScene() {
+        this.camera.position.set(0,0,80);
+        this.camera.rotation.set(0,0,0);
         renderer.setClearColor(0xffffff, 0);
         renderer.setClearColor(0x120A8F, .1);
         var colorOne = '#E0B0FF'; 
@@ -396,7 +398,6 @@ class BeachScene {
         // morph 
         setInterval( ()=> { this.morph() }, this.morph_interval )
 
-        this.camera.position.z = 80;
         // add car after place is set
         this.scene.add(this.sun);
 

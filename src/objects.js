@@ -20,7 +20,6 @@ function loadObj(_this, objName, objFile, matFile = null) {
             materials.preload();
             var objLoader = new THREE.OBJLoader(manager)
             objLoader.setMaterials( materials );
-            console.log(objLoader)
             objLoader.load( objFile,
 
                 function ( obj ) {
