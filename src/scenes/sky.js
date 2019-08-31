@@ -71,9 +71,8 @@ function getCloudSphere(_this){
 
             cloud.lights = true;
 
-            getCloudMorph(cloud);
             cloud.position.y += offsetY;
-            _this.morphClouds.push(cloud);
+            _this.clouds.push(cloud);
 
             }
     }
@@ -134,8 +133,7 @@ function getSkyBox() {
 class SkyScene { 
 
 	constructor() {
-        this.morph_interval = 5000; //milliseconds
-        this.morphClouds = []; 
+        this.clouds = []; 
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
@@ -175,25 +173,6 @@ class SkyScene {
    
 	}
     
-    morph() { 
-    
-        for ( let c of this.morphClouds ) {
-            var tween = new TWEEN.Tween(c.morphTargetInfluences)
-            .to({
-                "0":1
-            }, this.morph_interval)
-            .delay(10)
-            .easing(TWEEN.Easing.Elastic.Out);
-
-            tween.yoyo(true).repeat(Infinity);
-            // console.log(c)
-            // tween.onUpdate(()=>{ 
-            //     console.log( c.morphTargetInfluences);
-            // })
-        }
-
-        tween.start();
-    }
 
     setScene() { 
         this.controls.update();
@@ -210,7 +189,7 @@ class SkyScene {
         this.scene.fog = this.fog;
  
         this.scene.add(this.car);
-        for (let c of this.morphClouds) { 
+        for (let c of this.clouds) { 
             this.scene.add(c);
         }
         this.scene.add(this.planet);
@@ -219,21 +198,20 @@ class SkyScene {
         this.sun.position.set(0, 130, -400);
         this.scene.add(this.particleSystem);
 
-        // morph 
-        this.morph();
         this.scene.add(new THREE.AmbientLight( 0xffffff, .5 ));
         
         var directionalLight = new THREE.DirectionalLight( 0xfa8070, 0.5 );
         directionalLight.target = this.car;
         this.sun.add(directionalLight);
-        
-	}
 
+        
+    }
+    
 	update(pitch_array, volume_array) {
         
         this.planet.rotation.x -= .002;
         //this.clouds.rotation.x -= .001;
-        this.car.rotation.z = .05*Math.sin(this.throttle) + Math.PI;
+        this.car.rotation.z += .05*Math.sin(this.throttle) ;
         this.car.rotation.x = .05*Math.sin(this.throttle) + Math.PI;
         this.throttle += .01;
 		// update objects within the scene
@@ -244,6 +222,8 @@ class SkyScene {
         const volume_array = audio.getVolumeData();
         this.update( pitch_array,volume_array );
         TWEEN.update();
+
+
         
         // interpolates values
     }
