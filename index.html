@@ -68,7 +68,7 @@
 		p { 
 			color: white;
 			font-family: 'Titillium Web', sans-serif;
-			font-size: 18px;
+			font-size: 2em;
 			animation: blinker 3s linear infinite;
 		}
 		@keyframes blinker{
@@ -79,9 +79,12 @@
 
 		/* text */
 		.scene-title { 
-			background-color: #34282C;
+			display: block;
+			font-family: 'Titillium Web', sans-serif;
 			color: #B20000; 
+			font-size: 1em;
 		}
+
 
 
 		#spinning-video {
@@ -95,9 +98,10 @@
 		}
 
 		#container { 
+			z-index : 1000;
 			height: 100vh;
 			align-content: center;
-			display: flex;
+			display: none;
 		}
 
 		#vis-canvas { 
@@ -132,6 +136,8 @@
 						<source src="./assets/CMMND spinning.mov">
 				</video>
 			</div>
+
+		<div class="text-container scene-title"> the text goes here </div>
 		<section class="controls"> 
 			<!-- each button corresponds to a scene, switch between scenes (only initscene once) -->
 			<button class="control-button" data-index="0"></button>
@@ -140,12 +146,11 @@
 			<button class="control-button" data-index="3"></button>
 			<button class="control-button" data-index="4"></button>
 			<button class="control-button" data-index="5"></button>
+		
 		</section>
 		
 		<div id="container">
 		</div>
-	
-
 		
 
         <!-- Load libs -->
@@ -224,6 +229,15 @@
 						BAGFLIP: "INTERSECTION",
 					}
 
+					this.text = { 
+						INTRO: "WTF IS CMMND?", 
+						THEWAY: "THE WAY - KIR.ON, ZÉ ROSÉ, JHERZ, SEIJI ODA, CØLEMAN",
+						TENTOES: "TENTOES - SLEEPYBOYBRYAN, KRISTA MARINA, BEN 10K, SEIJI ODA, CØLEMAN", 
+						BAGFLIP: "BAGFLIP - ZÉ ROSÉ, YT APEX, GC OKE, SEIJI ODA", 
+						SUICIDE: "SUICIDE DOORS - SEIJI ODA, BEN 10K, KIR.ON FOURTÉ" , 
+						INDAROCKET: "INDAROCKET - BEN SENSELESS, LANCE CHU, JELEEL!, KEALA ANGELIQUE, CØLEMAN",
+					}
+
 					this.sceneObjects = { 
 						"CMMND": new CMMNDScene,
 						"BEACH": new BeachScene,
@@ -267,7 +281,7 @@
 				getScene () { 
 					return this.sceneObjects[this.currentScene];
 				}
-				
+
 				// web audio freq data
 				getFreqData() { 
 					this.analyser.getByteFrequencyData(this.pitch_array);
@@ -326,6 +340,8 @@
 					this.currentScene = this.scenes[this.titles[i]];
 					this.scene = this.sceneObjects[this.currentScene];
 					
+					// get text 
+					document.querySelector('.text-container').innerHTML = this.text[this.titles[i]];
 					console.log("setting scene...");
 					// this.scene.setObjects();
 					this.scene.setScene();
@@ -378,11 +394,10 @@
 
 					function playVis() { 
 		
-						// add prev buttons 
+						// add controls
 						let playerControls = document.querySelector('.controls');
 						playerControls.className += " controls-on";
 
-						console.log("play");
 						audio.context.resume();
 						audio.playLoop();
 						render(audio.scene);
