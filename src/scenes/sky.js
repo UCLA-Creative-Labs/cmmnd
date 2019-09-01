@@ -26,7 +26,7 @@ function getPlanet(){
 }
 
 function getCloudSphere(_this){ 
-
+    let clouds = new THREE.Group();
     // create rings of clouds using theta
     for (let j = 0; j < step_num; j++){
 
@@ -65,19 +65,23 @@ function getCloudSphere(_this){
             let cloud = new THREE.Mesh(cloudGeo, cloudMaterial);
 
             //set scale according to normal
-            // cloud.scale.set(2,1,1)
-            cloud.position.set(radius*Math.cos(angle) + offsetX, height, radius*Math.sin(angle) + offsetZ);
+            if( Math.random() >  .1 ) { 
+                cloud.position.set(radius*Math.cos(angle) + offsetX, height, radius*Math.sin(angle) + offsetZ) 
+            }
+            else { 
+                cloud.position.set(1.1 * radius*Math.cos(angle) + offsetX, 1.1 * height, 1.1 * radius*Math.sin(angle) + offsetZ); 
+                cloud.scale.set(.8,.8,.8)
+            }
+
+
             cloud.lookAt(new THREE.Vector3( 0, 0, 0 ));
-
             cloud.lights = true;
-
-            cloud.position.y += offsetY;
-            _this.clouds.push(cloud);
+            clouds.add(cloud);
 
             }
     }
-    // clouds.position.y = offsetY;
-    // return clouds;
+    clouds.position.y = offsetY;
+    return clouds;
 
     //create clouds 
     
@@ -133,7 +137,7 @@ function getSkyBox() {
 class SkyScene { 
 
 	constructor() {
-        this.clouds = []; 
+        this.clouds = getCloudSphere(); 
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
@@ -143,7 +147,7 @@ class SkyScene {
         
         this.backgroundColor = new THREE.Color( 0xdbddf2 );
         this.fog = new THREE.Fog(this.backgroundColor, 1, 1000);
-        getCloudSphere(this); // rotate around x axis of world
+    
         this.planet = getPlanet();
         this.car = models.car.clone();
         this.car.position.set(0,18,5);
@@ -189,9 +193,7 @@ class SkyScene {
         this.scene.fog = this.fog;
  
         this.scene.add(this.car);
-        for (let c of this.clouds) { 
-            this.scene.add(c);
-        }
+        this.scene.add(this.clouds)
         this.scene.add(this.planet);
         this.scene.add(this.sun);
         this.scene.add(this.sky);
@@ -200,9 +202,9 @@ class SkyScene {
 
         this.scene.add(new THREE.AmbientLight( 0xffffff, .5 ));
         
-        var directionalLight = new THREE.DirectionalLight( 0xfa8070, 0.5 );
-        directionalLight.target = this.car;
-        this.sun.add(directionalLight);
+        this.directionalLight = new THREE.DirectionalLight( 0xfa8070, 0.5 );
+        this.directionalLight.target = this.car;
+        this.sun.add(this.directionalLight);
 
         
     }
@@ -210,8 +212,8 @@ class SkyScene {
 	update(pitch_array, volume_array) {
         
         this.planet.rotation.x -= .002;
-        //this.clouds.rotation.x -= .001;
-        this.car.rotation.z += .05*Math.sin(this.throttle) ;
+        this.clouds.rotation.x -= .001;
+        this.car.rotation.z += .05*Math.sin(this.throttle);
         this.car.rotation.x = .05*Math.sin(this.throttle) + Math.PI;
         this.throttle += .01;
 		// update objects within the scene
@@ -221,7 +223,6 @@ class SkyScene {
         const pitch_array = audio.getFreqData();
         const volume_array = audio.getVolumeData();
         this.update( pitch_array,volume_array );
-        TWEEN.update();
 
 
         
